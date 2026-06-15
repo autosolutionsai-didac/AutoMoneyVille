@@ -169,7 +169,7 @@
 
 	let curr_maze = "the_ville";
 	let tile_width = 32;
-	let movement_speed = 32;
+	let movement_speed = 4;
 
 	// Movement display variables
 	let pollInProgress = false;
@@ -177,51 +177,331 @@
 	let execute_count_max = tile_width/movement_speed;
 	let execute_count = 0;
 	let movement_target = {};
+	let autoFollowMovement = true;
+	let lastMovementPacketAt = Date.now();
 
 	// ==========================================================================
 	// Playback Controls
 	// ==========================================================================
-	let isPaused = false;
+	let isPaused = true;
 	let isSkipping = false;
 	let playbackSpeed = 5;
 	let animationDelay = 200;
 	let lastAnimationTime = 0;
+	let playbackState = "paused";
+	let latestBackendHealth = null;
+	let backendBusy = false;
+	let selectedTownCenterRequestId = null;
+	let staleRunReloadScheduled = false;
 
 	// ==========================================================================
 	// Simulation Control (Frontend-driven)
 	// ==========================================================================
 	let isSimulating = false;
-	let simulationActive = true;  // Master switch for auto-simulation
+	let simulationActive = false; // Master switch for auto-simulation
 	let queuedMovements = 0;      // Steps queued but not yet animated
 	let displayedStep = step;     // Step currently being displayed
 	let simulatedStep = step;     // Step simulated on backend
-	const TARGET_BUFFER = 3;      // Target number of steps to keep buffered ahead
-	const BATCH_SIZE = 2;         // Steps to request per batch
+	let lastAppliedMovementStep = step - 1;
+	const CLIENT_VERSION = "stream-v2";
+	const TARGET_BUFFER = 1;      // Keep playback responsive; one slow LLM step should not block a batch
+	const BATCH_SIZE = 1;         // Request one backend step per batch
 
-	async function requestSimulation(numSteps) {
-		if (isSimulating) return;
+	function setPlaybackState(state) {
+		playbackState = state;
+		const stateEl = document.getElementById('playback-state-content');
+		if (stateEl) stateEl.textContent = state;
+	}
+
+	function setDisplayedSimTime(currTime) {
+		if (!currTime) return;
+		const gameTime = document.getElementById('game-time-content');
+		if (gameTime) {
+			gameTime.textContent = currTime;
+			updateDayNightCycle(currTime);
+		}
+	}
+
+	function updatePersonaCardFromSnapshot(persona) {
+		const personaName = persona?.name;
+		if (!personaName) return;
+		const personaNameOs = personaName.replace(/ /g, "_");
+		const actionEl = document.getElementById("current_action__" + personaNameOs);
+		const locationEl = document.getElementById("target_address__" + personaNameOs);
+		if (actionEl && persona.action) actionEl.textContent = persona.action;
+		if (locationEl && persona.location) locationEl.textContent = persona.location;
+	}
+
+	function syncBackendSnapshot(backend) {
+		if (!backend?.ok) return;
+		if (backend.curr_time && (isPaused || execute_count <= 0)) {
+			setDisplayedSimTime(backend.curr_time);
+		}
+		for (const persona of backend.personas || []) {
+			updatePersonaCardFromSnapshot(persona);
+		}
+	}
+
+	function updateRuntimePanel(health) {
+		const panel = document.getElementById('runtime-status-panel');
+		const backend = health?.backend || {};
+		latestBackendHealth = backend;
+		backendBusy = Boolean(backend.backend_busy);
+		if (
+			backend.ok &&
+			backend.sim_code &&
+			backend.sim_code !== sim_code &&
+			!staleRunReloadScheduled
+		) {
+			staleRunReloadScheduled = true;
+			updateSimStatus('New backend run detected - reloading page', true);
+			setTimeout(() => window.location.reload(), 750);
+		}
+
+		const backendHealth = document.getElementById('backend-health-content');
+		const backendTime = document.getElementById('backend-time-content');
+		const backendStep = document.getElementById('backend-step-content');
+		const queueDepth = document.getElementById('queue-depth-content');
+		const backendBusyEl = document.getElementById('backend-busy-content');
+
+		if (backendHealth) {
+			backendHealth.textContent = backend.ok ? (backend.backend_busy ? 'busy' : 'online') : 'offline';
+		}
+		if (backendTime) backendTime.textContent = backend.curr_time || '--';
+		const gameTime = document.getElementById('game-time-content');
+		if (gameTime && gameTime.textContent === '--:--' && backend.curr_time) {
+			gameTime.textContent = backend.curr_time;
+			updateDayNightCycle(backend.curr_time);
+		}
+		syncBackendSnapshot(backend);
+		if (backendStep) backendStep.textContent = backend.step ?? '--';
+		if (queueDepth) queueDepth.textContent = backend.movement_queue_depth ?? queuedMovements ?? '--';
+		if (backendBusyEl) {
+			if (!backend.ok) {
+				backendBusyEl.textContent = backend.error || 'unavailable';
+			} else if (backend.backend_busy) {
+				const seconds = backend.backend_busy_seconds ?? 0;
+				const reason = backend.backend_busy_reason || 'working';
+				backendBusyEl.textContent = `${reason} (${seconds}s)`;
+				backendBusyEl.title = backend.backend_busy_since || '';
+			} else {
+				backendBusyEl.textContent = 'idle';
+				backendBusyEl.title = '';
+			}
+		}
+		if (panel) panel.classList.toggle('backend-down', !backend.ok);
+	}
+
+	async function refreshRuntimeHealth() {
+		try {
+			const response = await fetch("{% url 'api_health' %}");
+			const health = await response.json();
+			updateRuntimePanel(health);
+			if (isPaused && !isSkipping) {
+				setPlaybackState('paused');
+			} else if (!health.backend?.ok) {
+				updateSimStatus('Backend offline', false);
+			} else if (health.backend?.backend_busy) {
+				setPlaybackState('backend busy');
+				updateSimStatus('Backend busy - waiting for next movement', true);
+			} else if (!isPaused && !isSkipping && !isSimulating && playbackState === 'backend busy') {
+				setPlaybackState('playing');
+				updateSimStatus('Ready', false);
+			}
+		} catch (error) {
+			updateRuntimePanel({ backend: { ok: false, error: String(error) } });
+			updateSimStatus('Health check failed', false);
+		}
+	}
+
+	function formatRevenue(cents) {
+		return `$${((cents || 0) / 100).toFixed(2)}`;
+	}
+
+	function setTownApprovalButtonsEnabled(enabled) {
+		for (const id of [
+			'town-approve-request',
+			'town-reject-request',
+			'town-complete-request',
+			'town-fail-request'
+		]) {
+			const button = document.getElementById(id);
+			if (button) button.disabled = !enabled;
+		}
+	}
+
+	function updateTownCenterPanel(snapshot) {
+		const objective = document.getElementById('town-center-objective');
+		const points = document.getElementById('town-points-content');
+		const revenue = document.getElementById('town-revenue-content');
+		const requests = document.getElementById('town-requests-content');
+		const approvals = document.getElementById('town-approvals-content');
+		const latest = document.getElementById('town-latest-request');
+		const approvalTitle = document.getElementById('town-approval-title');
+		const approvalMeta = document.getElementById('town-approval-meta');
+
+		const score = snapshot?.team_score || {};
+		const requestList = snapshot?.requests || [];
+		const approvalQueue = snapshot?.approval_queue || [];
+		const latestRequest = requestList[requestList.length - 1];
+		const activeApproval = approvalQueue[0] || null;
+
+		if (objective) objective.textContent = snapshot?.scenario?.objective || 'Scenario unavailable';
+		if (points) points.textContent = score.points ?? 0;
+		if (revenue) revenue.textContent = formatRevenue(score.revenue_cents);
+		if (requests) requests.textContent = requestList.length;
+		if (approvals) approvals.textContent = snapshot?.pending_approval_count ?? 0;
+		selectedTownCenterRequestId = activeApproval?.id || null;
+		if (approvalTitle) {
+			approvalTitle.textContent = activeApproval
+				? activeApproval.title
+				: 'No pending approvals';
+			approvalTitle.title = approvalTitle.textContent;
+		}
+		if (approvalMeta) {
+			approvalMeta.textContent = activeApproval
+				? `${activeApproval.actor || 'unknown'} - ${activeApproval.type || 'request'}`
+				: '--';
+			approvalMeta.title = approvalMeta.textContent;
+		}
+		setTownApprovalButtonsEnabled(Boolean(activeApproval));
+		if (latest) {
+			latest.textContent = latestRequest
+				? `${latestRequest.current_state}: ${latestRequest.title}`
+				: 'No requests yet';
+			latest.title = latest.textContent;
+		}
+	}
+
+	async function refreshTownCenter() {
+		try {
+			const response = await fetch("{% url 'api_town_center' %}");
+			const snapshot = await response.json();
+			if (snapshot.error) {
+				updateTownCenterPanel({ scenario: { objective: 'Town center unavailable' } });
+				return;
+			}
+			updateTownCenterPanel(snapshot);
+		} catch (error) {
+			updateTownCenterPanel({ scenario: { objective: 'Town center unavailable' } });
+		}
+	}
+
+	async function transitionTownCenterRequest(state) {
+		if (!selectedTownCenterRequestId) return;
+		setTownApprovalButtonsEnabled(false);
+		const transitionUrl = "{% url 'api_town_center_request_transition' 'REQUEST_ID' %}"
+			.replace('REQUEST_ID', encodeURIComponent(selectedTownCenterRequestId));
+		try {
+			await fetch(transitionUrl, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					state: state,
+					reviewer: 'human',
+					note: `${state} from simulator town center`
+				})
+			});
+		} catch (error) {
+			console.error('[TOWN] Transition failed:', error);
+		}
+		await refreshTownCenter();
+	}
+
+	async function requestSimulation(numSteps, forceRequest = false) {
+		if (isSimulating || (backendBusy && !forceRequest)) return;
 		isSimulating = true;
+		setPlaybackState('simulating');
 		updateSimStatus('Simulating...', true);
 
 		try {
 			const response = await fetch("{% url 'api_simulate' %}", {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				headers: {
+					'Content-Type': 'application/json',
+					'X-Claudeville-Client': CLIENT_VERSION
+				},
 				body: JSON.stringify({ steps: numSteps })
 			});
 			const result = await response.json();
-			if (result.status === 'ok') {
+			if (response.status === 504) {
+				backendBusy = true;
+				setPlaybackState('backend busy');
+				updateSimStatus('Backend timeout - waiting for completion', true);
+			} else if (result.status === 'ok') {
+				backendBusy = false;
 				simulatedStep = result.current_step;
 				queuedMovements = result.queued_movements;
+			} else if (result.status === 'busy') {
+				backendBusy = true;
+				queuedMovements = result.queued_movements ?? queuedMovements;
+				setPlaybackState('backend busy');
+				updateSimStatus('Backend busy - waiting for next movement', true);
 			} else if (result.error) {
 				console.error('[SIM] Backend error:', result.error);
+				handleSimulationError(result.error);
 			}
 		} catch (error) {
 			console.error('[SIM] Request failed:', error);
+			handleSimulationError(String(error));
 		}
 
 		isSimulating = false;
-		updateSimStatus('Ready', false);
+		if (isPaused && !isSkipping) {
+			setPlaybackState('paused');
+		} else if (backendBusy) {
+			setPlaybackState('backend busy');
+		} else if (!isPaused && !isSkipping && playbackState !== 'backend busy') {
+			setPlaybackState('playing');
+		}
+		if (simulationActive && !backendBusy) {
+			updateSimStatus('Ready', false);
+		}
+		refreshRuntimeHealth();
+	}
+
+	function handlePolledMovementResult(result) {
+		if (!result.hasMovements) return false;
+
+		queuedMovements = Math.max(0, queuedMovements - 1);
+
+		if (result.hadNewAction) {
+			const activePersonas = result.movement.meta?.active_personas || [];
+			if (activePersonas.length > 0) {
+				updatePersonaActivity(activePersonas);
+			}
+		}
+
+		if (isSkipping && result.hadNewAction) {
+			handleSkipActionFound(result.movement);
+		}
+
+		return true;
+	}
+
+	async function kickPlaybackPipeline(forceRequest = false) {
+		if (!simulationActive || isPaused || isSkipping || isMenuOpen()) return;
+		if (execute_count > 0 || pollInProgress) return;
+
+		pollInProgress = true;
+		const result = await pollMovements();
+		pollInProgress = false;
+
+		if (handlePolledMovementResult(result)) return;
+
+		if (simulationActive && !isSimulating && queuedMovements <= TARGET_BUFFER) {
+			requestSimulation(BATCH_SIZE, forceRequest);
+		}
+	}
+
+	function handleSimulationError(message) {
+		simulationActive = false;
+		isPaused = true;
+		isSkipping = false;
+		setPlaybackState('paused');
+		updateButtonStates();
+		updateSimStatus('Simulation error - check backend status', false);
+		console.error('[SIM] Auto-simulation paused:', message);
 	}
 
 	function updateSimStatus(text, simulating) {
@@ -237,17 +517,65 @@
 		}
 	}
 
+	function calculateMovementFrameCount(movement) {
+		let maxDistance = tile_width;
+		for (const [personaName, movementData] of Object.entries(movement?.persona || {})) {
+			const sprite = personas[personaName];
+			const targetTile = movementData?.movement;
+			if (!sprite || !targetTile || targetTile.length < 2) continue;
+			const targetX = targetTile[0] * tile_width;
+			const targetY = targetTile[1] * tile_width;
+			const distance = Math.abs(sprite.body.x - targetX) + Math.abs(sprite.body.y - targetY);
+			maxDistance = Math.max(maxDistance, distance);
+		}
+		return Math.max(tile_width / movement_speed, Math.ceil(maxDistance / movement_speed));
+	}
+
+	function focusMovementTarget(movement) {
+		if (!autoFollowMovement || !mainCamera || isDragging) return;
+
+		const personaEntries = Object.entries(movement?.persona || {});
+		const activeNames = movement?.meta?.active_personas || [];
+		const preferredEntries = [
+			...activeNames
+				.map(name => [name, movement.persona?.[name]])
+				.filter(([, data]) => data),
+			...personaEntries
+		];
+
+		for (const [personaName, movementData] of preferredEntries) {
+			const sprite = personas[personaName];
+			const targetTile = movementData?.movement;
+			if (!sprite || !targetTile || targetTile.length < 2) continue;
+
+			const targetX = targetTile[0] * tile_width;
+			const targetY = targetTile[1] * tile_width;
+			const isMoving = Math.abs(sprite.body.x - targetX) > 1 || Math.abs(sprite.body.y - targetY) > 1;
+			const isActive = activeNames.includes(personaName);
+			if (isMoving || isActive) {
+				mainCamera.pan(targetX, targetY, 450, 'Power2');
+				return;
+			}
+		}
+	}
+
 	// ==========================================================================
 	// Movement Polling
 	// ==========================================================================
 
 	async function pollMovements() {
 		try {
-			const response = await fetch("{% url 'api_movements' %}");
+			const movementsUrl = `{% url 'api_movements' %}?after_step=${lastAppliedMovementStep}`;
+			const response = await fetch(movementsUrl, {
+				headers: { 'X-Claudeville-Client': CLIENT_VERSION }
+			});
 			const result = await response.json();
 
 			if (result.empty) {
 				queuedMovements = 0;  // Backend queue is empty, reset our count
+				if (!isPaused && !isSimulating) {
+					setPlaybackState(backendBusy ? 'backend busy' : 'buffering');
+				}
 				await new Promise(r => setTimeout(r, 500));
 				return { hasMovements: false, hadNewAction: false };
 			}
@@ -258,8 +586,17 @@
 				return { hasMovements: false, hadNewAction: false };
 			}
 
+			const movementStep = result.meta?.step;
+			if (typeof movementStep === 'number' && movementStep <= lastAppliedMovementStep) {
+				return { hasMovements: false, hadNewAction: false };
+			}
+
 			execute_movement = result;
+			execute_count_max = calculateMovementFrameCount(result);
 			execute_count = execute_count_max;
+			lastMovementPacketAt = Date.now();
+			focusMovementTarget(result);
+			if (!isPaused && !isSkipping) setPlaybackState('playing');
 			const hadNewAction = result.meta && result.meta.had_new_action;
 			return { hasMovements: true, hadNewAction: hadNewAction, movement: result };
 
@@ -275,6 +612,7 @@
 	function startSkipMode() {
 		isSkipping = true;
 		isPaused = false;  // Unpause to let update() run
+		setPlaybackState('skipping');
 		updateButtonStates();
 		updateSimStatus('Skipping to next action...', false);
 	}
@@ -299,6 +637,7 @@
 		// Stop skipping and pause
 		isSkipping = false;
 		isPaused = true;
+		setPlaybackState('paused');
 		updateButtonStates();
 		updateSimStatus('Ready', false);
 	}
@@ -317,22 +656,30 @@
 		const currTime = execute_movement["meta"]["curr_time"];
 		document.getElementById("game-time-content").innerHTML = currTime;
 		updateDayNightCycle(currTime);
+		if (execute_count == execute_count_max) {
+			updateChatPopup(execute_movement);
+		}
 
 		for (let i = 0; i < Object.keys(personas).length; i++) {
 			let curr_persona_name = Object.keys(personas)[i];
 			let curr_persona = personas[curr_persona_name];
 			let curr_pronunciatio = pronunciatios[curr_persona_name];
+			const movementData = execute_movement?.["persona"]?.[curr_persona_name];
+			if (!movementData) {
+				movement_target[curr_persona_name] = [curr_persona.body.x, curr_persona.body.y];
+				continue;
+			}
 
 			if (execute_count == execute_count_max) {
-				let curr_x = execute_movement["persona"][curr_persona_name]["movement"][0];
-				let curr_y = execute_movement["persona"][curr_persona_name]["movement"][1];
+				let curr_x = movementData["movement"][0];
+				let curr_y = movementData["movement"][1];
 				movement_target[curr_persona_name] = [curr_x * tile_width, curr_y * tile_width];
 
-				let pronunciatio_content = execute_movement["persona"][curr_persona_name]["pronunciatio"];
+				let pronunciatio_content = movementData["pronunciatio"];
 				pronunciatios[curr_persona_name].setText(pronunciatio_content);
 
 				let curr_persona_name_os = curr_persona_name.replace(/ /g, "_");
-				let description_content = execute_movement["persona"][curr_persona_name]["description"];
+				let description_content = movementData["description"] || "";
 
 				document.getElementById("current_action__" + curr_persona_name_os).innerHTML = description_content.split("@")[0];
 				document.getElementById("target_address__" + curr_persona_name_os).innerHTML = description_content.split("@")[1];
@@ -361,7 +708,7 @@
 			curr_pronunciatio.x = curr_persona.body.x + 16;  // Center over sprite (sprite is 32px wide)
 			curr_pronunciatio.y = curr_persona.body.y - 42;  // Well above sprite head
 
-			let animKey = curr_persona.spriteKey || "misa";
+			let animKey = curr_persona.spriteKey || "fallback";
 			if (anims_direction == "l") {
 				curr_persona.anims.play(animKey + "-left-walk", true);
 			} else if (anims_direction == "r") {
@@ -375,7 +722,7 @@
 
 				// Determine facing direction: face conversation partner if chatting
 				let facing_direction = pre_anims_direction_dict[curr_persona_name];
-				let chatting_with = execute_movement?.["persona"]?.[curr_persona_name]?.["chatting_with"];
+				let chatting_with = movementData?.["chatting_with"];
 				if (chatting_with && personas[chatting_with]) {
 					let partner = personas[chatting_with];
 					let dx = partner.body.x - curr_persona.body.x;
@@ -394,10 +741,10 @@
 					else if (facing_direction == "u") curr_persona.setFrame(10);
 					else if (facing_direction == "d") curr_persona.setFrame(1);
 				} else {
-					if (facing_direction == "l") curr_persona.setTexture("atlas", "misa-left");
-					else if (facing_direction == "r") curr_persona.setTexture("atlas", "misa-right");
-					else if (facing_direction == "u") curr_persona.setTexture("atlas", "misa-back");
-					else if (facing_direction == "d") curr_persona.setTexture("atlas", "misa-front");
+					if (facing_direction == "l") curr_persona.setTexture("atlas", "left");
+					else if (facing_direction == "r") curr_persona.setTexture("atlas", "right");
+					else if (facing_direction == "u") curr_persona.setTexture("atlas", "up");
+					else if (facing_direction == "d") curr_persona.setTexture("atlas", "down");
 				}
 			}
 		}
@@ -409,7 +756,13 @@
 				personas[persona_name].body.x = movement_target[persona_name][0];
 				personas[persona_name].body.y = movement_target[persona_name][1];
 			}
-			step = execute_movement["meta"]["step"] + 1;
+			const movementStep = execute_movement?.["meta"]?.["step"];
+			if (typeof movementStep === 'number') {
+				lastAppliedMovementStep = Math.max(lastAppliedMovementStep, movementStep);
+				step = lastAppliedMovementStep + 1;
+				displayedStep = step;
+			}
+			execute_movement = null;
 			return true;
 		}
 
@@ -442,8 +795,8 @@
 	  this.load.tilemapTiledJSON("map", "{% static 'assets/the_ville/visuals/the_ville_jan7.json' %}");
 
 	  this.load.atlas("atlas",
-	                  "https://mikewesthad.github.io/phaser-3-tilemap-blog-posts/post-1/assets/atlas/atlas.png",
-	                  "https://mikewesthad.github.io/phaser-3-tilemap-blog-posts/post-1/assets/atlas/atlas.json");
+	                  "{% static 'img/atlas.png' %}",
+	                  "{% static 'assets/characters/atlas.json' %}");
 
 	  for (let persona_name in persona_names) {
 	    let sprite_key = persona_name.replace(/ /g, "_");
@@ -590,7 +943,7 @@
 	        repeat: -1 });
 	    } else {
 	      new_sprite = this.physics.add
-	                       .sprite(start_pos[0], start_pos[1], "atlas", "misa-front")
+	                       .sprite(start_pos[0], start_pos[1], "atlas", "down")
 	                       .setSize(30, 40)
 	                       .setOffset(0, 32);
 	    }
@@ -620,28 +973,28 @@
 	    pronunciatios[persona_name] = emojiText;
 	  }
 
-	  // Fallback misa animations
+	  // Fallback local atlas animations
 	  anims.create({
-	    key: "misa-left-walk",
-	    frames: anims.generateFrameNames("atlas", { prefix: "misa-left-walk.", start: 0, end: 3, zeroPad: 3 }),
+	    key: "fallback-left-walk",
+	    frames: anims.generateFrameNames("atlas", { prefix: "left-walk.", start: 0, end: 3, zeroPad: 3 }),
 	    frameRate: 4,
 	    repeat: -1 });
 
 	  anims.create({
-	    key: "misa-right-walk",
-	    frames: anims.generateFrameNames("atlas", { prefix: "misa-right-walk.", start: 0, end: 3, zeroPad: 3 }),
+	    key: "fallback-right-walk",
+	    frames: anims.generateFrameNames("atlas", { prefix: "right-walk.", start: 0, end: 3, zeroPad: 3 }),
 	    frameRate: 4,
 	    repeat: -1 });
 
 	  anims.create({
-	    key: "misa-front-walk",
-	    frames: anims.generateFrameNames("atlas", { prefix: "misa-front-walk.", start: 0, end: 3, zeroPad: 3 }),
+	    key: "fallback-front-walk",
+	    frames: anims.generateFrameNames("atlas", { prefix: "down-walk.", start: 0, end: 3, zeroPad: 3 }),
 	    frameRate: 4,
 	    repeat: -1 });
 
 	  anims.create({
-	    key: "misa-back-walk",
-	    frames: anims.generateFrameNames("atlas", { prefix: "misa-back-walk.", start: 0, end: 3, zeroPad: 3 }),
+	    key: "fallback-back-walk",
+	    frames: anims.generateFrameNames("atlas", { prefix: "up-walk.", start: 0, end: 3, zeroPad: 3 }),
 	    frameRate: 4,
 	    repeat: -1 });
 
@@ -679,29 +1032,10 @@
 	    pollMovements().then(result => {
 	      pollInProgress = false;
 
-	      if (result.hasMovements) {
-	        displayedStep++;
-	        queuedMovements = Math.max(0, queuedMovements - 1);
-
-	        // Update chat popup with conversation data
-	        updateChatPopup(result.movement);
-
-	        // Track persona activity for panel ordering
-	        if (result.hadNewAction) {
-	          const activePersonas = result.movement.meta?.active_personas || [];
-	          if (activePersonas.length > 0) {
-	            updatePersonaActivity(activePersonas);
-	          }
-	        }
-
-	        // During skip mode, check if this movement had an LLM action
-	        if (isSkipping && result.hadNewAction) {
-	          handleSkipActionFound(result.movement);
-	        }
-	      }
+	      handlePolledMovementResult(result);
 
 	      // Auto-request more simulation if buffer is low and simulation is active
-	      if (simulationActive && !isSimulating && queuedMovements <= TARGET_BUFFER) {
+	      if (simulationActive && !isSimulating && !backendBusy && queuedMovements <= TARGET_BUFFER) {
 	        requestSimulation(BATCH_SIZE);
 	      }
 	    });
@@ -738,7 +1072,7 @@
 			skipBtn.querySelector('.icon').textContent = '⏭';
 			pauseBtn.classList.add('active');
 		} else {
-			playBtn.disabled = true;
+			playBtn.disabled = false;
 			pauseBtn.disabled = false;
 			skipBtn.disabled = false;
 			skipBtn.querySelector('.icon').textContent = '⏭';
@@ -748,8 +1082,11 @@
 
 	// Play button
 	document.getElementById("play_button").addEventListener("click", function() {
+		simulationActive = true;
 		isPaused = false;
 		isSkipping = false;
+		setPlaybackState('playing');
+		updateSimStatus('Starting playback...', true);
 		updateButtonStates();
 		// Fade out any "new" message highlights when resuming playback
 		document.querySelectorAll('.chat-bubble.new').forEach(bubble => {
@@ -758,12 +1095,16 @@
 				bubble.classList.remove('new', 'fading');
 			}, 1500);
 		});
+		kickPlaybackPipeline(true);
 	});
 
 	// Pause button
 	document.getElementById("pause_button").addEventListener("click", function() {
+		simulationActive = false;
 		isPaused = true;
 		isSkipping = false;
+		setPlaybackState('paused');
+		updateSimStatus('Paused', false);
 		updateButtonStates();
 	});
 
@@ -791,6 +1132,7 @@
 				// Currently running (skipping or playing) - pause
 				isPaused = true;
 				isSkipping = false;
+				setPlaybackState('paused');
 				updateButtonStates();
 			} else {
 				// Currently paused - start skip mode
@@ -827,7 +1169,27 @@
 	});
 
 	// Initialize button states
+	const townApprovalActions = {
+		'town-approve-request': 'approved',
+		'town-reject-request': 'rejected',
+		'town-complete-request': 'completed',
+		'town-fail-request': 'failed'
+	};
+	for (const [buttonId, state] of Object.entries(townApprovalActions)) {
+		const button = document.getElementById(buttonId);
+		if (button) {
+			button.addEventListener('click', () => transitionTownCenterRequest(state));
+		}
+	}
+	setTownApprovalButtonsEnabled(false);
 	updateButtonStates();
+	setPlaybackState('paused');
+	updateSimStatus('Paused', false);
+	refreshRuntimeHealth();
+	refreshTownCenter();
+	setInterval(refreshRuntimeHealth, 3000);
+	setInterval(refreshTownCenter, 7000);
+	setInterval(() => kickPlaybackPipeline(false), 1000);
 
 	// ==========================================================================
 	// Chat Popup System
@@ -1195,8 +1557,5 @@
 		}
 	});
 
-	// Initial simulation request to get things started
-	if (simulationActive) {
-		requestSimulation(TARGET_BUFFER);
-	}
+	// The simulation starts only after Play is pressed.
 </script>

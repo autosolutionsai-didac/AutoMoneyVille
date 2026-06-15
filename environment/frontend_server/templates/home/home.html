@@ -18,7 +18,7 @@
 <!-- Top Bar - Time and Controls -->
 <div id="control-bar" class="ui-overlay top-bar">
   <div class="time-display">
-    <span id="game-time-content">--:--</span>
+    <span id="game-time-content">{{ initial_curr_time|default:"--:--" }}</span>
   </div>
   <div class="control-buttons">
     <button id="play_button" class="control-btn" title="Play">
@@ -75,6 +75,68 @@
 <div id="sim-status" class="ui-overlay sim-status">
   <span id="sim-status-text">Ready</span>
   <div id="sim-progress" class="sim-progress-bar"></div>
+</div>
+
+<!-- Runtime Status Panel -->
+<div id="runtime-status-panel" class="ui-overlay runtime-status">
+  <div class="runtime-status-title">Runtime</div>
+  <div class="runtime-row">
+    <span>Playback</span>
+    <strong id="playback-state-content">playing</strong>
+  </div>
+  <div class="runtime-row">
+    <span>Backend</span>
+    <strong id="backend-health-content">checking</strong>
+  </div>
+  <div class="runtime-row">
+    <span>Backend time</span>
+    <strong id="backend-time-content">--</strong>
+  </div>
+  <div class="runtime-row">
+    <span>Backend step</span>
+    <strong id="backend-step-content">--</strong>
+  </div>
+  <div class="runtime-row">
+    <span>Queue</span>
+    <strong id="queue-depth-content">--</strong>
+  </div>
+  <div class="runtime-row runtime-detail">
+    <span>Busy detail</span>
+    <strong id="backend-busy-content">--</strong>
+  </div>
+</div>
+
+<!-- Town Center Panel -->
+<div id="town-center-panel" class="ui-overlay town-center">
+  <div class="town-center-title">Town Center</div>
+  <div class="town-center-objective" id="town-center-objective">Loading scenario...</div>
+  <div class="town-row">
+    <span>Points</span>
+    <strong id="town-points-content">--</strong>
+  </div>
+  <div class="town-row">
+    <span>Revenue</span>
+    <strong id="town-revenue-content">$--</strong>
+  </div>
+  <div class="town-row">
+    <span>Requests</span>
+    <strong id="town-requests-content">--</strong>
+  </div>
+  <div class="town-row">
+    <span>Approvals</span>
+    <strong id="town-approvals-content">--</strong>
+  </div>
+  <div class="town-approval-card" id="town-approval-card">
+    <div class="town-approval-title" id="town-approval-title">No pending approvals</div>
+    <div class="town-approval-meta" id="town-approval-meta">--</div>
+    <div class="town-approval-actions">
+      <button id="town-approve-request" class="town-action approve" title="Approve request">Approve</button>
+      <button id="town-reject-request" class="town-action reject" title="Reject request">Reject</button>
+      <button id="town-complete-request" class="town-action complete" title="Mark completed">Done</button>
+      <button id="town-fail-request" class="town-action fail" title="Mark failed">Fail</button>
+    </div>
+  </div>
+  <div class="town-center-latest" id="town-latest-request">No requests yet</div>
 </div>
 
 <!-- Chat Popup - Bottom Center Conversation Display -->

@@ -84,6 +84,7 @@ class Persona:
 
         # Claudeville: Unified persona client (one LLM call per step)
         self.unified_client = UnifiedPersonaClient(self)
+        self.last_step_response = None
 
         # Track nearby activity we've already evaluated (to avoid redundant LLM calls)
         # Format: set of (persona_name, activity_description) tuples
@@ -184,6 +185,7 @@ class Persona:
             new_day, perceptions, nearby_personas, maze, personas
         )
         if skip_result:
+            self.last_step_response = None
             # Log skipped personas for visibility
             from persona.prompt_template.claude_structure import DEBUG_VERBOSITY
             import cli_interface as cli
@@ -239,6 +241,7 @@ class Persona:
             conversation_context=conversation_context,
             nearby_conversations=nearby_conversations,
         )
+        self.last_step_response = step_response
 
         # Update acknowledged nearby after LLM call
         self._acknowledged_nearby = set(nearby_personas)
@@ -622,7 +625,8 @@ class Persona:
         nearby_convos = []
         seen_groups = set()
 
-        for name, _ in self._acknowledged_nearby:
+        for nearby in self._acknowledged_nearby:
+            name = nearby[0]
             if name not in personas:
                 continue
 

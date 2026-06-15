@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import asyncio
 import atexit
+import concurrent.futures
 import datetime
 import json
 import re
@@ -47,6 +48,8 @@ SLEEP_COMPACTION_MIN_TOKENS = 50000  # Don't compact on sleep if under 50K token
 
 # Debug verbosity (0=silent, 1=summary, 2=decisions, 3=full prompts)
 DEBUG_VERBOSITY = 1
+
+DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-6"
 
 # Track last printed action per persona (to avoid duplicate output)
 # Format: {persona_name: action_description}
@@ -89,6 +92,16 @@ class ThoughtDecision:
 
 
 @dataclass
+class TownRequestDecision:
+    """Parsed Town Center request proposal from model response."""
+
+    request_type: str
+    title: str
+    rationale: str
+    payload: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
 class StepResponse:
     """Fully parsed response from a step prompt."""
 
@@ -96,6 +109,7 @@ class StepResponse:
     social: SocialDecision = field(default_factory=SocialDecision)
     thoughts: list[ThoughtDecision] = field(default_factory=list)
     schedule_update: list[tuple[str, int]] | None = None
+    town_request: TownRequestDecision | None = None
     raw_json: dict[str, Any] = field(default_factory=dict)
     parse_errors: list[str] = field(default_factory=list)
     continuing: bool = False  # True if LLM signals "no change" to current activity
@@ -176,11 +190,15 @@ def _shutdown_loop():
     _loop_thread = None
 
 
-def _run_async(coro):
+def _run_async(coro, timeout: float | None = None):
     """Run an async coroutine from sync code using the persistent event loop."""
     loop = _get_or_start_loop()
     future = asyncio.run_coroutine_threadsafe(coro, loop)
-    return future.result()
+    try:
+        return future.result(timeout=timeout)
+    except concurrent.futures.TimeoutError as exc:
+        future.cancel()
+        raise asyncio.TimeoutError from exc
 
 
 async def _cleanup_all_clients():
@@ -220,6 +238,8 @@ def build_initial_prompt(
     lifestyle = scratch.lifestyle or "no defined lifestyle"
     living_area = scratch.living_area or "unknown location"
     currently = scratch.currently or "nothing in particular"
+    daily_plan_req = scratch.daily_plan_req or "none"
+    daily_plan_req = scratch.daily_plan_req or "none"
 
     # Memory context
     memory_section = ""
@@ -237,6 +257,8 @@ def build_initial_prompt(
 {memories}
 """
 
+    scenario_section = _get_scenario_context(persona)
+
     return f"""You are {name}, a {age}-year-old living in Smallville.
 
 === WHO YOU ARE ===
@@ -245,12 +267,14 @@ Background: {learned}
 Lifestyle: {lifestyle}
 Home: {living_area}
 Current focus: {currently}
+Daily plan requirement: {daily_plan_req}
 
 === THE WORLD ===
 You live in a small town called Smallville. Time passes naturally. You interact
 with neighbors, maintain daily routines, and make your own decisions about how
 to spend your time. This is your life - act naturally as yourself.
 {memory_section}
+{scenario_section}
 === HOW TO RESPOND ===
 When I describe what's happening around you, respond with a JSON object containing
 your decisions. The required format is:
@@ -274,7 +298,8 @@ your decisions. The required format is:
     "target": null,
     "conversation_line": null
   }},
-  "thoughts": []
+  "thoughts": [],
+  "town_request": null
 }}
 ```
 
@@ -293,7 +318,30 @@ Example of continuing:
 ```
 
 Required fields: social
-Optional fields: continuing (default false), action (required if continuing is false), thoughts, schedule_update
+Optional fields: continuing (default false), action (required if continuing is false), thoughts, schedule_update, town_request
+
+=== TOWN CENTER REQUESTS ===
+Use a Town Center request when you need a tool, resource, approval, budget,
+account access, or real-world action. Do not perform or claim external actions
+yourself. For external contact, posting, spending, account changes, or purchases,
+submit a request and wait for human approval.
+
+Town Center request format:
+```json
+{{
+  "town_request": {{
+    "type": "external_action",
+    "title": "short request title",
+    "rationale": "why this helps the objective and why it is safe",
+    "payload": {{
+      "tool": "send_email",
+      "preview": "draft or summary for review",
+      "risk_label": "low|medium|high",
+      "expected_payoff": "what success would look like"
+    }}
+  }}
+}}
+```
 
 === CONVERSATIONS ===
 TALKING RANGE: You can only start conversations with people in "NEARBY PEOPLE (can talk)" - they're close enough to hear you.
@@ -454,6 +502,7 @@ def build_step_prompt(
 
     # Format schedule (remaining items for today)
     schedule_str = _format_remaining_schedule(scratch)
+    scenario_section = _get_scenario_context(persona)
 
     # Conversation context if active
     convo_section = ""
@@ -594,7 +643,14 @@ CURRENT ACTIVITY: {current_action}{action_context}
 
 === YOUR SCHEDULE FOR TODAY ===
 {schedule_str}
+{scenario_section}
 {convo_section}{nearby_convo_section}{positioning_guidance}{decision_guidance}
+
+=== TOWN CENTER REQUESTS ===
+If you need a tool, approval, resource, budget, account access, or external
+real-world action, include a Town Center request in `town_request`. External
+contact, posting, spending, account changes, and purchases require human approval;
+do not claim they are completed before approval.
 
 === REALITY CONSTRAINTS ===
 PHYSICAL:
@@ -648,6 +704,7 @@ def build_day_planning_prompt(persona: Persona, date_str: str) -> str:
     lifestyle = scratch.lifestyle or "no defined lifestyle"
     living_area = scratch.living_area or "unknown location"
     currently = scratch.currently or "nothing in particular"
+    daily_plan_req = scratch.daily_plan_req or "none"
 
     return f"""You are {name}, a {age}-year-old.
 
@@ -657,6 +714,7 @@ Background: {learned}
 Lifestyle: {lifestyle}
 Home: {living_area}
 Current focus: {currently}
+Daily plan requirement: {daily_plan_req}
 
 === TODAY ===
 Today is {date_str}. Plan your day.
@@ -691,6 +749,7 @@ Respond with JSON only:
 IMPORTANT:
 - Schedule activities should add up to 1440 minutes (24 hours)
 - Start with sleeping until your wake_up_hour
+- Honor any explicit daily plan requirement above
 - Be specific about activities based on your personality and goals
 - Respond with ONLY the JSON, no other text."""
 
@@ -866,7 +925,44 @@ def parse_step_response(
             (item[0], item[1]) for item in schedule_data if len(item) >= 2
         ]
 
+    # Parse optional Town Center request
+    request_data = data.get("town_request")
+    if request_data is not None:
+        _parse_town_request(request_data, result)
+
     return result
+
+
+def _parse_town_request(request_data: Any, result: StepResponse) -> None:
+    if not isinstance(request_data, dict):
+        result.parse_errors.append("town_request must be an object or null")
+        return
+
+    title = str(request_data.get("title") or "").strip()
+    rationale = str(request_data.get("rationale") or "").strip()
+    if not title or not rationale:
+        result.parse_errors.append("town_request requires title and rationale")
+        return
+
+    request_type = str(
+        request_data.get("type") or request_data.get("request_type") or "resource"
+    ).strip()
+    payload = request_data.get("payload") or {}
+    if not isinstance(payload, dict):
+        result.parse_errors.append("town_request payload must be an object")
+        return
+
+    payload = dict(payload)
+    for key in ("tool", "requested_tool", "preview", "risk_label", "expected_payoff"):
+        if key in request_data and key not in payload:
+            payload[key] = request_data[key]
+
+    result.town_request = TownRequestDecision(
+        request_type=request_type,
+        title=title,
+        rationale=rationale,
+        payload=payload,
+    )
 
 
 def _fuzzy_match(target: str, options: list[str]) -> str | None:
@@ -907,7 +1003,7 @@ class UnifiedPersonaClient:
                 options = ClaudeAgentOptions(
                     allowed_tools=[],
                     permission_mode="bypassPermissions",
-                    model="opus",
+                    model=DEFAULT_CLAUDE_MODEL,
                 )
                 client = ClaudeSDKClient(options)
                 try:
@@ -1687,6 +1783,14 @@ def _get_recent_memories(persona: Persona) -> str:
                 lines.append(f"  {desc}")
 
     return "\n".join(lines) if lines else ""
+
+
+def _get_scenario_context(persona: Persona) -> str:
+    """Return optional scenario context attached by the runtime."""
+    scenario_context = getattr(persona, "scenario_context", "")
+    if not scenario_context:
+        return ""
+    return f"\n{scenario_context.strip()}\n"
 
 
 def _format_remaining_schedule(scratch) -> str:

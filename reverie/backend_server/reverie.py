@@ -20,18 +20,27 @@ from dataclasses import dataclass, field
 
 from flask import Flask, jsonify, request
 
+from agent_requests import submit_latest_town_request
 import cli_interface as cli
+from economy import RequestState
+from event_ledger import EventLedger
 from maze import Maze
 from persona.prompt_template.claude_structure import _run_async
+from runtime_storage import RunStorage
+from scenario_runtime import attach_scenario_to_personas, bind_scenario_to_run
+from town_center import TownCenterStore
 from utils import (
     debug,
     fs_storage,
-    fs_storage_base,
     fs_storage_runs,
     fs_temp_storage,
 )
 
 from persona.persona import Persona
+
+PERSONA_MOVE_TIMEOUT_SECONDS = float(
+    os.environ.get("CLAUDEVILLE_PERSONA_MOVE_TIMEOUT", "15")
+)
 
 
 ##############################################################################
@@ -119,31 +128,39 @@ BACKEND_PORT = 5000
 
 class ReverieServer:
     def __init__(self, fork_sim_code, sim_code):
+        self.run_storage = RunStorage()
+
         # FORKING FROM A PRIOR SIMULATION:
         # <fork_sim_code> indicates the simulation we are forking from.
         # Base templates are in storage/base/, simulation runs go to storage/runs/
-        self.fork_sim_code = fork_sim_code
-
-        # Check if fork is a base template or a previous run
-        if os.path.exists(f"{fs_storage_base}/{self.fork_sim_code}"):
-            fork_folder = f"{fs_storage_base}/{self.fork_sim_code}"
-        else:
-            fork_folder = f"{fs_storage_runs}/{self.fork_sim_code}"
+        self.fork_sim_code = self.run_storage.canonical_fork_code(fork_sim_code)
 
         # <sim_code> indicates our current simulation. Runs always go to storage/runs/
         self.sim_code = sim_code
         sim_folder = f"{fs_storage_runs}/{self.sim_code}"
         if not os.path.exists(sim_folder):
-            shutil.copytree(fork_folder, sim_folder)
+            self.run_storage.create_run_from_fork(fork_sim_code, self.sim_code)
 
         # Create movement folder for this run (not in base template)
         os.makedirs(f"{sim_folder}/movement", exist_ok=True)
+        self.event_ledger = EventLedger(
+            self.run_storage.run_dir(self.sim_code) / "events.jsonl"
+        )
+        self.town_center = TownCenterStore(
+            self.run_storage.run_dir(self.sim_code),
+            scenario_id="startup_team_v1",
+        )
+        bind_scenario_to_run(
+            self.run_storage,
+            self.sim_code,
+            self.town_center.scenario,
+        )
 
         with open(f"{sim_folder}/reverie/meta.json") as json_file:
             reverie_meta = json.load(json_file)
 
         with open(f"{sim_folder}/reverie/meta.json", "w") as outfile:
-            reverie_meta["fork_sim_code"] = fork_sim_code
+            reverie_meta["fork_sim_code"] = self.fork_sim_code
             outfile.write(json.dumps(reverie_meta, indent=2))
 
         # LOADING REVERIE'S GLOBAL VARIABLES
@@ -240,6 +257,8 @@ class ReverieServer:
                 curr_persona.scratch.get_curr_event_and_desc()
             )
 
+        attach_scenario_to_personas(self.personas, self.town_center.scenario)
+
         # Initialize all persona sessions in parallel (avoids delays later)
         from persona.prompt_template.claude_structure import (
             initialize_all_personas_sync,
@@ -258,15 +277,26 @@ class ReverieServer:
         # used to communicate the code and step information to the frontend.
         # Note that step file is removed as soon as the frontend opens up the
         # simulation.
-        curr_sim_code = dict()
-        curr_sim_code["sim_code"] = self.sim_code
-        with open(f"{fs_temp_storage}/curr_sim_code.json", "w") as outfile:
-            outfile.write(json.dumps(curr_sim_code, indent=2))
+        self.run_storage.write_current_run_pointer(self.sim_code, self.step)
 
-        curr_step = dict()
-        curr_step["step"] = self.step
-        with open(f"{fs_temp_storage}/curr_step.json", "w") as outfile:
-            outfile.write(json.dumps(curr_step, indent=2))
+        # Track game object cleanup between steps
+        self._game_obj_cleanup = dict()
+
+        # Lock to prevent concurrent step processing (CLI vs HTTP)
+        self._step_lock = threading.Lock()
+        self._busy_since = None
+        self._busy_reason = None
+
+        # Queue of pending movements for frontend to display
+        # Each entry is a movements dict from _process_step
+        self._pending_movements = []
+        self._movement_history = []
+        self._movement_history_limit = 500
+        self._movements_lock = threading.Lock()
+
+        # Active conversation groups for multi-party conversations
+        # Maps group_id -> ConversationGroup
+        self.active_conversations: dict[str, ConversationGroup] = {}
 
         # HTTP SERVER SETUP
         # Flask app for handling step requests from frontend
@@ -274,23 +304,68 @@ class ReverieServer:
         self.flask_app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
         self._setup_flask_routes()
 
-        # Track game object cleanup between steps
-        self._game_obj_cleanup = dict()
+    def _mark_backend_busy(self, reason: str) -> None:
+        self._busy_since = datetime.datetime.now(datetime.timezone.utc)
+        self._busy_reason = reason
 
-        # Lock to prevent concurrent step processing (CLI vs HTTP)
-        self._step_lock = threading.Lock()
+    def _clear_backend_busy(self) -> None:
+        self._busy_since = None
+        self._busy_reason = None
 
-        # Queue of pending movements for frontend to display
-        # Each entry is a movements dict from _process_step
-        self._pending_movements = []
-        self._movements_lock = threading.Lock()
-
-        # Active conversation groups for multi-party conversations
-        # Maps group_id -> ConversationGroup
-        self.active_conversations: dict[str, ConversationGroup] = {}
+    def runtime_status(self):
+        """Return a compact runtime snapshot for health checks and UI panels."""
+        pending_movements = len(getattr(self, "_pending_movements", []))
+        step_lock = getattr(self, "_step_lock", None)
+        backend_busy = bool(step_lock.locked()) if step_lock else False
+        busy_since = getattr(self, "_busy_since", None)
+        busy_seconds = None
+        if backend_busy and busy_since:
+            busy_seconds = round(
+                (
+                    datetime.datetime.now(datetime.timezone.utc) - busy_since
+                ).total_seconds(),
+                1,
+            )
+        personas = []
+        for name, persona in self.personas.items():
+            personas.append(
+                {
+                    "name": name,
+                    "tile": self.personas_tile.get(name),
+                    "action": persona.scratch.act_description,
+                    "location": persona.scratch.act_address,
+                    "chatting_with": persona.scratch.chatting_with,
+                }
+            )
+        return {
+            "ok": True,
+            "service": "claudeville-backend",
+            "sim_code": self.sim_code,
+            "fork_sim_code": self.fork_sim_code,
+            "step": self.step,
+            "curr_time": self.curr_time.strftime("%B %d, %Y, %H:%M:%S"),
+            "sec_per_step": self.sec_per_step,
+            "movement_queue_depth": pending_movements,
+            "backend_busy": backend_busy,
+            "backend_busy_since": (
+                busy_since.isoformat() if backend_busy and busy_since else None
+            ),
+            "backend_busy_seconds": busy_seconds,
+            "backend_busy_reason": (
+                getattr(self, "_busy_reason", None) if backend_busy else None
+            ),
+            "active_conversations": len(self.active_conversations),
+            "persona_count": len(self.personas),
+            "personas": personas,
+        }
 
     def _setup_flask_routes(self):
         """Set up Flask HTTP endpoints for frontend communication."""
+
+        @self.flask_app.route("/health", methods=["GET"])
+        def handle_health():
+            """Return backend health and queue information."""
+            return jsonify(self.runtime_status())
 
         @self.flask_app.route("/movements", methods=["GET"])
         def handle_movements():
@@ -299,7 +374,19 @@ class ReverieServer:
             Frontend polls this endpoint to get movement data.
             Backend (CLI) drives the simulation and queues movements here.
             """
+            after_step = request.args.get("after_step", type=int)
             with self._movements_lock:
+                if after_step is not None:
+                    self._pending_movements = [
+                        movement
+                        for movement in self._pending_movements
+                        if self._movement_step(movement) > after_step
+                    ]
+                    for movement in self._movement_history:
+                        if self._movement_step(movement) > after_step:
+                            return jsonify(movement)
+                    return jsonify({"empty": True, "step": self.step, "cursor": after_step})
+
                 if self._pending_movements:
                     # Return oldest pending movement
                     movement = self._pending_movements.pop(0)
@@ -311,14 +398,66 @@ class ReverieServer:
         @self.flask_app.route("/status", methods=["GET"])
         def handle_status():
             """Return current simulation status."""
-            return jsonify(
-                {
-                    "sim_code": self.sim_code,
-                    "step": self.step,
-                    "curr_time": self.curr_time.strftime("%B %d, %Y, %H:%M:%S"),
-                    "personas": list(self.personas.keys()),
-                }
+            status = self.runtime_status()
+            status["personas"] = list(self.personas.keys())
+            return jsonify(status)
+
+        @self.flask_app.route("/scenario", methods=["GET"])
+        def handle_scenario():
+            """Return the active scenario configuration."""
+            return jsonify(self.town_center.scenario)
+
+        @self.flask_app.route("/town-center", methods=["GET"])
+        def handle_town_center():
+            """Return the governed money-agent control-plane snapshot."""
+            return jsonify(self.town_center.snapshot())
+
+        @self.flask_app.route("/town-center/requests", methods=["POST"])
+        def handle_town_center_request():
+            """Submit a request for tools, resources, approvals, or actions."""
+            data = request.get_json() or {}
+            if not data.get("title"):
+                return jsonify({"error": "title is required"}), 400
+            entry = self.town_center.submit_request(
+                actor=data.get("actor", "human"),
+                request_type=data.get("type", "tool"),
+                title=data["title"],
+                rationale=data.get("rationale", ""),
+                payload=data.get("payload", {}),
             )
+            return jsonify(entry)
+
+        @self.flask_app.route(
+            "/town-center/requests/<request_id>/transition", methods=["POST"]
+        )
+        def handle_town_center_request_transition(request_id):
+            """Move a request through the approval lifecycle."""
+            data = request.get_json() or {}
+            try:
+                entry = self.town_center.transition_request(
+                    request_id,
+                    RequestState(data.get("state", "")),
+                    reviewer=data.get("reviewer", "human"),
+                    note=data.get("note", ""),
+                )
+            except ValueError:
+                return jsonify({"error": "invalid request state"}), 400
+            return jsonify(entry)
+
+        @self.flask_app.route("/town-center/rewards", methods=["POST"])
+        def handle_town_center_reward():
+            """Award auditable points or revenue evidence."""
+            data = request.get_json() or {}
+            if not data.get("actor") or not data.get("source"):
+                return jsonify({"error": "actor and source are required"}), 400
+            entry = self.town_center.award_reward(
+                actor=data["actor"],
+                points=int(data.get("points", 0)),
+                source=data["source"],
+                evidence=data.get("evidence", ""),
+                revenue_cents=int(data.get("revenue_cents", 0)),
+            )
+            return jsonify(entry)
 
         @self.flask_app.route("/save", methods=["POST"])
         def handle_save():
@@ -346,8 +485,10 @@ class ReverieServer:
                 )
 
             try:
+                self._mark_backend_busy("simulate request")
                 data = request.get_json() or {}
                 num_steps = min(data.get("steps", 1), 10)  # Cap at 10 steps per request
+                self._busy_reason = f"simulate {num_steps} step(s)"
 
                 # Build environment data from current state
                 environment = {}
@@ -374,6 +515,7 @@ class ReverieServer:
                     }
                 )
             finally:
+                self._clear_backend_busy()
                 self._step_lock.release()
 
         @self.flask_app.route("/saves", methods=["GET"])
@@ -416,7 +558,11 @@ class ReverieServer:
         Thread-safe: Uses _step_lock to prevent concurrent processing.
         """
         with self._step_lock:
-            return self._process_step_unlocked(data)
+            self._mark_backend_busy("process simulation step")
+            try:
+                return self._process_step_unlocked(data)
+            finally:
+                self._clear_backend_busy()
 
     def _process_step_unlocked(self, data):
         """Internal step processing (must hold _step_lock)."""
@@ -462,6 +608,7 @@ class ReverieServer:
 
         # Run cognitive pipeline for all personas
         movements = {"persona": {}, "meta": {}}
+        submitted_town_requests = []
 
         # SEQUENTIAL INITIATIVE SYSTEM
         # For new encounters (two personas seeing each other for first time),
@@ -486,6 +633,8 @@ class ReverieServer:
                     "chat": chat,
                     "had_action": had_llm_call,
                 }
+                if had_llm_call:
+                    self._submit_latest_town_request(name, submitted_town_requests)
                 self.personas_tile[name] = next_tile
                 handled_personas.add(name)
 
@@ -523,7 +672,10 @@ class ReverieServer:
 
         # Run remaining persona moves in parallel
         try:
-            results = _run_async(run_remaining_personas())
+            self._busy_reason = f"processing step {self.step}: moving personas"
+            results = _run_async(
+                run_remaining_personas(), timeout=PERSONA_MOVE_TIMEOUT_SECONDS
+            )
             # Check for exceptions in results
             for r in results:
                 if isinstance(r, Exception):
@@ -531,6 +683,16 @@ class ReverieServer:
                     import traceback
 
                     traceback.print_exception(type(r), r, r.__traceback__)
+        except asyncio.TimeoutError:
+            cli.print_error(
+                f"Persona move batch timed out after "
+                f"{PERSONA_MOVE_TIMEOUT_SECONDS:.0f}s; continuing current actions."
+            )
+            results = [
+                self._fallback_persona_move_result(name, persona)
+                for name, persona in self.personas.items()
+                if name not in handled_personas
+            ]
         except Exception as e:
             cli.print_error(f"Fatal error in parallel execution: {e}")
             import traceback
@@ -558,12 +720,14 @@ class ReverieServer:
             if had_llm_call:
                 any_llm_call = True
                 active_personas.append(name)
+                self._submit_latest_town_request(name, submitted_town_requests)
 
         # CONVERSATION SYNCHRONIZATION
         # After all personas have moved in parallel, synchronize their chats.
         # If Klaus is chatting with Maria and Maria is chatting with Klaus,
         # merge their chat lists so both have the full conversation.
         try:
+            self._busy_reason = f"processing step {self.step}: synchronizing"
             self._synchronize_conversations()
         except Exception as e:
             cli.print_error(f"Error in conversation sync: {e}")
@@ -592,6 +756,8 @@ class ReverieServer:
         movements["meta"][
             "active_personas"
         ] = active_personas  # List of personas who made decisions
+        movements["meta"]["town_requests"] = submitted_town_requests
+        movements["meta"]["town_request_count"] = len(submitted_town_requests)
 
         # Add active conversation groups for frontend display
         movements["meta"]["conversations"] = {
@@ -606,15 +772,109 @@ class ReverieServer:
         self.step += 1
         self.curr_time += datetime.timedelta(seconds=self.sec_per_step)
 
-        # Update temp storage for recovery (can be removed later)
-        with open(f"{fs_temp_storage}/curr_step.json", "w") as outfile:
-            outfile.write(json.dumps({"step": self.step}, indent=2))
+        self.run_storage.write_current_run_pointer(self.sim_code, self.step)
 
         # Queue movements for frontend to poll
-        with self._movements_lock:
-            self._pending_movements.append(movements)
+        self._busy_reason = f"processing step {self.step}: queueing movement"
+        self.event_ledger.append(
+            "simulation_step",
+            actor="runtime",
+            step=movements["meta"]["step"],
+            sim_time=movements["meta"]["curr_time"],
+            payload={
+                "had_new_action": any_llm_call,
+                "active_personas": active_personas,
+                "persona_count": len(movements["persona"]),
+                "conversation_count": len(movements["meta"]["conversations"]),
+                "town_request_count": len(submitted_town_requests),
+            },
+        )
+        self._record_movement(movements)
 
         return movements
+
+    def _fallback_persona_move_result(self, name, persona):
+        """Return a no-LLM movement for a persona when a step times out."""
+        tile = self.personas_tile.get(name) or getattr(
+            persona.scratch, "curr_tile", None
+        )
+        if tile is None:
+            tile = (0, 0)
+        description = persona.scratch.act_description or "Waiting for next step"
+        address = persona.scratch.act_address
+        if address and " @ " not in description:
+            description = f"{description} @ {address}"
+        return (
+            name,
+            tile,
+            persona.scratch.act_pronunciatio or "",
+            description,
+            persona.scratch.chat,
+            False,
+        )
+
+    def _movement_step(self, movement: dict) -> int:
+        """Return a movement packet step, or -1 for malformed packets."""
+        try:
+            return int(movement.get("meta", {}).get("step", -1))
+        except (TypeError, ValueError):
+            return -1
+
+    def _record_movement(self, movements: dict):
+        """Record a movement packet for live clients and refresh recovery."""
+        with self._movements_lock:
+            self._pending_movements.append(movements)
+            self._movement_history.append(movements)
+            if len(self._movement_history) > self._movement_history_limit:
+                overflow = len(self._movement_history) - self._movement_history_limit
+                del self._movement_history[:overflow]
+        if hasattr(self, "personas_tile") and hasattr(self, "maze") and hasattr(
+            self, "sim_code"
+        ):
+            self._write_environment_snapshot()
+
+    def _write_environment_snapshot(self):
+        """Persist current persona tiles so refreshed browsers start in sync."""
+        env_dir = f"{fs_storage}/{self.sim_code}/environment"
+        os.makedirs(env_dir, exist_ok=True)
+        snapshot = {
+            name: {"maze": self.maze.maze_name, "x": tile[0], "y": tile[1]}
+            for name, tile in self.personas_tile.items()
+        }
+        with open(f"{env_dir}/{self.step}.json", "w") as outfile:
+            outfile.write(json.dumps(snapshot, indent=2))
+
+    def _submit_latest_town_request(
+        self, persona_name: str, submitted_town_requests: list[dict]
+    ) -> dict | None:
+        persona = self.personas.get(persona_name)
+        if not persona:
+            return None
+
+        sim_time = self.curr_time.strftime("%B %d, %Y, %H:%M:%S")
+        request_entry = submit_latest_town_request(
+            self.town_center,
+            actor=persona_name,
+            persona=persona,
+            event_ledger=self.event_ledger,
+            step=self.step,
+            sim_time=sim_time,
+        )
+        if not request_entry:
+            return None
+
+        summary = {
+            "id": request_entry["id"],
+            "actor": request_entry["actor"],
+            "type": request_entry["type"],
+            "title": request_entry["title"],
+            "approval_required": request_entry.get("approval_required", True),
+        }
+        submitted_town_requests.append(summary)
+        cli.print_info(
+            f"  Town Center request: {persona_name} -> {request_entry['title']}"
+        )
+        return request_entry
 
     def _detect_new_encounters(self) -> list[tuple[str, str]]:
         """
@@ -672,8 +932,12 @@ class ReverieServer:
 
                 # Check if this is a NEW encounter for BOTH personas
                 # (neither has acknowledged the other yet)
-                a_knows_b = any(n == name_b for n, _ in persona_a._acknowledged_nearby)
-                b_knows_a = any(n == name_a for n, _ in persona_b._acknowledged_nearby)
+                a_knows_b = any(
+                    nearby[0] == name_b for nearby in persona_a._acknowledged_nearby
+                )
+                b_knows_a = any(
+                    nearby[0] == name_a for nearby in persona_b._acknowledged_nearby
+                )
 
                 if not a_knows_b and not b_knows_a:
                     # Debug: log the encounter detection with positions
@@ -1577,7 +1841,7 @@ def load_local_config():
     except FileNotFoundError:
         # Return default config if file doesn't exist
         return {
-            "default_fork": "base_the_ville_isabella_maria_klaus",
+            "default_fork": "the_ville_isabella_maria_klaus",
             "last_simulation": None,
         }, config_path
 

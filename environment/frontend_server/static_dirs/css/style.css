@@ -353,6 +353,154 @@ html, body {
   animation: pulse 1s ease-in-out infinite;
 }
 
+.runtime-status {
+  right: 20px;
+  bottom: 20px;
+  width: 260px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.85em;
+}
+
+.runtime-status-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.runtime-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.runtime-row span {
+  opacity: 0.65;
+}
+
+.runtime-row strong {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runtime-row.runtime-detail {
+  font-size: 0.8em;
+}
+
+.runtime-status.backend-down {
+  border-color: rgba(255, 116, 116, 0.6);
+}
+
+.town-center {
+  left: 20px;
+  bottom: 20px;
+  width: 300px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.85em;
+}
+
+.town-center-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.town-center-objective,
+.town-center-latest {
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.town-center-objective {
+  margin-bottom: 8px;
+}
+
+.town-center-latest {
+  margin-top: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.town-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.town-row span {
+  opacity: 0.65;
+}
+
+.town-row strong {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.town-approval-card {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.town-approval-title,
+.town-approval-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.town-approval-title {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+}
+
+.town-approval-meta {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.82em;
+  margin-top: 3px;
+}
+
+.town-approval-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.town-action {
+  min-height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 0.76em;
+  cursor: pointer;
+}
+
+.town-action:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.town-action.approve:not(:disabled),
+.town-action.complete:not(:disabled) {
+  border-color: rgba(104, 220, 142, 0.6);
+}
+
+.town-action.reject:not(:disabled),
+.town-action.fail:not(:disabled) {
+  border-color: rgba(255, 116, 116, 0.6);
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }

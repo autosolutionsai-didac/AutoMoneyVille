@@ -21,10 +21,27 @@ from translator import views as translator_views
 urlpatterns = [
     # API endpoints (backend-driven simulation)
     path("api/movements/", translator_views.api_movements, name="api_movements"),
+    path("api/health/", translator_views.api_health, name="api_health"),
     path("api/status/", translator_views.api_status, name="api_status"),
     path("api/save/", translator_views.api_save, name="api_save"),
     path("api/simulate/", translator_views.api_simulate, name="api_simulate"),
     path("api/saves/", translator_views.api_saves, name="api_saves"),
+    path("api/town-center/", translator_views.api_town_center, name="api_town_center"),
+    path(
+        "api/town-center/requests/",
+        translator_views.api_town_center_request,
+        name="api_town_center_request",
+    ),
+    path(
+        "api/town-center/requests/<str:request_id>/transition/",
+        translator_views.api_town_center_request_transition,
+        name="api_town_center_request_transition",
+    ),
+    path(
+        "api/town-center/rewards/",
+        translator_views.api_town_center_reward,
+        name="api_town_center_reward",
+    ),
     # Page views
     re_path(r"^$", translator_views.landing, name="landing"),
     re_path(r"^simulator_home$", translator_views.home, name="home"),

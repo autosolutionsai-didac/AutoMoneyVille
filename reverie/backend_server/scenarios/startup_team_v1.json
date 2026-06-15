@@ -1,0 +1,120 @@
+{
+  "id": "startup_team_v1",
+  "name": "Startup Team V1",
+  "objective": "Generate real-world money through legal, human-approved business actions.",
+  "team_structure": "cooperative_startup",
+  "opportunity_paths": [
+    "digital_services",
+    "content_products",
+    "micro_saas",
+    "marketplaces"
+  ],
+  "starting_resources": {
+    "team_points": 100,
+    "cash_budget_cents": 0,
+    "approval_required_for_external_actions": true
+  },
+  "visible_morning_routine": [
+    "At simulation start, physically walk to Hobbs Cafe > cafe > cafe customer seating for a 9:00 startup standup before deep work.",
+    "Use the standup to coordinate roles, then move to a suitable work location such as a desk, computer desk, common room table, or cafe seating.",
+    "When testing the simulation, prefer visible travel between rooms or venues instead of remaining at the spawn tile for long stretches."
+  ],
+  "real_world_policy": {
+    "default_external_action": "human_approval",
+    "automatic_capabilities": [
+      "web_research",
+      "market_analysis",
+      "lead_list_draft",
+      "offer_draft",
+      "proposal_draft",
+      "content_draft",
+      "internal_planning"
+    ],
+    "blocked_without_approval": [
+      "send_email",
+      "post_content",
+      "spend_money",
+      "account_change",
+      "purchase",
+      "scrape_at_scale",
+      "contact_person"
+    ],
+    "forbidden_behaviors": [
+      "spam",
+      "deception",
+      "credential_misuse",
+      "unauthorized_scraping",
+      "illegal_activity",
+      "uncontrolled_spending"
+    ]
+  },
+  "reward_model": {
+    "early_weights": {
+      "useful_research": 1,
+      "validated_opportunity": 3,
+      "approved_request": 2,
+      "draft_deliverable": 2,
+      "reply_received": 5,
+      "meeting_booked": 10,
+      "actual_revenue": 20
+    },
+    "late_weights": {
+      "validated_opportunity": 1,
+      "reply_received": 3,
+      "meeting_booked": 5,
+      "actual_revenue": 50
+    }
+  },
+  "agents": [
+    {
+      "name": "Nora Vale",
+      "role": "strategist",
+      "mission": "Choose the most promising path to revenue and keep the team focused."
+    },
+    {
+      "name": "Milo Chen",
+      "role": "market_researcher",
+      "mission": "Find niches, pains, buyer signals, and reachable prospects."
+    },
+    {
+      "name": "Iris Morgan",
+      "role": "offer_designer",
+      "mission": "Turn market pain into specific service packages and guarantees."
+    },
+    {
+      "name": "Theo Grant",
+      "role": "sales_drafter",
+      "mission": "Draft outreach, proposals, and follow-up messages for human approval."
+    },
+    {
+      "name": "Lena Ortiz",
+      "role": "delivery_planner",
+      "mission": "Plan how the team would fulfill sold services with minimal risk."
+    },
+    {
+      "name": "Ravi Singh",
+      "role": "analyst",
+      "mission": "Score opportunities and track evidence behind every decision."
+    },
+    {
+      "name": "June Park",
+      "role": "operations_coordinator",
+      "mission": "Coordinate tasks, dependencies, and team handoffs."
+    },
+    {
+      "name": "Amara Cole",
+      "role": "finance_scoring_agent",
+      "mission": "Track points, revenue evidence, costs, and survival pressure."
+    },
+    {
+      "name": "Felix Reed",
+      "role": "tool_advocate",
+      "mission": "Submit town-center requests for tools, approvals, and resources."
+    },
+    {
+      "name": "Sofia Lane",
+      "role": "critic_risk_officer",
+      "mission": "Challenge unsafe, low-quality, or unrealistic plans before approval."
+    }
+  ]
+}

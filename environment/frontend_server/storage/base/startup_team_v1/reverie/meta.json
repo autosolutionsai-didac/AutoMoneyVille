@@ -1,0 +1,20 @@
+{
+    "fork_sim_code":  "base_startup_team_v1",
+    "start_date":  "February 13, 2023",
+    "curr_time":  "February 13, 2023, 09:00:00",
+    "sec_per_step":  10,
+    "maze_name":  "the_ville",
+    "persona_names":  [
+                          "Nora Vale",
+                          "Milo Chen",
+                          "Iris Morgan",
+                          "Theo Grant",
+                          "Lena Ortiz",
+                          "Ravi Singh",
+                          "June Park",
+                          "Amara Cole",
+                          "Felix Reed",
+                          "Sofia Lane"
+                      ],
+    "step":  0
+}
