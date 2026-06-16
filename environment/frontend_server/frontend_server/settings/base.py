@@ -19,13 +19,39 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
+
+def _env_bool(name, default=False):
+    return os.environ.get(name, str(default)).strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "c7l%1%b=2sh$o9zqvd4i*h8*__^@-5sm-y)m(1ib2t92)43@62"
+# Read from the environment; the fallback is a clearly-insecure dev-only value.
+# The previously-committed key is considered compromised and was rotated out — set
+# DJANGO_SECRET_KEY in any non-local environment (see .env.example).
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY", "django-insecure-dev-only-change-me-via-DJANGO_SECRET_KEY"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Secure-by-default: DEBUG is OFF unless DJANGO_DEBUG is explicitly truthy.
+# start.sh exports DJANGO_DEBUG=True for the local dev loop (static serving needs it).
+DEBUG = _env_bool("DJANGO_DEBUG", False)
 
-ALLOWED_HOSTS = []
+# Comma-separated; defaults cover local runserver. Django's test runner
+# (setup_test_environment) auto-appends 'testserver', so the test client works
+# even at DEBUG=False.
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]").split(
+        ","
+    )
+    if h.strip()
+]
 
 
 # Application definition
@@ -45,7 +71,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -134,3 +160,38 @@ MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), "media_root")
 
 # CORS_ORIGIN_ALLOW_ALL = True
 # CORS_ALLOW_CREDENTIALS = False
+
+
+# Logging (FE-3)
+# Django's dev `runserver` logs one access line per request at INFO on the
+# 'django.server' logger (2xx/3xx -> info, 4xx -> warning, 5xx -> error). With the
+# frontend polling /api/health every 3s etc., that floods the log (the 984 KB
+# django.err.log observed in the audit). Raise django.server to WARNING so 2xx/3xx
+# access noise is dropped while real 4xx/5xx problems still surface.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "django.server": {
+            "()": "django.utils.log.ServerFormatter",
+            "format": "[{server_time}] {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+        "django.server": {
+            "class": "logging.StreamHandler",
+            "formatter": "django.server",
+        },
+    },
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO"},
+        # WARNING here silences 2xx/3xx access lines but keeps 4xx/5xx.
+        "django.server": {
+            "handlers": ["django.server"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+    },
+}

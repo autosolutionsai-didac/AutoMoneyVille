@@ -13,10 +13,10 @@ import time
 import requests
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import ensure_csrf_cookie
 
-# Backend server URL
-BACKEND_URL = "http://127.0.0.1:5000"
+# Backend server URL (env-overridable; defaults to the local Flask backend).
+BACKEND_URL = os.environ.get("CLAUDEVILLE_BACKEND_URL", "http://127.0.0.1:5000")
 CLIENT_VERSION = "stream-v2"
 
 
@@ -64,7 +64,6 @@ def _read_json_file(path, retries=3, delay=0.05):
 # =============================================================================
 
 
-@csrf_exempt
 def api_movements(request):
     """
     Poll for pending movements from backend.
@@ -121,7 +120,6 @@ def api_health(request):
     return JsonResponse(health)
 
 
-@csrf_exempt
 def api_save(request):
     """Save simulation state via backend."""
     if request.method != "POST":
@@ -135,7 +133,6 @@ def api_save(request):
         return JsonResponse({"error": str(e)}, status=502)
 
 
-@csrf_exempt
 def api_simulate(request):
     """Request simulation steps from backend."""
     if request.method != "POST":
@@ -183,7 +180,6 @@ def api_town_center(request):
         return JsonResponse({"error": str(e)}, status=502)
 
 
-@csrf_exempt
 def api_town_center_request(request):
     """Submit a town-center request through the backend."""
     if request.method != "POST":
@@ -203,7 +199,6 @@ def api_town_center_request(request):
         return JsonResponse({"error": str(e)}, status=502)
 
 
-@csrf_exempt
 def api_town_center_request_transition(request, request_id):
     """Transition a town-center request through the approval lifecycle."""
     if request.method != "POST":
@@ -223,7 +218,6 @@ def api_town_center_request_transition(request, request_id):
         return JsonResponse({"error": str(e)}, status=502)
 
 
-@csrf_exempt
 def api_town_center_reward(request):
     """Award points or revenue evidence through the backend."""
     if request.method != "POST":
@@ -337,6 +331,7 @@ def demo(request, sim_code, step, play_speed="2"):
     return render(request, template, context)
 
 
+@ensure_csrf_cookie
 def home(request):
     f_curr_sim_code = "temp_storage/curr_sim_code.json"
     f_curr_step = "temp_storage/curr_step.json"
@@ -406,6 +401,7 @@ def home(request):
     return render(request, template, context)
 
 
+@ensure_csrf_cookie
 def replay(request, sim_code, step):
     sim_code = sim_code
     step = int(step)
@@ -496,6 +492,7 @@ def replay_persona_state(request, sim_code, step, persona_name):
     return render(request, template, context)
 
 
+@ensure_csrf_cookie
 def path_tester(request):
     context = {}
     template = "path_tester/path_tester.html"

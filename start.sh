@@ -58,6 +58,15 @@ conda activate claudeville
 # NLTK data
 python -c "import nltk; nltk.download('punkt', quiet=True); nltk.download('averaged_perceptron_tagger', quiet=True)" 2>/dev/null || true
 
+# Local-dev environment defaults (OPS-2). Override by exporting before running,
+# or by creating a .env (see .env.example). DEBUG must be on for `runserver` to
+# serve static assets (Phaser map/sprites/CSS); production must set these via env.
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    set -a; . "$SCRIPT_DIR/.env"; set +a
+fi
+export DJANGO_DEBUG="${DJANGO_DEBUG:-True}"
+export DJANGO_ALLOWED_HOSTS="${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,[::1]}"
+
 # Start frontend (silently in background, logs to file)
 echo "Starting frontend on http://localhost:8000 ..."
 cd "$SCRIPT_DIR/environment/frontend_server"

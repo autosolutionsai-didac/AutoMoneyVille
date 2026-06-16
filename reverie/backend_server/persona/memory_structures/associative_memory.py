@@ -11,6 +11,7 @@ agents paper.
 
 import datetime
 import json
+import logging
 
 
 class ConceptNode:
@@ -279,8 +280,10 @@ class AssociativeMemory:
         try:
             if filling:
                 depth += max([self.id_to_node[i].depth for i in filling])
-        except Exception:
-            pass
+        except KeyError:
+            logging.warning(
+                "add_thought: dangling node reference in filling=%s", filling
+            )
 
         # Creating the <ConceptNode> object.
         # NOTE: embedding_key is now just a string identifier, not a key to embeddings dict
@@ -387,13 +390,19 @@ class AssociativeMemory:
     def get_str_seq_events(self):
         ret_str = ""
         for count, event in enumerate(self.seq_event):
-            ret_str += f"{'Event', len(self.seq_event) - count, ': ', event.spo_summary(), ' -- ', event.description}\n"
+            ret_str += (
+                f"Event {len(self.seq_event) - count}: "
+                f"{event.spo_summary()} -- {event.description}\n"
+            )
         return ret_str
 
     def get_str_seq_thoughts(self):
         ret_str = ""
         for count, event in enumerate(self.seq_thought):
-            ret_str += f"{'Thought', len(self.seq_thought) - count, ': ', event.spo_summary(), ' -- ', event.description}"
+            ret_str += (
+                f"Thought {len(self.seq_thought) - count}: "
+                f"{event.spo_summary()} -- {event.description}\n"
+            )
         return ret_str
 
     def get_str_seq_chats(self):
@@ -408,10 +417,13 @@ class AssociativeMemory:
     def retrieve_relevant_thoughts(self, s_content, p_content, o_content):
         contents = [s_content, p_content, o_content]
 
+        # kw_to_thought is keyed lowercase (see add_thought), so normalize the
+        # lookup key on both the membership test and the index access.
         ret = []
         for i in contents:
-            if i in self.kw_to_thought:
-                ret += self.kw_to_thought[i.lower()]
+            key = i.lower() if isinstance(i, str) else i
+            if key in self.kw_to_thought:
+                ret += self.kw_to_thought[key]
 
         ret = set(ret)
         return ret
@@ -419,10 +431,13 @@ class AssociativeMemory:
     def retrieve_relevant_events(self, s_content, p_content, o_content):
         contents = [s_content, p_content, o_content]
 
+        # kw_to_event is keyed lowercase (see add_event), so normalize the
+        # lookup key on both the membership test and the index access.
         ret = []
         for i in contents:
-            if i in self.kw_to_event:
-                ret += self.kw_to_event[i]
+            key = i.lower() if isinstance(i, str) else i
+            if key in self.kw_to_event:
+                ret += self.kw_to_event[key]
 
         ret = set(ret)
         return ret

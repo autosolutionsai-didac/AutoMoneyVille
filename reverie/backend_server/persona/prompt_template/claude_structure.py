@@ -884,14 +884,28 @@ def parse_step_response(
 
         # Parse event triple
         event_data = action_data.get("event", [persona_name, "is", "idle"])
-        if len(event_data) >= 3:
+        if isinstance(event_data, (list, tuple)) and len(event_data) >= 3:
             event = (str(event_data[0]), str(event_data[1]), str(event_data[2]))
         else:
             event = (persona_name, "is", "idle")
 
+        # Coerce + clamp duration: the model may emit a string ("30 minutes"),
+        # null, a negative, or an absurd value. Unvalidated, these feed
+        # datetime.timedelta() and act_duration arithmetic and crash the step
+        # or pin the persona forever.
+        raw_duration = action_data.get("duration_minutes", 30)
+        try:
+            duration_minutes = int(raw_duration)
+        except (TypeError, ValueError):
+            result.parse_errors.append(
+                f"Invalid duration_minutes {raw_duration!r}; defaulting to 30"
+            )
+            duration_minutes = 30
+        duration_minutes = max(1, min(duration_minutes, 1440))
+
         result.action = ActionDecision(
             description=action_data.get("description", "idle"),
-            duration_minutes=action_data.get("duration_minutes", 30),
+            duration_minutes=duration_minutes,
             sector=sector,
             arena=arena,
             game_object=obj,

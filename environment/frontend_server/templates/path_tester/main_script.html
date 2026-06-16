@@ -316,6 +316,9 @@
     var retrieve_xobj = new XMLHttpRequest();
     retrieve_xobj.overrideMimeType("application/json");
     retrieve_xobj.open('POST', "{% url 'path_tester_update' %}", true);
+    // CSRF: echo the csrftoken cookie (primed by @ensure_csrf_cookie on the page view).
+    var csrftoken = (document.cookie.match(/(^|;)\s*csrftoken\s*=\s*([^;]+)/) || ['', '', ''])[2];
+    retrieve_xobj.setRequestHeader('X-CSRFToken', decodeURIComponent(csrftoken));
     retrieve_xobj.send(json);
     // Finally, we update the phase variable to start the "udpate" process.
     // Now that we sent all persona locations to the backend server, we need

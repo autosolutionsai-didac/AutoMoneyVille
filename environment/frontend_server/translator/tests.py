@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from unittest import mock
 
-from django.test import RequestFactory, SimpleTestCase
+from django.test import Client, RequestFactory, SimpleTestCase
 
 from translator import views
 
@@ -470,3 +470,54 @@ class RuntimeStatusTemplateTests(SimpleTestCase):
 
         self.assertIn("if (isPaused && !isSkipping)", source)
         self.assertIn("simulationActive = false;", source)
+
+
+class CsrfProtectionTests(SimpleTestCase):
+    """OPS-1: CSRF is enforced at runtime and the cookie is primed for the JS.
+
+    The other suites use RequestFactory, which bypasses middleware and therefore
+    gives no CSRF coverage. These use the real test Client so CsrfViewMiddleware
+    actually runs.
+    """
+
+    def test_untokened_post_to_mutating_api_is_blocked(self):
+        # api_save is POST-only and no longer @csrf_exempt; a tokenless POST must
+        # be rejected by CsrfViewMiddleware before the view (or any backend call).
+        client = Client(enforce_csrf_checks=True)
+        response = client.post("/api/save/", data="{}", content_type="application/json")
+        self.assertEqual(response.status_code, 403)
+
+    @mock.patch("translator.views.os.path.exists", return_value=False)
+    @mock.patch(
+        "translator.views.requests.get",
+        side_effect=views.requests.ConnectionError("backend offline"),
+    )
+    def test_home_page_primes_csrf_cookie(self, _mock_get, _mock_exists):
+        # @ensure_csrf_cookie on home must set the csrftoken cookie so the JS can
+        # echo it in X-CSRFToken. Backend + filesystem are stubbed so the view
+        # returns the "start backend" page (200) without external dependencies.
+        response = Client().get("/simulator_home")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("csrftoken", response.cookies)
+
+    @mock.patch(
+        "translator.views.open",
+        new_callable=mock.mock_open,
+        read_data='{"Nora Vale": {"x": 1, "y": 2}}',
+    )
+    @mock.patch("translator.views.os.listdir")
+    def test_replay_page_primes_csrf_cookie(self, mock_listdir, _mock_open):
+        # The replay view renders the same home.html (with Save/Simulate/Town-Center
+        # POST controls), so it must also prime the csrftoken cookie. Regression
+        # caught in adversarial review: it was missing @ensure_csrf_cookie.
+        mock_listdir.side_effect = [["Nora Vale"], ["0.json"]]
+        response = Client().get("/replay/run_one/5/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("csrftoken", response.cookies)
+
+    def test_get_movements_does_not_require_csrf(self):
+        # Safe methods (GET) are never CSRF-checked; the movements poll must still
+        # work without a token. Stale-client guard returns 409 (not a CSRF 403).
+        client = Client(enforce_csrf_checks=True)
+        response = client.get("/api/movements/")
+        self.assertNotEqual(response.status_code, 403)

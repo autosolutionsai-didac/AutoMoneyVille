@@ -208,7 +208,7 @@ class Scratch:
                     scratch_load["act_start_time"], "%B %d, %Y, %H:%M:%S"
                 )
             else:
-                self.curr_time = None
+                self.act_start_time = None
             self.act_duration = scratch_load["act_duration"]
             self.act_description = scratch_load["act_description"]
             self.act_pronunciatio = scratch_load["act_pronunciatio"]
@@ -246,7 +246,10 @@ class Scratch:
         scratch["att_bandwidth"] = self.att_bandwidth
         scratch["retention"] = self.retention
 
-        scratch["curr_time"] = self.curr_time.strftime("%B %d, %Y, %H:%M:%S")
+        if self.curr_time:
+            scratch["curr_time"] = self.curr_time.strftime("%B %d, %Y, %H:%M:%S")
+        else:
+            scratch["curr_time"] = None
         scratch["curr_tile"] = self.curr_tile
         scratch["daily_plan_req"] = self.daily_plan_req
 
@@ -275,7 +278,12 @@ class Scratch:
         scratch["f_daily_schedule_hourly_org"] = self.f_daily_schedule_hourly_org
 
         scratch["act_address"] = self.act_address
-        scratch["act_start_time"] = self.act_start_time.strftime("%B %d, %Y, %H:%M:%S")
+        if self.act_start_time:
+            scratch["act_start_time"] = self.act_start_time.strftime(
+                "%B %d, %Y, %H:%M:%S"
+            )
+        else:
+            scratch["act_start_time"] = None
         scratch["act_duration"] = self.act_duration
         scratch["act_description"] = self.act_description
         scratch["act_pronunciatio"] = self.act_pronunciatio
@@ -524,18 +532,25 @@ class Scratch:
         if not self.act_address:
             return True
 
+        if self.curr_time is None:
+            return False
+
         if self.chatting_with:
             end_time = self.chatting_end_time
         else:
+            if self.act_start_time is None:
+                return False
             x = self.act_start_time
             if x.second != 0:
                 x = x.replace(second=0)
                 x = x + datetime.timedelta(minutes=1)
             end_time = x + datetime.timedelta(minutes=self.act_duration)
 
-        if end_time.strftime("%H:%M:%S") == self.curr_time.strftime("%H:%M:%S"):
-            return True
-        return False
+        if end_time is None:
+            return False
+        # Use >= rather than exact-second equality: a sim tick that skips the
+        # precise end second would otherwise never register the action as done.
+        return self.curr_time >= end_time
 
     def act_summarize(self):
         """

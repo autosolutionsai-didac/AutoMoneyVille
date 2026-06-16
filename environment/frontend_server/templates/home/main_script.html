@@ -207,6 +207,23 @@
 	const TARGET_BUFFER = 1;      // Keep playback responsive; one slow LLM step should not block a batch
 	const BATCH_SIZE = 1;         // Request one backend step per batch
 
+	// CSRF token reader. Django sets the csrftoken cookie via @ensure_csrf_cookie on
+	// the page view; non-GET requests must echo it back in the X-CSRFToken header.
+	function getCookie(name) {
+		const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+		return match ? decodeURIComponent(match.pop()) : '';
+	}
+
+	// HTML-escape untrusted (LLM/backend-derived) text before interpolating into markup.
+	function escapeHtml(value) {
+		return String(value == null ? '' : value)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#39;');
+	}
+
 	function setPlaybackState(state) {
 		playbackState = state;
 		const stateEl = document.getElementById('playback-state-content');
@@ -395,7 +412,10 @@
 		try {
 			await fetch(transitionUrl, {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRFToken': getCookie('csrftoken')
+				},
 				body: JSON.stringify({
 					state: state,
 					reviewer: 'human',
@@ -419,7 +439,8 @@
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					'X-Claudeville-Client': CLIENT_VERSION
+					'X-Claudeville-Client': CLIENT_VERSION,
+					'X-CSRFToken': getCookie('csrftoken')
 				},
 				body: JSON.stringify({ steps: numSteps })
 			});
@@ -654,7 +675,7 @@
 		}
 
 		const currTime = execute_movement["meta"]["curr_time"];
-		document.getElementById("game-time-content").innerHTML = currTime;
+		document.getElementById("game-time-content").textContent = currTime;
 		updateDayNightCycle(currTime);
 		if (execute_count == execute_count_max) {
 			updateChatPopup(execute_movement);
@@ -681,8 +702,8 @@
 				let curr_persona_name_os = curr_persona_name.replace(/ /g, "_");
 				let description_content = movementData["description"] || "";
 
-				document.getElementById("current_action__" + curr_persona_name_os).innerHTML = description_content.split("@")[0];
-				document.getElementById("target_address__" + curr_persona_name_os).innerHTML = description_content.split("@")[1];
+				document.getElementById("current_action__" + curr_persona_name_os).textContent = description_content.split("@")[0];
+				document.getElementById("target_address__" + curr_persona_name_os).textContent = description_content.split("@")[1] || "";
 			}
 
 			if (curr_persona.body.x < movement_target[curr_persona_name][0]) {
@@ -1406,8 +1427,8 @@
 				// When playing, messages flow naturally so no highlight needed
 				bubble.className = isPaused ? 'chat-bubble new' : 'chat-bubble';
 				bubble.innerHTML = `
-					<span class="speaker">${speaker}</span>
-					<span class="message">${line}</span>
+					<span class="speaker">${escapeHtml(speaker)}</span>
+					<span class="message">${escapeHtml(line)}</span>
 				`;
 				chatMessages.appendChild(bubble);
 				addedNew = true;
@@ -1485,12 +1506,12 @@
 			if (result.saves && result.saves.length > 0) {
 				savesList.innerHTML = result.saves.map(save => `
 					<div class="save-item ${save.sim_code === sim_code ? 'current' : ''}"
-						 data-sim-code="${save.sim_code}">
+						 data-sim-code="${escapeHtml(save.sim_code)}">
 						<div>
-							<div class="save-name">${save.sim_code}</div>
-							<div class="save-info">Step ${save.step} - ${save.personas.length} personas</div>
+							<div class="save-name">${escapeHtml(save.sim_code)}</div>
+							<div class="save-info">Step ${escapeHtml(save.step)} - ${escapeHtml(save.personas.length)} personas</div>
 						</div>
-						<div class="save-info">${save.curr_time}</div>
+						<div class="save-info">${escapeHtml(save.curr_time)}</div>
 					</div>
 				`).join('');
 
@@ -1518,7 +1539,10 @@
 		saveBtn.textContent = 'Saving...';
 
 		try {
-			const response = await fetch("{% url 'api_save' %}", { method: 'POST' });
+			const response = await fetch("{% url 'api_save' %}", {
+				method: 'POST',
+				headers: { 'X-CSRFToken': getCookie('csrftoken') }
+			});
 			const result = await response.json();
 
 			if (result.status === 'saved') {

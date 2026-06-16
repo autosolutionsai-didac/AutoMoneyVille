@@ -1,0 +1,57 @@
+name: CI
+
+# Phase A / OPS-3: automated quality gate. Runs the (previously advisory) test
+# suites + ruff on every push and PR so regressions are caught automatically.
+# See docs/PHASE-1-AUDIT.md (OPS-3) and docs/IMPROVEMENT-LOG.md.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+# Login shell keeps the activated conda environment available across steps.
+defaults:
+  run:
+    shell: bash -el {0}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-test:
+    name: Lint & test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up conda environment (claudeville)
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: environment.yaml
+          activate-environment: claudeville
+          miniforge-version: latest
+          auto-activate-base: false
+
+      - name: Show toolchain
+        run: |
+          python --version
+          ruff --version
+
+      - name: Ruff lint (blocking)
+        run: ruff check .
+
+      # NOTE: non-blocking until OPS-6 lands (reconcile ruff version skew —
+      # pre-commit pins v0.1.9, the env ships a newer ruff — and reformat the
+      # tree). Flip `continue-on-error` to false once the tree is formatted.
+      - name: Ruff format check (non-blocking — see OPS-6)
+        continue-on-error: true
+        run: ruff format --check .
+
+      - name: Backend unit tests
+        run: python -m unittest discover -s reverie/backend_server/tests -t .
+
+      - name: Frontend (Django) tests
+        working-directory: environment/frontend_server
+        run: python manage.py test translator
