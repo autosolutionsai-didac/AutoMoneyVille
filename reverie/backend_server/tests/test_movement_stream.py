@@ -70,7 +70,12 @@ class MovementStreamTests(unittest.TestCase):
         self.assertFalse(result[5])
 
     def test_persona_move_timeout_keeps_playback_responsive(self):
-        self.assertLessEqual(PERSONA_MOVE_TIMEOUT_SECONDS, 15)
+        # The batch timeout must stay bounded so a slow/hung step can't freeze
+        # playback indefinitely — but 15s proved too tight (three concurrent LLM
+        # decisions on a grown context routinely exceeded it, causing no-op
+        # fallback stutter), so the default was raised to 45s. Keep an upper
+        # bound to guard against an unbounded/very-long hang.
+        self.assertLessEqual(PERSONA_MOVE_TIMEOUT_SECONDS, 60)
 
 
 if __name__ == "__main__":

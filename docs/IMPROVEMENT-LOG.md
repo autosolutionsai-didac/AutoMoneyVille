@@ -59,6 +59,18 @@ Chronological record of changes made during the Claudeville improvement pass. On
 
 **Batch 3 verification (2026-06-16):** backend **49 OK**, Django **33 OK**, `manage.py check` clean, `ruff check` clean (now with `I`+`UP`, target py39). Process: discovery (ruff blast-radius + dep versions) → wave-1/wave-2 edits with test gates → adversarial review workflow (3 agents, found 4 real bugs incl. a Python-3.9 startup crash, all fixed). **Deferred (logged):** ARCH-11 (encounter-method refactor — 2-file behavior risk, thin tests), ARCH-13 (dead guard in 340-line conv-sync), ARCH-15 (path-tester except/rmtree, dev-only), FE-7/FE-8 (frontend — need visual verification), OPS-6 `B`/`S` rules (~17 manual sites).
 
+### Live-test session (2026-06-17) — full stack run
+
+Ran the full stack end-to-end via the `env/` venv (no conda → `start.sh` unused; frontend from `environment/frontend_server/`, backend from `reverie/backend_server/` with `PYTHONUTF8=1`). The sim works: agents progress through a realistic day (sleep → wake ~6am → Isabella runs Hobbs Cafe, Maria showers, Klaus heads to the cafe). One fix + four findings:
+
+| Date | Finding | Status | Notes |
+|------|---------|--------|-------|
+| 2026-06-17 | Move-timeout default 15s too tight | ✅ fixed | 3 concurrent persona LLM calls on a grown context routinely exceeded 15s → no-op "continue current action" fallback = playback stutter. Default raised **15s→45s** (`CLAUDEVILLE_PERSONA_MOVE_TIMEOUT`); `test_movement_stream` bound updated 15→60. Ties to ARCH-2/LLM-5 (Phase B: per-persona timeout excluding compaction). |
+| 2026-06-17 | **NEW** — CLI header crashes on non-UTF-8 stdout | ⬜ open (LOW) | `cli_interface.print_header` emits Unicode/box-drawing; on Windows with piped/redirected stdout (cp1252) it raises `UnicodeEncodeError` and the backend never starts. Workaround: `PYTHONUTF8=1`. Fix: force UTF-8 stdout or ASCII-fallback the banner. |
+| 2026-06-17 | **ARCH-7 confirmed** (frontend CWD) | ⬜ open | Django `home`/`replay`/`demo` views use relative `storage/...` paths → the frontend must run from `environment/frontend_server/` or it 500s. Live instance of the audited CWD-dependent-paths finding. |
+| 2026-06-17 | **NEW** — 5 AM dead cold-start UX | ⬜ open (LOW) | Continuing a save at 05:00 means all agents sleep → static map + a stuck "backend busy" label looks frozen. UI should surface "💤 agents sleeping" / auto-skip the night. |
+| 2026-06-17 | **FE-2 confirmed** (speed vs LLM-bound sim) | ⬜ open | High playback speed drains the small movement buffer faster than the LLM-bound backend can simulate → stalls then resumes. Reinforces the SSE/async-prebuffer direction (FE-2/ARCH-5, Phase C). |
+
 ---
 
 ## Findings burndown

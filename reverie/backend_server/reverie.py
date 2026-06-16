@@ -36,8 +36,13 @@ from utils import (
     fs_temp_storage,
 )
 
+# Per-step budget for the parallel persona-move batch. 15s was too tight: three
+# concurrent LLM decisions on a grown context (esp. when a compaction call piggybacks)
+# routinely exceeded it, so steps timed out into no-op "continue current action"
+# fallbacks — visible as playback stutter. 45s lets normal active steps finish.
+# (Proper fix is per-persona timeouts that exclude compaction — ARCH-2 / LLM-5, Phase B.)
 PERSONA_MOVE_TIMEOUT_SECONDS = float(
-    os.environ.get("CLAUDEVILLE_PERSONA_MOVE_TIMEOUT", "15")
+    os.environ.get("CLAUDEVILLE_PERSONA_MOVE_TIMEOUT", "45")
 )
 
 
