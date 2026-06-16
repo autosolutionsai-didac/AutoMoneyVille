@@ -1,12 +1,21 @@
 # Ruff configuration for Claudeville
 
+# Match the lowest supported interpreter (environment.yaml: python>=3.9) so the
+# UP autofixes never emit syntax that breaks on the support floor.
+target-version = "py39"
+
 [lint]
 # Select rules to enable
 select = [
     "E",   # pycodestyle errors
     "F",   # pyflakes
     "W",   # pycodestyle warnings
+    "I",   # isort (import ordering)
+    "UP",  # pyupgrade (modernize syntax)
 ]
+# NOTE: B (bugbear) and S (flake8-bandit) are a planned follow-up (OPS-6 cont.) —
+# they surface ~17 violations that need per-site judgment (B007 unused loop vars,
+# S110 try-except-pass, S605 shell), so they are sequenced separately.
 
 # Ignore rules globally
 ignore = [

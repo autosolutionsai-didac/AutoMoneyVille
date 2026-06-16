@@ -39,6 +39,26 @@ Chronological record of changes made during the Claudeville improvement pass. On
 
 **Batch 2 verification (2026-06-16):** Django `translator` → **33 OK** (29 → +4 CSRF/replay); backend **49 OK** (unchanged); `manage.py check` clean (DEBUG=False default); `ruff check` clean on changed Python. Process: exhaustive discovery workflow (4 agents) → coordinated edits → live runserver round-trip verification → adversarial review workflow (4 agents, found 1 real bug, fixed). Frontend JS (`escapeHtml`, fetch headers) verified by inspection + the live CSRF round-trip; no automated JS test harness exists yet.
 
+### Batch 3 — backend correctness + tooling Quick Wins
+
+| Date | Phase | Finding(s) | Goal | Change | Verification | PR / commit |
+|------|-------|-----------|------|--------|--------------|-------------|
+| 2026-06-16 | A | ARCH-4 | G7 | `/save` route holds `_step_lock`; `runtime_status` snapshots `list(personas.items())` (lock-free so `/health` stays responsive) | review: no deadlock (Lock non-reentrant, save() lock-free, separate thread) | local |
+| 2026-06-16 | A | ARCH-10 | G6 | Both ledgers: module `_WRITE_LOCK` + `flush()`+`os.fsync()` per append; `read_all` tolerates only a torn **final** line, logs mid-file corruption at error | review SHIP after trailing-only fix | local |
+| 2026-06-16 | A | ARCH-12 | G1 | `_validate_env_tile` — client positions validated (missing key / non-numeric / out-of-bounds → fall back to current tile) | review: maze bounds correct | local |
+| 2026-06-16 | A | ARCH-14 | — | `print_persona_action` uses `zlib.crc32` (stable across runs) instead of salted `hash()` | review OK | local |
+| 2026-06-16 | A | ARCH-16 | G7 | `meta.json` rewritten only when `fork_sim_code` changed | review: guard correct | local |
+| 2026-06-16 | A | LLM-9 | G3 | `MAX_CONTEXT_TOKENS` model-derived (Sonnet 4.6 → 1M, fixing wrong 200K); tunables env-overridable via safe `_env_int/_env_float`; fixed "Opus agency" docstring | review SHIP; Opus 4.8→1M + malformed-env fallback verified | local |
+| 2026-06-16 | A | LLM-12 | — | `_fuzzy_match` prefers exact (case-insensitive) match before substring | review: strict improvement | local |
+| 2026-06-16 | A | LLM-13 | G4 | `bypassPermissions` guarded by named `allowed_tools=[]` + assert | review OK | local |
+| 2026-06-16 | A | OPS-5 | G5 | Pinned `claude-agent-sdk>=0.2.101,<0.3`, `ruff==0.15.17`, `django>=4.2,<4.3` (full conda-lock deferred — needs a conda host; dev venv is a pip-less uv venv) | review: pins consistent + installed | local |
+| 2026-06-16 | A | OPS-6 | G5 | ruff `select += I, UP` (+ `target-version=py39`); bumped pre-commit ruff `v0.1.9→v0.15.17`; autofixed repo (B/S deferred — need per-site judgment) | `ruff check` clean | local |
+| 2026-06-16 | A | OPS-9 | — | `.gitattributes` binary rules for image/zip/audio/font assets | review: syntax OK | local |
+| 2026-06-16 | A | OPS-10 | — | `utils/__init__` re-exports `read_file_to_list` | review: no circular import | local |
+| 2026-06-16 | A | (review fixes) | — | Fixed 4 adversarial-review findings: path_finder 3.9-union crash (`from __future__ import annotations` + ruff target-version), ledger trailing-only tolerance, Opus window 200K→1M, env-cast crash-on-typo | re-verified all suites + ruff | local |
+
+**Batch 3 verification (2026-06-16):** backend **49 OK**, Django **33 OK**, `manage.py check` clean, `ruff check` clean (now with `I`+`UP`, target py39). Process: discovery (ruff blast-radius + dep versions) → wave-1/wave-2 edits with test gates → adversarial review workflow (3 agents, found 4 real bugs incl. a Python-3.9 startup crash, all fixed). **Deferred (logged):** ARCH-11 (encounter-method refactor — 2-file behavior risk, thin tests), ARCH-13 (dead guard in 340-line conv-sync), ARCH-15 (path-tester except/rmtree, dev-only), FE-7/FE-8 (frontend — need visual verification), OPS-6 `B`/`S` rules (~17 manual sites).
+
 ---
 
 ## Findings burndown
@@ -59,7 +79,7 @@ Mirror of the audit register (§2 of [PHASE-1-AUDIT.md](PHASE-1-AUDIT.md)). Stat
 | ID | Title | Status | Notes |
 |----|-------|--------|-------|
 | ARCH-3 | `ReverieServer` god object | ⬜ | Phase C |
-| ARCH-4 | Read/save routes bypass step lock | ⬜ | Phase A |
+| ARCH-4 | Read/save routes bypass step lock | ✅ | Closed 2026-06-16 — /save locked, status snapshot |
 | ARCH-5 | `/simulate` synchronous in request thread | ⬜ | Phase B |
 | ARCH-6 | `save()` non-atomic + CWD-dependent | ⬜ | Phase B |
 | ARCH-7 | Two divergent storage path systems | ⬜ | Phase B |
@@ -76,19 +96,19 @@ Mirror of the audit register (§2 of [PHASE-1-AUDIT.md](PHASE-1-AUDIT.md)). Stat
 | FE-2 | 100% polling, no SSE; double-hop health | ⬜ | Phase C (backoff in A) |
 | OPS-3 | No CI / quality gates | ✅ | Closed 2026-06-16 — ci.yml added; first GH run pending push |
 | OPS-4 | ~5,900 LOC core untested | ⬜ | Phase B (G8) |
-| OPS-5 | Zero dependency pinning | ⬜ | Phase A |
+| OPS-5 | Zero dependency pinning | ✅ | Closed 2026-06-16 — sdk/ruff/django pinned (full conda-lock = follow-up) |
 
 ### MEDIUM (0/23 closed)
 | ID | Title | Status | Notes |
 |----|-------|--------|-------|
 | ARCH-8 | `/movements` destructive; multi-client unsafe | ⬜ | Phase B |
 | ARCH-9 | `town_center.snapshot()` re-reads full ledger | ⬜ | Phase B |
-| ARCH-10 | Ledger appends not crash/concurrency-safe | ⬜ | Phase A |
+| ARCH-10 | Ledger appends not crash/concurrency-safe | ✅ | Closed 2026-06-16 — lock + fsync + torn-line tolerance |
 | ARCH-11 | Convo/encounter uses private persona attrs | ⬜ | Phase A |
-| ARCH-12 | Client positions unvalidated | ⬜ | Phase A |
+| ARCH-12 | Client positions unvalidated | ✅ | Closed 2026-06-16 — _validate_env_tile |
 | LLM-7 | Prompt bloat; static rulebook re-sent | ⬜ | Phase B |
 | LLM-8 | No cost controls (max_tokens/spend cap) | ⬜ | Phase B |
-| LLM-9 | Magic numbers/model params hardcoded | ⬜ | Phase A |
+| LLM-9 | Magic numbers/model params hardcoded | ✅ | Closed 2026-06-16 — model-derived window + env tunables |
 | LLM-10 | Module-global mutable state | ⬜ | Phase C |
 | LLM-11 | `_send_prompt` re-entrancy on compaction | ⬜ | Phase B/C |
 | MEM-6 | `get_str_seq_*` f-string tuple bug | ✅ | Closed 2026-06-16 — readable interpolation + test |
@@ -100,7 +120,7 @@ Mirror of the audit register (§2 of [PHASE-1-AUDIT.md](PHASE-1-AUDIT.md)). Stat
 | FE-4 | 1561-line inline JS; tags block extraction | ⬜ | Phase C |
 | FE-5 | Inconsistent view error handling; `str(e)` leak | ⬜ | Phase B |
 | FE-6 | Unescaped persona text → DOM (XSS) | ✅ | Closed 2026-06-16 — all sinks escaped/textContent (home+demo), adversarially re-swept |
-| OPS-6 | Ruff config minimal; pre-commit version skew | ⬜ | Phase A |
+| OPS-6 | Ruff config minimal; pre-commit version skew | ✅ | Closed 2026-06-16 — +I/UP/target-version, version reconciled (B/S follow-up) |
 | OPS-7 | Asset ZIP bloat; 26 pending deletions | ⬜ | Phase A (reconcile) / B (full) |
 | OPS-8 | Fragile dual test-import convention | ⬜ | Phase B |
 
@@ -108,21 +128,21 @@ Mirror of the audit register (§2 of [PHASE-1-AUDIT.md](PHASE-1-AUDIT.md)). Stat
 | ID | Title | Status |
 |----|-------|--------|
 | ARCH-13 | `_synchronize_conversations` dead guard | ⬜ |
-| ARCH-14 | `print_persona_action` salted `hash()` color | ⬜ |
+| ARCH-14 | `print_persona_action` salted `hash()` color | ✅ |
 | ARCH-15 | Path-tester `except: pass`; rmtree before loop | ⬜ |
-| ARCH-16 | `meta.json` rewritten 3× in `__init__` | ⬜ |
+| ARCH-16 | `meta.json` rewritten 3× in `__init__` | ✅ |
 | ARCH-17 | Batch timeout discards completed work | ⬜ |
-| LLM-12 | Naive fuzzy match mis-resolves locations | ⬜ |
-| LLM-13 | `bypassPermissions` + empty allowed_tools footgun | ⬜ |
+| LLM-12 | Naive fuzzy match mis-resolves locations | ✅ |
+| LLM-13 | `bypassPermissions` + empty allowed_tools footgun | ✅ |
 | MEM-11 | `_is_wall` infers opacity from empty arena | ⬜ |
 | MEM-12 | `merge_chat_lines` unbounded / O(n²) | ⬜ |
 | MEM-13 | Retrieval/perception magic numbers scattered | ⬜ |
 | FE-7 | Dead/duplicated template data; `persona_name_str` unused | ⬜ |
 | FE-8 | CSS duplication, no variables | ⬜ |
 | FE-9 | `api_simulate` 240s synchronous proxy | ⬜ |
-| OPS-9 | `.gitattributes` minimal; no binary/LFS | ⬜ |
-| OPS-10 | `utils/__init__.py` dangling re-export | ⬜ |
+| OPS-9 | `.gitattributes` minimal; no binary/LFS | ✅ |
+| OPS-10 | `utils/__init__.py` dangling re-export | ✅ |
 
-**Progress:** 11 / 63 findings closed (1 CRITICAL · 4 HIGH · 6 MEDIUM). Remaining: 5 CRITICAL · 15 HIGH · 17 MEDIUM · 15 LOW.
+**Progress:** 23 / 63 findings closed (1 CRITICAL · 6 HIGH · 10 MEDIUM · 6 LOW). Remaining: 5 CRITICAL · 13 HIGH · 13 MEDIUM · 9 LOW.
 
-_Phase A continues: remaining Quick Wins include OPS-5 (pin deps), OPS-6 (ruff rules + version), ARCH-4 (lock read/save routes), ARCH-10 (ledger fsync), ARCH-11 (private-attr methods), ARCH-12 (validate client positions), ARCH-16 (meta.json single write), LLM-9 (config/model constants), FE-2 backoff slice, OPS-7 (reconcile pending deletions), and the LOW batch. Then Phase B (structural) — gated on D-001 memory direction (already decided: Restore)._
+_Phase A nearly complete. Still open (deferred with rationale): ARCH-11 (encounter-method refactor), ARCH-13/ARCH-15 (LOW, complex/dev-only), FE-7/FE-8 (frontend — need visual verification), OPS-6 `B`/`S` ruff rules, OPS-7 (reconcile the 26 pending PNG deletions). Then Phase B (structural) — gated on D-001 (decided: Restore memory)._

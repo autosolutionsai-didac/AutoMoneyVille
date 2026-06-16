@@ -45,8 +45,11 @@ dependencies:
   - pip
 
   - pip:
-    # Django (4.2 LTS, compatible with updated code)
-    - django>=4.2,<5.0
+    # Pins below target reproducibility (OPS-5). NOTE: a full conda-lock for the
+    # conda-resolved scientific stack is a follow-up (requires a conda host;
+    # the dev venv on disk is a uv venv without pip, so no faithful freeze here).
+    # Django (4.2 LTS — stay on the tested 4.2.x line)
+    - django>=4.2,<4.3
     - dj-database-url>=0.5.0
     # Statistics
     - statsmodels>=0.13.0
@@ -55,12 +58,13 @@ dependencies:
     # Other utilities
     - trueskill>=0.4.5
 
-    # Development tools
+    # Development tools (ruff pinned to match .pre-commit-config.yaml)
     - pre-commit>=3.6.0
-    - ruff>=0.1.9
+    - ruff==0.15.17
 
-    # Claude Agent SDK (uses existing Claude Code auth)
-    - claude-agent-sdk>=0.1.0
+    # Claude Agent SDK (fast-moving — pin to the tested 0.2.x line; a breaking
+    # 0.3 could change ClaudeAgentOptions and silently break new installs)
+    - claude-agent-sdk>=0.2.101,<0.3.0
 
 # Note: The following have been intentionally REMOVED:
 # - openai (replaced by Claude CLI)

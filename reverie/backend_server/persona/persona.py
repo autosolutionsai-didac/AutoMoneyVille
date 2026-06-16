@@ -12,10 +12,9 @@ original multi-step cognitive chain.
 import datetime
 import random
 
+import cli_interface as cli
 from path_finder import PathFinder
 from utils import collision_block_id
-
-import cli_interface as cli
 
 # Conversation range constants
 # Must be within this range to START a conversation
@@ -187,8 +186,8 @@ class Persona:
         if skip_result:
             self.last_step_response = None
             # Log skipped personas for visibility
-            from persona.prompt_template.claude_structure import DEBUG_VERBOSITY
             import cli_interface as cli
+            from persona.prompt_template.claude_structure import DEBUG_VERBOSITY
 
             if DEBUG_VERBOSITY >= 1:
                 time_str = curr_time.strftime("%H:%M") if curr_time else ""

@@ -6,7 +6,9 @@ File: path_finder.py
 Description: Implements PathFinder class for generative agents path finding.
 """
 
-from typing import Optional
+# PEP 604 unions (`X | None`) appear in annotations below; defer evaluation so
+# they remain valid on the Python 3.9 floor declared in environment.yaml.
+from __future__ import annotations
 
 import numpy as np
 
@@ -220,7 +222,7 @@ class PathFinder:
                         distance_map[i][j + 1] = step + 1
 
     @staticmethod
-    def closest_coordinate(curr: tuple, target_list: list) -> Optional[tuple]:
+    def closest_coordinate(curr: tuple, target_list: list) -> tuple | None:
         """
         Find the closest coordinate from a list of targets using Euclidean distance.
 

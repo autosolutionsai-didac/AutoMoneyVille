@@ -5,8 +5,9 @@ from types import SimpleNamespace
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from reverie.backend_server.reverie import ReverieServer
 from persona.persona import Persona
+
+from reverie.backend_server.reverie import ReverieServer
 
 
 class MazeStub:

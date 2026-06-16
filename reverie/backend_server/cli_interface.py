@@ -5,6 +5,7 @@ Clean, colorful terminal interface for the simulation.
 
 import os
 import sys
+import zlib
 
 
 # ANSI color codes
@@ -213,8 +214,9 @@ def print_persona_action(persona_name, action, emoji=""):
         3: Colors.BRIGHT_GREEN,
         4: Colors.BRIGHT_BLUE,
     }
-    # Simple hash to get consistent color per persona
-    color = name_colors[hash(persona_name) % len(name_colors)]
+    # Stable hash (Python's built-in hash() is salted per process, so colors
+    # would change between runs); crc32 is deterministic across runs (ARCH-14).
+    color = name_colors[zlib.crc32(persona_name.encode()) % len(name_colors)]
 
     emoji_str = f" {emoji}" if emoji else ""
     print(

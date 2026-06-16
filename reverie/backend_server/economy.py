@@ -3,12 +3,19 @@
 from __future__ import annotations
 
 import json
+import logging
+import os
+import threading
 import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any
+
+_LOGGER = logging.getLogger(__name__)
+# Serializes ledger appends across HTTP and CLI threads (ARCH-10).
+_WRITE_LOCK = threading.Lock()
 
 
 class RequestState(str, Enum):
@@ -36,7 +43,7 @@ class ToolRegistry:
         self._tools = {tool.name: tool for tool in tools}
 
     @classmethod
-    def default(cls) -> "ToolRegistry":
+    def default(cls) -> ToolRegistry:
         return cls(
             [
                 ToolCapability(
@@ -108,15 +115,40 @@ class JsonlLedger:
 
     def _append(self, entry: dict[str, Any]) -> dict[str, Any]:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with self.path.open("a", encoding="utf-8") as outfile:
-            outfile.write(json.dumps(entry, ensure_ascii=True) + "\n")
+        with _WRITE_LOCK:
+            with self.path.open("a", encoding="utf-8") as outfile:
+                outfile.write(json.dumps(entry, ensure_ascii=True) + "\n")
+                outfile.flush()
+                os.fsync(outfile.fileno())
         return entry
 
     def read_all(self) -> list[dict[str, Any]]:
         if not self.path.exists():
             return []
         with self.path.open("r", encoding="utf-8") as infile:
-            return [json.loads(line) for line in infile if line.strip()]
+            raw_lines = infile.readlines()
+        # Index of the last non-blank line — only a torn write *there* is benign.
+        last_idx = max(
+            (i for i, ln in enumerate(raw_lines) if ln.strip()), default=-1
+        )
+        entries = []
+        for idx, line in enumerate(raw_lines):
+            stripped = line.strip()
+            if not stripped:
+                continue
+            try:
+                entries.append(json.loads(stripped))
+            except json.JSONDecodeError:
+                if idx == last_idx:
+                    # A torn/partial final line from an interrupted append is benign.
+                    _LOGGER.warning("Ignoring torn final ledger line in %s", self.path)
+                else:
+                    # Mid-file corruption is a real integrity problem, not a torn
+                    # append — surface it loudly (read still fails open).
+                    _LOGGER.error(
+                        "Corrupt ledger line %d in %s (skipped)", idx + 1, self.path
+                    )
+        return entries
 
 
 class RequestLedger(JsonlLedger):

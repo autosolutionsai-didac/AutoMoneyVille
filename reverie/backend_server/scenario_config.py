@@ -7,7 +7,6 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
-
 SCENARIO_DIR = Path(__file__).resolve().parent / "scenarios"
 
 

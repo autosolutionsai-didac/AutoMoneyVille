@@ -18,13 +18,13 @@ import traceback
 import uuid
 from dataclasses import dataclass, field
 
-from flask import Flask, jsonify, request
-
-from agent_requests import submit_latest_town_request
 import cli_interface as cli
+from agent_requests import submit_latest_town_request
 from economy import RequestState
 from event_ledger import EventLedger
+from flask import Flask, jsonify, request
 from maze import Maze
+from persona.persona import Persona
 from persona.prompt_template.claude_structure import _run_async
 from runtime_storage import RunStorage
 from scenario_runtime import attach_scenario_to_personas, bind_scenario_to_run
@@ -35,8 +35,6 @@ from utils import (
     fs_storage_runs,
     fs_temp_storage,
 )
-
-from persona.persona import Persona
 
 PERSONA_MOVE_TIMEOUT_SECONDS = float(
     os.environ.get("CLAUDEVILLE_PERSONA_MOVE_TIMEOUT", "15")
@@ -159,9 +157,13 @@ class ReverieServer:
         with open(f"{sim_folder}/reverie/meta.json") as json_file:
             reverie_meta = json.load(json_file)
 
-        with open(f"{sim_folder}/reverie/meta.json", "w") as outfile:
+        # Only rewrite when the fork code actually changed — RunStorage already
+        # persisted meta during fork resolution, so this avoids a redundant write
+        # (and its partial-write surface) on every startup (ARCH-16).
+        if reverie_meta.get("fork_sim_code") != self.fork_sim_code:
             reverie_meta["fork_sim_code"] = self.fork_sim_code
-            outfile.write(json.dumps(reverie_meta, indent=2))
+            with open(f"{sim_folder}/reverie/meta.json", "w") as outfile:
+                outfile.write(json.dumps(reverie_meta, indent=2))
 
         # LOADING REVERIE'S GLOBAL VARIABLES
         # The start datetime of the Reverie:
@@ -327,7 +329,10 @@ class ReverieServer:
                 1,
             )
         personas = []
-        for name, persona in self.personas.items():
+        # Snapshot to avoid "dict changed size during iteration" if personas
+        # mutate concurrently; intentionally lock-free so /health stays
+        # responsive during a step (which it reports via backend_busy) (ARCH-4).
+        for name, persona in list(self.personas.items()):
             personas.append(
                 {
                     "name": name,
@@ -462,8 +467,12 @@ class ReverieServer:
         @self.flask_app.route("/save", methods=["POST"])
         def handle_save():
             """Save simulation state."""
-            self.save()
-            return jsonify({"status": "saved", "step": self.step})
+            # Hold the step lock so a save can't capture half-mutated state
+            # while a step is in progress (ARCH-4).
+            with self._step_lock:
+                self.save()
+                saved_step = self.step
+            return jsonify({"status": "saved", "step": saved_step})
 
         @self.flask_app.route("/simulate", methods=["POST"])
         def handle_simulate():
@@ -564,6 +573,20 @@ class ReverieServer:
             finally:
                 self._clear_backend_busy()
 
+    def _validate_env_tile(self, env_pos, fallback_tile):
+        """Validate a frontend-supplied tile, falling back to the current backend
+        tile when the persona is missing from the payload or the coordinates are
+        absent, non-numeric, or out of maze bounds (ARCH-12)."""
+        if not isinstance(env_pos, dict) or "x" not in env_pos or "y" not in env_pos:
+            return fallback_tile
+        try:
+            px, py = int(env_pos["x"]), int(env_pos["y"])
+        except (TypeError, ValueError):
+            return fallback_tile
+        if 0 <= px < self.maze.maze_width and 0 <= py < self.maze.maze_height:
+            return (px, py)
+        return fallback_tile
+
     def _process_step_unlocked(self, data):
         """Internal step processing (must hold _step_lock)."""
         # Note: We ignore data["step"] - the backend is authoritative.
@@ -578,9 +601,8 @@ class ReverieServer:
         # Update persona positions in backend to match frontend
         for persona_name, persona in self.personas.items():
             curr_tile = self.personas_tile[persona_name]
-            new_tile = (
-                environment[persona_name]["x"],
-                environment[persona_name]["y"],
+            new_tile = self._validate_env_tile(
+                environment.get(persona_name), curr_tile
             )
 
             # Move persona on backend tile map
@@ -1836,7 +1858,7 @@ def load_local_config():
     )
     config_path = os.path.normpath(config_path)
     try:
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             return json.load(f), config_path
     except FileNotFoundError:
         # Return default config if file doesn't exist

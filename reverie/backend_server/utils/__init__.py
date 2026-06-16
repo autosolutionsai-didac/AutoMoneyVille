@@ -23,3 +23,4 @@ collision_block_id = "32125"  # Tile ID for collision detection in maze pathfind
 debug = True
 
 # Re-export CSV utility for convenience
+from .file_utils import read_file_to_list  # noqa: E402, F401

@@ -9,8 +9,9 @@ Key features:
 - UnifiedPersonaClient: One call per step, all decisions batched
 - Initial prompt sent once at session start and after compaction
 - Step prompts contain only world updates (perceptions, time, location)
-- Automatic context monitoring with 80% threshold compaction
-- Full Opus agency - model decides actions naturally
+- Automatic context monitoring with configurable threshold compaction
+- Model-agnostic agency - the configured Claude model decides actions naturally
+  (default claude-sonnet-4-6; override via CLAUDEVILLE_CLAUDE_MODEL)
 
 Author: Claudeville Project
 """
@@ -22,16 +23,16 @@ import atexit
 import concurrent.futures
 import datetime
 import json
+import os
 import re
 import threading
 import time
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+import cli_interface as cli
 from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient
 from claude_agent_sdk.types import ResultMessage
-
-import cli_interface as cli
 
 if TYPE_CHECKING:
     from persona.persona import Persona
@@ -40,16 +41,50 @@ if TYPE_CHECKING:
 # #####################[SECTION 1: CONFIGURATION] ############################
 # ============================================================================
 
-# Context window limits
-MAX_CONTEXT_TOKENS = 200000  # Claude Opus context window
-COMPACTION_THRESHOLD = 0.80  # Trigger compaction at 80% fill
-COMPACTION_TOKEN_LIMIT = int(MAX_CONTEXT_TOKENS * COMPACTION_THRESHOLD)  # 160K tokens
-SLEEP_COMPACTION_MIN_TOKENS = 50000  # Don't compact on sleep if under 50K tokens
+def _env_int(name: str, default: int) -> int:
+    """Read an int env override, falling back to default on unset/malformed
+    (so a typo'd env var can't crash backend import)."""
+    try:
+        return int(os.environ[name])
+    except (KeyError, TypeError, ValueError):
+        return int(default)
+
+
+def _env_float(name: str, default: float) -> float:
+    """Read a float env override, falling back to default on unset/malformed."""
+    try:
+        return float(os.environ[name])
+    except (KeyError, TypeError, ValueError):
+        return float(default)
+
+
+# Model selection (env-overridable; see docs/DECISIONS.md D-003).
+DEFAULT_CLAUDE_MODEL = os.environ.get("CLAUDEVILLE_CLAUDE_MODEL", "claude-sonnet-4-6")
+
+# Per-model input-context windows (tokens): Opus 4.8 and Sonnet 4.6 are 1M;
+# Haiku 4.5 is 200K. The previous hardcoded 200000 ("Claude Opus context window")
+# was wrong for the configured Sonnet 4.6 model (LLM-9 / D-003).
+MODEL_CONTEXT_WINDOWS = {
+    "claude-sonnet-4-6": 1_000_000,
+    "claude-opus-4-8": 1_000_000,
+    "claude-haiku-4-5-20251001": 200_000,
+}
+
+# Context window limits — derived from the active model, env-overridable.
+# NOTE: the compaction *trigger* also depends on correct cumulative token
+# accounting (LLM-6, Phase B); this constant only makes the ceiling match the
+# model's real window instead of a wrong literal.
+MAX_CONTEXT_TOKENS = _env_int(
+    "CLAUDEVILLE_MAX_CONTEXT_TOKENS",
+    MODEL_CONTEXT_WINDOWS.get(DEFAULT_CLAUDE_MODEL, 200_000),
+)
+# Trigger compaction at this fraction of the window.
+COMPACTION_THRESHOLD = _env_float("CLAUDEVILLE_COMPACTION_THRESHOLD", 0.80)
+COMPACTION_TOKEN_LIMIT = int(MAX_CONTEXT_TOKENS * COMPACTION_THRESHOLD)
+SLEEP_COMPACTION_MIN_TOKENS = _env_int("CLAUDEVILLE_SLEEP_COMPACTION_MIN_TOKENS", 50000)
 
 # Debug verbosity (0=silent, 1=summary, 2=decisions, 3=full prompts)
-DEBUG_VERBOSITY = 1
-
-DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-6"
+DEBUG_VERBOSITY = _env_int("CLAUDEVILLE_DEBUG_VERBOSITY", 1)
 
 # Track last printed action per persona (to avoid duplicate output)
 # Format: {persona_name: action_description}
@@ -980,8 +1015,16 @@ def _parse_town_request(request_data: Any, result: StepResponse) -> None:
 
 
 def _fuzzy_match(target: str, options: list[str]) -> str | None:
-    """Find closest match for target in options."""
+    """Find closest match for target in options.
+
+    Prefers an exact (case-insensitive) match before falling back to substring
+    containment, so e.g. "cafe" resolves to a literal "cafe" option rather than
+    the first option that merely contains the substring "cafe" (LLM-12).
+    """
     target_lower = target.lower().strip()
+    for opt in options:
+        if target_lower == opt.lower().strip():
+            return opt
     for opt in options:
         if target_lower in opt.lower() or opt.lower() in target_lower:
             return opt
@@ -1014,8 +1057,15 @@ class UnifiedPersonaClient:
 
         async with _persona_locks[self.persona_name]:
             if self.persona_name not in _persona_clients:
+                # bypassPermissions is safe ONLY because no tools are enabled:
+                # personas issue no tool calls, so there is nothing to gate. If
+                # tools are ever added, switch to a gated permission mode (LLM-13).
+                allowed_tools: list[str] = []
+                assert not allowed_tools, (
+                    "bypassPermissions requires allowed_tools to stay empty"
+                )
                 options = ClaudeAgentOptions(
-                    allowed_tools=[],
+                    allowed_tools=allowed_tools,
                     permission_mode="bypassPermissions",
                     model=DEFAULT_CLAUDE_MODEL,
                 )
@@ -1904,7 +1954,7 @@ def generate_prompt(curr_input, prompt_lib_file):
         curr_input = [curr_input]
     curr_input = [str(i) for i in curr_input]
 
-    with open(prompt_lib_file, "r") as f:
+    with open(prompt_lib_file) as f:
         prompt = f.read()
 
     for count, i in enumerate(curr_input):
