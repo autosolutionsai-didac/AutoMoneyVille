@@ -167,7 +167,9 @@
 		}
 	}
 
-	let curr_maze = "the_ville";
+	let curr_maze = "{{ maze_name|default:'the_ville' }}";
+	let map_width_px = {{ map_width_px|default:4480 }};
+	let map_height_px = {{ map_height_px|default:3200 }};
 	let tile_width = 32;
 	let movement_speed = 4;
 
@@ -206,6 +208,10 @@
 	const CLIENT_VERSION = "stream-v2";
 	const TARGET_BUFFER = 1;      // Keep playback responsive; one slow LLM step should not block a batch
 	const BATCH_SIZE = 1;         // Request one backend step per batch
+	// When the backend's autosim producer is running, it drives stepping ahead of
+	// the display and the frontend is a PURE CONSUMER: it only polls /movements and
+	// replays the deep buffer (smooth playback, decoupled from LLM latency).
+	let autosimEnabled = false;
 
 	// CSRF token reader. Django sets the csrftoken cookie via @ensure_csrf_cookie on
 	// the page view; non-GET requests must echo it back in the X-CSRFToken header.
@@ -313,6 +319,7 @@
 		try {
 			const response = await fetch("{% url 'api_health' %}");
 			const health = await response.json();
+			autosimEnabled = !!(health.backend && health.backend.autosim_enabled);
 			updateRuntimePanel(health);
 			if (isPaused && !isSkipping) {
 				setPlaybackState('paused');
@@ -510,7 +517,8 @@
 
 		if (handlePolledMovementResult(result)) return;
 
-		if (simulationActive && !isSimulating && queuedMovements <= TARGET_BUFFER) {
+		// autosim drives stepping on the backend; consumer only polls (above).
+		if (!autosimEnabled && simulationActive && !isSimulating && queuedMovements <= TARGET_BUFFER) {
 			requestSimulation(BATCH_SIZE, forceRequest);
 		}
 	}
@@ -796,6 +804,7 @@
 	// ###########################################################################
 
 	function preload() {
+	  if (curr_maze === "the_ville") {
 	  this.load.image("blocks_1", "{% static 'assets/the_ville/visuals/map_assets/blocks/blocks_1.png' %}");
 	  this.load.image("walls", "{% static 'assets/the_ville/visuals/map_assets/v1/Room_Builder_32x32.png' %}");
 	  this.load.image("interiors_pt1", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt1.png' %}");
@@ -814,6 +823,10 @@
 	  this.load.image("CuteRPG_Forest_C", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Forest_C.png' %}");
 
 	  this.load.tilemapTiledJSON("map", "{% static 'assets/the_ville/visuals/the_ville_jan7.json' %}");
+	  } else {
+	    this.load.image("world_bg",
+	      "{% static 'assets/' %}" + curr_maze + "/visuals/" + curr_maze + "_bg.png");
+	  }
 
 	  this.load.atlas("atlas",
 	                  "{% static 'img/atlas.png' %}",
@@ -829,6 +842,7 @@
 	}
 
 	function create() {
+	  if (curr_maze === "the_ville") {
 	  const map = this.make.tilemap({ key: "map" });
 
 	  const collisions = map.addTilesetImage("blocks", "blocks_1");
@@ -869,13 +883,20 @@
 	  collisionsLayer.setCollisionByProperty({ collide: true });
 	  collisionsLayer.setDepth(-1);
 
+	  mapBounds = { width: map.widthInPixels, height: map.heightInPixels };
+	  } else {
+	  // Non-the_ville world (e.g. claudeville): render the prebuilt PNG as a flat
+	  // background. Collision/zones come from the backend matrices, not tile layers.
+	    this.add.image(0, 0, "world_bg").setOrigin(0, 0).setDepth(-1);
+	    mapBounds = { width: map_width_px, height: map_height_px };
+	  }
+
 	  // *** SET UP CAMERA - Mouse drag panning ***
 	  const camera = this.cameras.main;
 	  mainCamera = camera;
-	  mapBounds = { width: map.widthInPixels, height: map.heightInPixels };
 
-	  camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-	  camera.centerOn(map.widthInPixels / 2, map.heightInPixels / 2);
+	  camera.setBounds(0, 0, mapBounds.width, mapBounds.height);
+	  camera.centerOn(mapBounds.width / 2, mapBounds.height / 2);
 
 	  // Mouse drag panning
 	  this.input.on('pointerdown', function(pointer) {
@@ -1023,7 +1044,7 @@
 	  // Uses a dark blue tint that fades based on time of day
 	  const graphics = this.add.graphics();
 	  graphics.fillStyle(0x0a0a20, 1);  // Darker blue-purple night color
-	  graphics.fillRect(0, 0, map.widthInPixels, map.heightInPixels);
+	  graphics.fillRect(0, 0, mapBounds.width, mapBounds.height);
 	  nightOverlay = graphics;
 	  nightOverlay.setDepth(2.5);  // Above foreground layers (depth 2) but below personas (depth 3)
 	  nightOverlay.setAlpha(0);   // Start with no overlay (daytime)
@@ -1055,8 +1076,9 @@
 
 	      handlePolledMovementResult(result);
 
-	      // Auto-request more simulation if buffer is low and simulation is active
-	      if (simulationActive && !isSimulating && !backendBusy && queuedMovements <= TARGET_BUFFER) {
+	      // Auto-request more simulation only when autosim is OFF (else the backend
+	      // producer fills the buffer ahead of the display; we just consume it).
+	      if (!autosimEnabled && simulationActive && !isSimulating && !backendBusy && queuedMovements <= TARGET_BUFFER) {
 	        requestSimulation(BATCH_SIZE);
 	      }
 	    });

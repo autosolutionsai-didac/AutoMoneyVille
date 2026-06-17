@@ -1,0 +1,4 @@
+# Generated diagnostic artifacts (overlays, drafts) — reproducible from the scripts
+out/
+# One-off backups of hand-authored specs
+*.bak.json

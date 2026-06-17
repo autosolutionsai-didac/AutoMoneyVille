@@ -22,6 +22,10 @@ dependencies:
   - matplotlib>=3.7.0
   - seaborn>=0.12.0
 
+  # Map tooling (tools/mapgen): structural detection of tile-grid zones from the
+  # town PNG — edges/contours for walls/footprints, color segmentation for rooms.
+  - scikit-image>=0.22.0
+
   # NLP (no embeddings - Claude handles semantic understanding)
   - nltk>=3.6.5
 
@@ -57,6 +61,10 @@ dependencies:
 
     # Other utilities
     - trueskill>=0.4.5
+
+    # Map tooling (tools/mapgen): OpenCV for the structural zone detector
+    # (headless = no GUI deps; server-friendly)
+    - opencv-python-headless>=4.9.0
 
     # Development tools (ruff pinned to match .pre-commit-config.yaml)
     - pre-commit>=3.6.0

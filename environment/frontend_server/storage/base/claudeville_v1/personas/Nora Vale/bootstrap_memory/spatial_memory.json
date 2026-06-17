@@ -1,0 +1,152 @@
+{
+  "Claudeville": {
+    "Residencia 1": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ]
+    },
+    "Universidad": {
+      "main": [
+        "table"
+      ]
+    },
+    "Academia de Agentes": {
+      "classroom": [
+        "blackboard",
+        "classroom student seating",
+        "desk"
+      ]
+    },
+    "Residencia 2": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ]
+    },
+    "Banco": {
+      "main": [
+        "table"
+      ]
+    },
+    "Mercado": {
+      "main": [
+        "table"
+      ]
+    },
+    "Residencia 3": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ]
+    },
+    "Taller de Trabajo": {
+      "main": [
+        "table"
+      ]
+    },
+    "Sala de Acuerdos": {
+      "main": [
+        "table"
+      ]
+    },
+    "Biblioteca": {
+      "reading room": [
+        "bookshelf",
+        "library table"
+      ]
+    },
+    "Oficina de Correos": {
+      "main": [
+        "table"
+      ]
+    },
+    "Residencia 4": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ]
+    },
+    "Residencia 5": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ]
+    },
+    "Residencia 6": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ]
+    },
+    "Residencia 7": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ]
+    },
+    "Residencia 8": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ]
+    },
+    "Oficina de Gobierno": {
+      "main": [
+        "table"
+      ]
+    },
+    "Residencia 9": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ]
+    },
+    "Residencia 10": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ]
+    }
+  }
+}

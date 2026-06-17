@@ -1,0 +1,1224 @@
+{
+  "world_name": "Claudeville",
+  "grid": {
+    "maze_width": 88,
+    "maze_height": 48,
+    "sq_tile_size": 32
+  },
+  "collision_block_id": "32125",
+  "outdoor_collision_from_draft": true,
+  "auto_connect": true,
+  "_generated_by": "detect_zones.py (structural OpenCV auto-detection)",
+  "sectors": [
+    {
+      "name": "Residencia 1",
+      "rect": [
+        22,
+        4,
+        32,
+        15
+      ]
+    },
+    {
+      "name": "Universidad",
+      "rect": [
+        35,
+        3,
+        50,
+        14
+      ]
+    },
+    {
+      "name": "Academia de Agentes",
+      "rect": [
+        54,
+        0,
+        67,
+        16
+      ]
+    },
+    {
+      "name": "Residencia 2",
+      "rect": [
+        70,
+        1,
+        76,
+        8
+      ]
+    },
+    {
+      "name": "Banco",
+      "rect": [
+        1,
+        6,
+        15,
+        16
+      ]
+    },
+    {
+      "name": "Mercado",
+      "rect": [
+        71,
+        7,
+        79,
+        16
+      ]
+    },
+    {
+      "name": "Residencia 3",
+      "rect": [
+        71,
+        14,
+        87,
+        17
+      ]
+    },
+    {
+      "name": "Taller de Trabajo",
+      "rect": [
+        0,
+        20,
+        17,
+        32
+      ]
+    },
+    {
+      "name": "Sala de Acuerdos",
+      "rect": [
+        20,
+        20,
+        34,
+        32
+      ]
+    },
+    {
+      "name": "Biblioteca",
+      "rect": [
+        54,
+        20,
+        68,
+        32
+      ]
+    },
+    {
+      "name": "Oficina de Correos",
+      "rect": [
+        72,
+        19,
+        87,
+        31
+      ]
+    },
+    {
+      "name": "Residencia 4",
+      "rect": [
+        78,
+        34,
+        87,
+        44
+      ]
+    },
+    {
+      "name": "Residencia 5",
+      "rect": [
+        2,
+        37,
+        9,
+        44
+      ]
+    },
+    {
+      "name": "Residencia 6",
+      "rect": [
+        10,
+        37,
+        16,
+        44
+      ]
+    },
+    {
+      "name": "Residencia 7",
+      "rect": [
+        20,
+        37,
+        27,
+        44
+      ]
+    },
+    {
+      "name": "Residencia 8",
+      "rect": [
+        31,
+        37,
+        40,
+        47
+      ]
+    },
+    {
+      "name": "Oficina de Gobierno",
+      "rect": [
+        47,
+        36,
+        56,
+        46
+      ]
+    },
+    {
+      "name": "Residencia 9",
+      "rect": [
+        61,
+        37,
+        67,
+        44
+      ]
+    },
+    {
+      "name": "Residencia 10",
+      "rect": [
+        71,
+        37,
+        76,
+        44
+      ]
+    }
+  ],
+  "arenas": [
+    {
+      "sector": "Residencia 1",
+      "name": "bedroom",
+      "rect": [
+        23,
+        5,
+        27,
+        14
+      ]
+    },
+    {
+      "sector": "Residencia 1",
+      "name": "bathroom",
+      "rect": [
+        28,
+        5,
+        31,
+        14
+      ]
+    },
+    {
+      "sector": "Universidad",
+      "name": "main",
+      "rect": [
+        36,
+        4,
+        49,
+        13
+      ]
+    },
+    {
+      "sector": "Academia de Agentes",
+      "name": "classroom",
+      "rect": [
+        55,
+        1,
+        66,
+        15
+      ]
+    },
+    {
+      "sector": "Residencia 2",
+      "name": "bedroom",
+      "rect": [
+        71,
+        2,
+        73,
+        7
+      ]
+    },
+    {
+      "sector": "Residencia 2",
+      "name": "bathroom",
+      "rect": [
+        74,
+        2,
+        75,
+        7
+      ]
+    },
+    {
+      "sector": "Banco",
+      "name": "main",
+      "rect": [
+        2,
+        7,
+        14,
+        15
+      ]
+    },
+    {
+      "sector": "Mercado",
+      "name": "main",
+      "rect": [
+        72,
+        8,
+        78,
+        15
+      ]
+    },
+    {
+      "sector": "Residencia 3",
+      "name": "bedroom",
+      "rect": [
+        72,
+        15,
+        79,
+        16
+      ]
+    },
+    {
+      "sector": "Residencia 3",
+      "name": "bathroom",
+      "rect": [
+        80,
+        15,
+        86,
+        16
+      ]
+    },
+    {
+      "sector": "Taller de Trabajo",
+      "name": "main",
+      "rect": [
+        1,
+        21,
+        16,
+        31
+      ]
+    },
+    {
+      "sector": "Sala de Acuerdos",
+      "name": "main",
+      "rect": [
+        21,
+        21,
+        33,
+        31
+      ]
+    },
+    {
+      "sector": "Biblioteca",
+      "name": "reading room",
+      "rect": [
+        55,
+        21,
+        67,
+        31
+      ]
+    },
+    {
+      "sector": "Oficina de Correos",
+      "name": "main",
+      "rect": [
+        73,
+        20,
+        86,
+        30
+      ]
+    },
+    {
+      "sector": "Residencia 4",
+      "name": "bedroom",
+      "rect": [
+        79,
+        35,
+        82,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 4",
+      "name": "bathroom",
+      "rect": [
+        83,
+        35,
+        86,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 5",
+      "name": "bedroom",
+      "rect": [
+        3,
+        38,
+        5,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 5",
+      "name": "bathroom",
+      "rect": [
+        6,
+        38,
+        8,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 6",
+      "name": "bedroom",
+      "rect": [
+        11,
+        38,
+        13,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 6",
+      "name": "bathroom",
+      "rect": [
+        14,
+        38,
+        15,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 7",
+      "name": "bedroom",
+      "rect": [
+        21,
+        38,
+        23,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 7",
+      "name": "bathroom",
+      "rect": [
+        24,
+        38,
+        26,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 8",
+      "name": "bedroom",
+      "rect": [
+        32,
+        38,
+        35,
+        46
+      ]
+    },
+    {
+      "sector": "Residencia 8",
+      "name": "bathroom",
+      "rect": [
+        36,
+        38,
+        39,
+        46
+      ]
+    },
+    {
+      "sector": "Oficina de Gobierno",
+      "name": "main",
+      "rect": [
+        48,
+        37,
+        55,
+        45
+      ]
+    },
+    {
+      "sector": "Residencia 9",
+      "name": "bedroom",
+      "rect": [
+        62,
+        38,
+        64,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 9",
+      "name": "bathroom",
+      "rect": [
+        65,
+        38,
+        66,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 10",
+      "name": "bedroom",
+      "rect": [
+        72,
+        38,
+        73,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 10",
+      "name": "bathroom",
+      "rect": [
+        74,
+        38,
+        75,
+        43
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "sector": "Residencia 1",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          23,
+          5
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 1",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          23,
+          14
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 1",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          31,
+          14
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 1",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          31,
+          5
+        ]
+      ]
+    },
+    {
+      "sector": "Universidad",
+      "arena": "main",
+      "type": "table",
+      "tiles": [
+        [
+          42,
+          8
+        ]
+      ]
+    },
+    {
+      "sector": "Academia de Agentes",
+      "arena": "classroom",
+      "type": "blackboard",
+      "tiles": [
+        [
+          55,
+          1
+        ]
+      ]
+    },
+    {
+      "sector": "Academia de Agentes",
+      "arena": "classroom",
+      "type": "classroom student seating",
+      "tiles": [
+        [
+          60,
+          15
+        ]
+      ]
+    },
+    {
+      "sector": "Academia de Agentes",
+      "arena": "classroom",
+      "type": "desk",
+      "tiles": [
+        [
+          66,
+          1
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 2",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          71,
+          2
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 2",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          71,
+          7
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 2",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          75,
+          7
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 2",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          75,
+          2
+        ]
+      ]
+    },
+    {
+      "sector": "Banco",
+      "arena": "main",
+      "type": "table",
+      "tiles": [
+        [
+          8,
+          11
+        ]
+      ]
+    },
+    {
+      "sector": "Mercado",
+      "arena": "main",
+      "type": "table",
+      "tiles": [
+        [
+          75,
+          11
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 3",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          72,
+          15
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 3",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          72,
+          16
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 3",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          86,
+          16
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 3",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          86,
+          15
+        ]
+      ]
+    },
+    {
+      "sector": "Taller de Trabajo",
+      "arena": "main",
+      "type": "table",
+      "tiles": [
+        [
+          8,
+          26
+        ]
+      ]
+    },
+    {
+      "sector": "Sala de Acuerdos",
+      "arena": "main",
+      "type": "table",
+      "tiles": [
+        [
+          27,
+          26
+        ]
+      ]
+    },
+    {
+      "sector": "Biblioteca",
+      "arena": "reading room",
+      "type": "bookshelf",
+      "tiles": [
+        [
+          55,
+          21
+        ]
+      ]
+    },
+    {
+      "sector": "Biblioteca",
+      "arena": "reading room",
+      "type": "library table",
+      "tiles": [
+        [
+          61,
+          26
+        ]
+      ]
+    },
+    {
+      "sector": "Oficina de Correos",
+      "arena": "main",
+      "type": "table",
+      "tiles": [
+        [
+          79,
+          25
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 4",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          79,
+          35
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 4",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          79,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 4",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          86,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 4",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          86,
+          35
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 5",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          3,
+          38
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 5",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          3,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 5",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          8,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 5",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          8,
+          38
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 6",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          11,
+          38
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 6",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          11,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 6",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          15,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 6",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          15,
+          38
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 7",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          21,
+          38
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 7",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          21,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 7",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          26,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 7",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          26,
+          38
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 8",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          32,
+          38
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 8",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          32,
+          46
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 8",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          39,
+          46
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 8",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          39,
+          38
+        ]
+      ]
+    },
+    {
+      "sector": "Oficina de Gobierno",
+      "arena": "main",
+      "type": "table",
+      "tiles": [
+        [
+          51,
+          41
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 9",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          62,
+          38
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 9",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          62,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 9",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          66,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 9",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          66,
+          38
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 10",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          72,
+          38
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 10",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          72,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 10",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          75,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 10",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          75,
+          38
+        ]
+      ]
+    }
+  ],
+  "spawns": [
+    {
+      "sector": "Residencia 1",
+      "arena": "bedroom",
+      "name": "sp",
+      "tile": [
+        24,
+        9
+      ]
+    },
+    {
+      "sector": "Universidad",
+      "arena": "main",
+      "name": "sp",
+      "tile": [
+        37,
+        8
+      ]
+    },
+    {
+      "sector": "Academia de Agentes",
+      "arena": "classroom",
+      "name": "sp",
+      "tile": [
+        56,
+        8
+      ]
+    },
+    {
+      "sector": "Residencia 2",
+      "arena": "bedroom",
+      "name": "sp",
+      "tile": [
+        72,
+        4
+      ]
+    },
+    {
+      "sector": "Banco",
+      "arena": "main",
+      "name": "sp",
+      "tile": [
+        3,
+        11
+      ]
+    },
+    {
+      "sector": "Mercado",
+      "arena": "main",
+      "name": "sp",
+      "tile": [
+        73,
+        11
+      ]
+    },
+    {
+      "sector": "Residencia 3",
+      "arena": "bedroom",
+      "name": "sp",
+      "tile": [
+        73,
+        15
+      ]
+    },
+    {
+      "sector": "Taller de Trabajo",
+      "arena": "main",
+      "name": "sp",
+      "tile": [
+        2,
+        26
+      ]
+    },
+    {
+      "sector": "Sala de Acuerdos",
+      "arena": "main",
+      "name": "sp",
+      "tile": [
+        22,
+        26
+      ]
+    },
+    {
+      "sector": "Biblioteca",
+      "arena": "reading room",
+      "name": "sp",
+      "tile": [
+        56,
+        26
+      ]
+    },
+    {
+      "sector": "Oficina de Correos",
+      "arena": "main",
+      "name": "sp",
+      "tile": [
+        74,
+        25
+      ]
+    },
+    {
+      "sector": "Residencia 4",
+      "arena": "bedroom",
+      "name": "sp",
+      "tile": [
+        80,
+        39
+      ]
+    },
+    {
+      "sector": "Residencia 5",
+      "arena": "bedroom",
+      "name": "sp",
+      "tile": [
+        4,
+        40
+      ]
+    },
+    {
+      "sector": "Residencia 6",
+      "arena": "bedroom",
+      "name": "sp",
+      "tile": [
+        12,
+        40
+      ]
+    },
+    {
+      "sector": "Residencia 7",
+      "arena": "bedroom",
+      "name": "sp",
+      "tile": [
+        22,
+        40
+      ]
+    },
+    {
+      "sector": "Residencia 8",
+      "arena": "bedroom",
+      "name": "sp",
+      "tile": [
+        33,
+        42
+      ]
+    },
+    {
+      "sector": "Oficina de Gobierno",
+      "arena": "main",
+      "name": "sp",
+      "tile": [
+        49,
+        41
+      ]
+    },
+    {
+      "sector": "Residencia 9",
+      "arena": "bedroom",
+      "name": "sp",
+      "tile": [
+        63,
+        40
+      ]
+    },
+    {
+      "sector": "Residencia 10",
+      "arena": "bedroom",
+      "name": "sp",
+      "tile": [
+        73,
+        40
+      ]
+    }
+  ]
+}

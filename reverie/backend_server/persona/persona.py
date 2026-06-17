@@ -14,7 +14,8 @@ import random
 
 import cli_interface as cli
 from path_finder import PathFinder
-from utils import collision_block_id
+
+# collision_block_id is read per-world from the Maze instance (maze.collision_block_id)
 
 # Conversation range constants
 # Must be within this range to START a conversation
@@ -517,7 +518,7 @@ class Persona:
 
             # Create pathfinder that avoids other personas
             pf = PathFinder(
-                maze.collision_maze, collision_block_id, other_persona_tiles
+                maze.collision_maze, maze.collision_block_id, other_persona_tiles
             )
             path = pf.find_path(self.scratch.curr_tile, target_tile)
             if path and len(path) > 1:
@@ -989,7 +990,7 @@ class Persona:
             )
             # If more than 2 tiles away, move towards partner
             if dist > 2:
-                path_finder = PathFinder(maze.collision_maze, collision_block_id)
+                path_finder = PathFinder(maze.collision_maze, maze.collision_block_id)
                 path = path_finder.find_path(self.scratch.curr_tile, partner_tile)
                 if path and len(path) > 1:
                     self.scratch.planned_path = path[1:]
@@ -1043,7 +1044,7 @@ class Persona:
             target_name = act_address.split("<persona>")[-1].strip()
             if target_name in personas:
                 target_tile = personas[target_name].scratch.curr_tile
-                pf = PathFinder(maze.collision_maze, collision_block_id)
+                pf = PathFinder(maze.collision_maze, maze.collision_block_id)
                 path = pf.find_path(self.scratch.curr_tile, target_tile)
                 if len(path) > 1:
                     self.scratch.planned_path = path[1:]
@@ -1123,7 +1124,9 @@ class Persona:
         all_blocked = extra_blocked | other_persona_tiles
 
         # Create pathfinder with extra blocked tiles
-        path_finder = PathFinder(maze.collision_maze, collision_block_id, all_blocked)
+        path_finder = PathFinder(
+            maze.collision_maze, maze.collision_block_id, all_blocked
+        )
 
         # Find path to nearest target tile
         path, closest_tile = path_finder.find_path_to_nearest(

@@ -298,8 +298,28 @@ class ReverieServer:
         # Each entry is a movements dict from _process_step
         self._pending_movements = []
         self._movement_history = []
-        self._movement_history_limit = 500
         self._movements_lock = threading.Lock()
+
+        # --- Smooth playback: a background producer simulates steps AHEAD of what
+        # the frontend has displayed, so the frontend replays a deep buffer at a
+        # steady cadence (decouples animation from per-step LLM latency). The
+        # /movements cursor reports the displayed step for backpressure, and the
+        # producer pauses when nobody is polling so it never burns LLM calls on an
+        # idle/closed tab (FE-2 / ARCH-5). ---
+        self._buffer_ahead = int(os.environ.get("CLAUDEVILLE_BUFFER_AHEAD", "20"))
+        self._autosim_min_fill = int(
+            os.environ.get("CLAUDEVILLE_BUFFER_MIN_FILL", "5")
+        )
+        self._autosim_idle_pause_s = float(
+            os.environ.get("CLAUDEVILLE_AUTOSIM_IDLE_S", "8")
+        )
+        self._displayed_step = max(0, self.step - 1)
+        self._last_poll_at = 0.0
+        self._autosim_enabled = threading.Event()
+        self._stop_autosim = threading.Event()
+        # keep history comfortably larger than the buffer so recent packets aren't
+        # evicted before a slow/refreshed client reads them
+        self._movement_history_limit = max(500, self._buffer_ahead * 6)
 
         # Active conversation groups for multi-party conversations
         # Maps group_id -> ConversationGroup
@@ -347,11 +367,16 @@ class ReverieServer:
                     "chatting_with": persona.scratch.chatting_with,
                 }
             )
+        autosim_evt = getattr(self, "_autosim_enabled", None)
+        displayed_step = getattr(self, "_displayed_step", self.step - 1)
         return {
             "ok": True,
             "service": "claudeville-backend",
             "sim_code": self.sim_code,
             "fork_sim_code": self.fork_sim_code,
+            "maze_name": self.maze.maze_name,
+            "map_width_px": self.maze.maze_width * self.maze.sq_tile_size,
+            "map_height_px": self.maze.maze_height * self.maze.sq_tile_size,
             "step": self.step,
             "curr_time": self.curr_time.strftime("%B %d, %Y, %H:%M:%S"),
             "sec_per_step": self.sec_per_step,
@@ -367,6 +392,12 @@ class ReverieServer:
             "active_conversations": len(self.active_conversations),
             "persona_count": len(self.personas),
             "personas": personas,
+            # smooth-playback buffer state (for the frontend's buffering UX)
+            "autosim_enabled": bool(autosim_evt.is_set()) if autosim_evt else False,
+            "buffer_ahead_target": getattr(self, "_buffer_ahead", 0),
+            "buffer_ahead_actual": max(0, self.step - 1 - displayed_step),
+            "buffering": (self.step - 1 - displayed_step)
+            < getattr(self, "_autosim_min_fill", 5),
         }
 
     def _setup_flask_routes(self):
@@ -386,6 +417,13 @@ class ReverieServer:
             """
             after_step = request.args.get("after_step", type=int)
             with self._movements_lock:
+                # a poll means a client is actively watching -> let the producer run,
+                # and advance the displayed-step cursor for backpressure.
+                self._last_poll_at = time.monotonic()
+                if after_step is not None and after_step > getattr(
+                    self, "_displayed_step", -1
+                ):
+                    self._displayed_step = after_step
                 if after_step is not None:
                     self._pending_movements = [
                         movement
@@ -472,11 +510,20 @@ class ReverieServer:
         @self.flask_app.route("/save", methods=["POST"])
         def handle_save():
             """Save simulation state."""
-            # Hold the step lock so a save can't capture half-mutated state
-            # while a step is in progress (ARCH-4).
-            with self._step_lock:
-                self.save()
-                saved_step = self.step
+            # Pause the autosim producer so it doesn't starve the save of the step
+            # lock, then hold the lock so a save can't capture half-mutated state
+            # while a step is in progress (ARCH-4). Saves the backend head.
+            autosim_evt = getattr(self, "_autosim_enabled", None)
+            was_enabled = bool(autosim_evt.is_set()) if autosim_evt else False
+            if autosim_evt:
+                autosim_evt.clear()
+            try:
+                with self._step_lock:
+                    self.save()
+                    saved_step = self.step
+            finally:
+                if was_enabled:
+                    autosim_evt.set()
             return jsonify({"status": "saved", "step": saved_step})
 
         @self.flask_app.route("/simulate", methods=["POST"])
@@ -486,6 +533,23 @@ class ReverieServer:
             Request body: {"steps": N} where N is number of steps to simulate.
             Returns immediately after queueing the steps.
             """
+            # When autosim is on, the background producer drives stepping; the
+            # frontend is a pure consumer, so /simulate is a no-op echo (removes the
+            # in-request synchronous stepping + proxy-timeout risk, ARCH-5).
+            autosim_evt = getattr(self, "_autosim_enabled", None)
+            if autosim_evt and autosim_evt.is_set():
+                self._last_poll_at = time.monotonic()
+                gap = max(0, self.step - 1 - self._displayed_step)
+                return jsonify(
+                    {
+                        "status": "autosim",
+                        "current_step": self.step,
+                        "buffer_ahead_actual": gap,
+                        "buffer_ahead_target": self._buffer_ahead,
+                        "queued_movements": len(self._pending_movements),
+                    }
+                )
+
             # Check if a step is already in progress (non-blocking)
             if not self._step_lock.acquire(blocking=False):
                 # Step already running - return current state without running more
@@ -1494,6 +1558,49 @@ class ReverieServer:
 
         cli.print_info(f"  Stored conversation: {s} <-> {partner} ({num_lines} lines)")
 
+    def _autosim_loop(self):
+        """Background producer for smooth playback: simulate steps ahead of the
+        displayed step, capped by the buffer-ahead window. Pauses when nobody is
+        polling so it never burns LLM calls on an idle/closed tab."""
+        while not self._stop_autosim.is_set():
+            if not self._autosim_enabled.is_set():
+                time.sleep(0.2)
+                continue
+            # cost guard: only produce while a client is actively polling
+            now = time.monotonic()
+            if (
+                self._last_poll_at == 0.0
+                or (now - self._last_poll_at) > self._autosim_idle_pause_s
+            ):
+                time.sleep(0.3)
+                continue
+            # backpressure: stop if already buffer_ahead steps ahead of the display
+            if (self.step - 1 - self._displayed_step) >= self._buffer_ahead:
+                time.sleep(0.1)
+                continue
+            environment = {}
+            for persona_name in self.personas:
+                tile = self.personas_tile[persona_name]
+                environment[persona_name] = {"x": tile[0], "y": tile[1]}
+            try:
+                self._process_step({"environment": environment})
+            except Exception as e:
+                cli.print_error(f"autosim step failed: {e}")
+                time.sleep(0.5)
+
+    def start_autosim(self):
+        """Launch the background producer thread (HTTP mode)."""
+        if os.environ.get("CLAUDEVILLE_AUTOSIM", "1") == "0":
+            cli.print_info("autosim disabled (CLAUDEVILLE_AUTOSIM=0)")
+            return
+        self._autosim_enabled.set()
+        self.autosim_thread = threading.Thread(target=self._autosim_loop, daemon=True)
+        self.autosim_thread.start()
+        cli.print_info(
+            f"autosim producer started (buffer_ahead={self._buffer_ahead}, "
+            f"min_fill={self._autosim_min_fill})"
+        )
+
     def start_http_server(self):
         """Start the Flask HTTP server in a background thread."""
         import logging
@@ -1941,6 +2048,10 @@ if __name__ == "__main__":
 
     # Start HTTP server for frontend communication
     rs.start_http_server()
+
+    # Start the background producer for smooth playback (frontend replays a deep
+    # buffer it fills ahead of the displayed step)
+    rs.start_autosim()
 
     # Run CLI interface
     rs.open_server()

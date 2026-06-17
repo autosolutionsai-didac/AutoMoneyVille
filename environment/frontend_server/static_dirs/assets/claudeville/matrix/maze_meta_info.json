@@ -1,0 +1,8 @@
+{
+  "world_name": "Claudeville",
+  "maze_width": 88,
+  "maze_height": 48,
+  "sq_tile_size": 32,
+  "collision_block_id": "32125",
+  "special_constraint": ""
+}

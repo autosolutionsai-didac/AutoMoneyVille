@@ -1,0 +1,22 @@
+{
+    "Nora Vale": {
+        "maze": "claudeville",
+        "x": 18,
+        "y": 18
+    },
+    "Milo Chen": {
+        "maze": "claudeville",
+        "x": 24,
+        "y": 24
+    },
+    "Iris Morgan": {
+        "maze": "claudeville",
+        "x": 19,
+        "y": 30
+    },
+    "Theo Grant": {
+        "maze": "claudeville",
+        "x": 53,
+        "y": 35
+    }
+}

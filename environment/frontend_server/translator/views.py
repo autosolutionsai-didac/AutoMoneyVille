@@ -59,6 +59,19 @@ def _read_json_file(path, retries=3, delay=0.05):
     raise last_error
 
 
+def _world_render_context(backend):
+    """maze_name + map pixel size for the Phaser frontend, read from the backend
+    health snapshot (the running backend knows its world). Defaults to the_ville so
+    the frontend keeps working when the backend is down. No filesystem reads.
+    """
+    backend = backend or {}
+    return {
+        "maze_name": backend.get("maze_name", "the_ville"),
+        "map_width_px": backend.get("map_width_px", 4480),
+        "map_height_px": backend.get("map_height_px", 3200),
+    }
+
+
 # =============================================================================
 # API Endpoints (New HTTP-based communication)
 # =============================================================================
@@ -397,6 +410,7 @@ def home(request):
         "initial_curr_time": initial_curr_time,
         "mode": "simulate",
     }
+    context.update(_world_render_context(backend))
     template = "home/home.html"
     return render(request, template, context)
 
