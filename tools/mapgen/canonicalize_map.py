@@ -10,8 +10,13 @@ The single canonical background written here is shared by:
   - draft_collision.py / debug_overlay.py (per-tile analysis),
 so geometry can never drift between renderer, generator, and engine.
 
+For art that doesn't already match the grid aspect (e.g. a cleanly-rendered map at
+a different resolution), pass `rescale` to resize the whole image to the exact grid
+instead of padding. The structural detector (detect_zones.py) uses edges/contours,
+which survive a clean LANCZOS upscale -- unlike the legacy per-tile color classifier.
+
 Usage:
-  python tools/mapgen/canonicalize_map.py <source.png>
+  python tools/mapgen/canonicalize_map.py <source.png> [rescale]
 Writes: environment/frontend_server/static_dirs/assets/claudeville/visuals/claudeville_bg.png
 Prints the locked grid dims as JSON for downstream tools.
 """
@@ -41,17 +46,39 @@ OUT_DIR = (
 OUT_PATH = OUT_DIR / "claudeville_bg.png"
 
 
-def canonicalize(source: Path) -> dict:
+def canonicalize(source: Path, rescale: bool = False) -> dict:
     target_w = MAZE_WIDTH * SQ_TILE_SIZE
     target_h = MAZE_HEIGHT * SQ_TILE_SIZE
 
     img = Image.open(source).convert("RGB")
     src_w, src_h = img.size
 
+    if rescale:
+        # Clean art at a different resolution: resize the whole image to the exact
+        # grid with LANCZOS. The structural detector uses edges/contours, which
+        # survive a clean resample, so no padding/size guard is needed here.
+        canvas = img.resize((target_w, target_h), Image.LANCZOS)
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        canvas.save(OUT_PATH)
+        return {
+            "world_name": "Claudeville",
+            "source": str(source),
+            "source_size": [src_w, src_h],
+            "mode": "rescale",
+            "pad_right": 0,
+            "pad_bottom": 0,
+            "maze_width": MAZE_WIDTH,
+            "maze_height": MAZE_HEIGHT,
+            "sq_tile_size": SQ_TILE_SIZE,
+            "background_px": [target_w, target_h],
+            "background": str(OUT_PATH.relative_to(REPO_ROOT)),
+        }
+
     if src_w > target_w or src_h > target_h:
         raise SystemExit(
             f"Source {src_w}x{src_h} exceeds target {target_w}x{target_h}; "
-            "adjust MAZE_WIDTH/MAZE_HEIGHT or downscale deliberately first."
+            "adjust MAZE_WIDTH/MAZE_HEIGHT or downscale deliberately first "
+            "(or pass `rescale` to resize to the exact grid)."
         )
 
     pad_right = target_w - src_w
@@ -87,7 +114,7 @@ def canonicalize(source: Path) -> dict:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        raise SystemExit("usage: canonicalize_map.py <source.png>")
-    info = canonicalize(Path(sys.argv[1]))
+    if len(sys.argv) not in (2, 3) or (len(sys.argv) == 3 and sys.argv[2] != "rescale"):
+        raise SystemExit("usage: canonicalize_map.py <source.png> [rescale]")
+    info = canonicalize(Path(sys.argv[1]), rescale=(len(sys.argv) == 3))
     print(json.dumps(info, indent=2))

@@ -11,206 +11,216 @@
   "_generated_by": "detect_zones.py (structural OpenCV auto-detection)",
   "sectors": [
     {
+      "name": "Banco",
+      "rect": [
+        4,
+        5,
+        14,
+        15
+      ]
+    },
+    {
       "name": "Residencia 1",
       "rect": [
         22,
         4,
-        32,
-        15
+        31,
+        16
       ]
     },
     {
       "name": "Universidad",
       "rect": [
-        35,
-        3,
+        36,
+        2,
         50,
-        14
+        16
       ]
     },
     {
       "name": "Academia de Agentes",
       "rect": [
         54,
-        0,
-        67,
+        4,
+        65,
         16
       ]
     },
     {
-      "name": "Residencia 2",
+      "name": "Oficina de Correos",
       "rect": [
-        70,
-        1,
-        76,
-        8
-      ]
-    },
-    {
-      "name": "Banco",
-      "rect": [
-        1,
-        6,
+        73,
         15,
-        16
+        87,
+        32
       ]
     },
     {
       "name": "Mercado",
       "rect": [
-        71,
-        7,
-        79,
-        16
-      ]
-    },
-    {
-      "name": "Residencia 3",
-      "rect": [
-        71,
-        14,
-        87,
-        17
+        73,
+        12,
+        80,
+        14
       ]
     },
     {
       "name": "Taller de Trabajo",
       "rect": [
-        0,
+        4,
         20,
-        17,
-        32
+        14,
+        31
       ]
     },
     {
       "name": "Sala de Acuerdos",
       "rect": [
+        22,
         20,
-        20,
-        34,
+        31,
         32
       ]
     },
     {
       "name": "Biblioteca",
       "rect": [
-        54,
+        55,
         20,
-        68,
-        32
+        65,
+        31
       ]
     },
     {
-      "name": "Oficina de Correos",
+      "name": "Residencia 2",
       "rect": [
-        72,
-        19,
-        87,
-        31
+        3,
+        35,
+        8,
+        44
+      ]
+    },
+    {
+      "name": "Residencia 3",
+      "rect": [
+        11,
+        35,
+        15,
+        45
       ]
     },
     {
       "name": "Residencia 4",
       "rect": [
-        78,
-        34,
-        87,
-        44
+        21,
+        35,
+        25,
+        45
       ]
     },
     {
       "name": "Residencia 5",
       "rect": [
-        2,
-        37,
-        9,
-        44
+        26,
+        35,
+        33,
+        45
       ]
     },
     {
       "name": "Residencia 6",
       "rect": [
-        10,
-        37,
-        16,
+        39,
+        35,
+        46,
         44
+      ]
+    },
+    {
+      "name": "Oficina de Gobierno",
+      "rect": [
+        52,
+        35,
+        58,
+        45
       ]
     },
     {
       "name": "Residencia 7",
       "rect": [
-        20,
-        37,
-        27,
+        61,
+        35,
+        65,
         44
       ]
     },
     {
       "name": "Residencia 8",
       "rect": [
-        31,
-        37,
-        40,
-        47
-      ]
-    },
-    {
-      "name": "Oficina de Gobierno",
-      "rect": [
-        47,
-        36,
-        56,
-        46
+        71,
+        35,
+        75,
+        44
       ]
     },
     {
       "name": "Residencia 9",
       "rect": [
-        61,
-        37,
-        67,
-        44
+        79,
+        33,
+        87,
+        39
       ]
     },
     {
       "name": "Residencia 10",
       "rect": [
-        71,
-        37,
-        76,
-        44
+        78,
+        40,
+        83,
+        43
       ]
     }
   ],
   "arenas": [
+    {
+      "sector": "Banco",
+      "name": "main",
+      "rect": [
+        5,
+        6,
+        13,
+        14
+      ]
+    },
     {
       "sector": "Residencia 1",
       "name": "bedroom",
       "rect": [
         23,
         5,
-        27,
-        14
+        26,
+        15
       ]
     },
     {
       "sector": "Residencia 1",
       "name": "bathroom",
       "rect": [
-        28,
+        27,
         5,
-        31,
-        14
+        30,
+        15
       ]
     },
     {
       "sector": "Universidad",
       "name": "main",
       "rect": [
-        36,
-        4,
+        37,
+        3,
         49,
-        13
+        15
       ]
     },
     {
@@ -218,88 +228,48 @@
       "name": "classroom",
       "rect": [
         55,
-        1,
-        66,
+        5,
+        64,
         15
       ]
     },
     {
-      "sector": "Residencia 2",
-      "name": "bedroom",
-      "rect": [
-        71,
-        2,
-        73,
-        7
-      ]
-    },
-    {
-      "sector": "Residencia 2",
-      "name": "bathroom",
-      "rect": [
-        74,
-        2,
-        75,
-        7
-      ]
-    },
-    {
-      "sector": "Banco",
+      "sector": "Oficina de Correos",
       "name": "main",
       "rect": [
-        2,
-        7,
-        14,
-        15
+        74,
+        16,
+        86,
+        31
       ]
     },
     {
       "sector": "Mercado",
       "name": "main",
       "rect": [
-        72,
-        8,
-        78,
-        15
-      ]
-    },
-    {
-      "sector": "Residencia 3",
-      "name": "bedroom",
-      "rect": [
-        72,
-        15,
-        79,
-        16
-      ]
-    },
-    {
-      "sector": "Residencia 3",
-      "name": "bathroom",
-      "rect": [
+        73,
+        12,
         80,
-        15,
-        86,
-        16
+        14
       ]
     },
     {
       "sector": "Taller de Trabajo",
       "name": "main",
       "rect": [
-        1,
+        5,
         21,
-        16,
-        31
+        13,
+        30
       ]
     },
     {
       "sector": "Sala de Acuerdos",
       "name": "main",
       "rect": [
+        23,
         21,
-        21,
-        33,
+        30,
         31
       ]
     },
@@ -307,174 +277,237 @@
       "sector": "Biblioteca",
       "name": "reading room",
       "rect": [
-        55,
+        56,
         21,
-        67,
-        31
-      ]
-    },
-    {
-      "sector": "Oficina de Correos",
-      "name": "main",
-      "rect": [
-        73,
-        20,
-        86,
+        64,
         30
       ]
     },
     {
-      "sector": "Residencia 4",
+      "sector": "Residencia 2",
       "name": "bedroom",
       "rect": [
-        79,
-        35,
-        82,
-        43
-      ]
-    },
-    {
-      "sector": "Residencia 4",
-      "name": "bathroom",
-      "rect": [
-        83,
-        35,
-        86,
-        43
-      ]
-    },
-    {
-      "sector": "Residencia 5",
-      "name": "bedroom",
-      "rect": [
-        3,
-        38,
+        4,
+        36,
         5,
         43
       ]
     },
     {
-      "sector": "Residencia 5",
+      "sector": "Residencia 2",
       "name": "bathroom",
       "rect": [
         6,
-        38,
-        8,
+        36,
+        7,
         43
       ]
     },
     {
-      "sector": "Residencia 6",
+      "sector": "Residencia 3",
       "name": "bedroom",
       "rect": [
-        11,
-        38,
+        12,
+        36,
         13,
-        43
+        44
       ]
     },
     {
-      "sector": "Residencia 6",
+      "sector": "Residencia 3",
       "name": "bathroom",
       "rect": [
         14,
-        38,
-        15,
-        43
+        36,
+        14,
+        44
       ]
     },
     {
-      "sector": "Residencia 7",
+      "sector": "Residencia 4",
       "name": "bedroom",
       "rect": [
-        21,
-        38,
+        22,
+        36,
         23,
-        43
+        44
       ]
     },
     {
-      "sector": "Residencia 7",
+      "sector": "Residencia 4",
       "name": "bathroom",
       "rect": [
         24,
-        38,
-        26,
+        36,
+        24,
+        44
+      ]
+    },
+    {
+      "sector": "Residencia 5",
+      "name": "bedroom",
+      "rect": [
+        27,
+        36,
+        29,
+        44
+      ]
+    },
+    {
+      "sector": "Residencia 5",
+      "name": "bathroom",
+      "rect": [
+        30,
+        36,
+        32,
+        44
+      ]
+    },
+    {
+      "sector": "Residencia 6",
+      "name": "bedroom",
+      "rect": [
+        40,
+        36,
+        42,
         43
       ]
     },
     {
-      "sector": "Residencia 8",
-      "name": "bedroom",
-      "rect": [
-        32,
-        38,
-        35,
-        46
-      ]
-    },
-    {
-      "sector": "Residencia 8",
+      "sector": "Residencia 6",
       "name": "bathroom",
       "rect": [
+        43,
         36,
-        38,
-        39,
-        46
+        45,
+        43
       ]
     },
     {
       "sector": "Oficina de Gobierno",
       "name": "main",
       "rect": [
-        48,
-        37,
-        55,
-        45
+        53,
+        36,
+        57,
+        44
       ]
     },
     {
-      "sector": "Residencia 9",
+      "sector": "Residencia 7",
       "name": "bedroom",
       "rect": [
         62,
-        38,
+        36,
+        63,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 7",
+      "name": "bathroom",
+      "rect": [
+        64,
+        36,
         64,
         43
       ]
     },
     {
+      "sector": "Residencia 8",
+      "name": "bedroom",
+      "rect": [
+        72,
+        36,
+        73,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 8",
+      "name": "bathroom",
+      "rect": [
+        74,
+        36,
+        74,
+        43
+      ]
+    },
+    {
+      "sector": "Residencia 9",
+      "name": "bedroom",
+      "rect": [
+        80,
+        34,
+        83,
+        38
+      ]
+    },
+    {
       "sector": "Residencia 9",
       "name": "bathroom",
       "rect": [
-        65,
-        38,
-        66,
-        43
+        84,
+        34,
+        86,
+        38
       ]
     },
     {
       "sector": "Residencia 10",
       "name": "bedroom",
       "rect": [
-        72,
-        38,
-        73,
-        43
+        79,
+        41,
+        80,
+        42
       ]
     },
     {
       "sector": "Residencia 10",
       "name": "bathroom",
       "rect": [
-        74,
-        38,
-        75,
-        43
+        81,
+        41,
+        82,
+        42
       ]
     }
   ],
   "objects": [
+    {
+      "sector": "Banco",
+      "arena": "main",
+      "type": "table",
+      "tiles": [
+        [
+          9,
+          10
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 1",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          30,
+          15
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 1",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          30,
+          5
+        ]
+      ]
+    },
     {
       "sector": "Residencia 1",
       "arena": "bedroom",
@@ -493,29 +526,7 @@
       "tiles": [
         [
           23,
-          14
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 1",
-      "arena": "bathroom",
-      "type": "toilet",
-      "tiles": [
-        [
-          31,
-          14
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 1",
-      "arena": "bathroom",
-      "type": "shower",
-      "tiles": [
-        [
-          31,
-          5
+          15
         ]
       ]
     },
@@ -525,8 +536,8 @@
       "type": "table",
       "tiles": [
         [
-          42,
-          8
+          43,
+          9
         ]
       ]
     },
@@ -537,7 +548,7 @@
       "tiles": [
         [
           55,
-          1
+          5
         ]
       ]
     },
@@ -547,7 +558,7 @@
       "type": "classroom student seating",
       "tiles": [
         [
-          60,
+          59,
           15
         ]
       ]
@@ -558,63 +569,19 @@
       "type": "desk",
       "tiles": [
         [
-          66,
-          1
+          64,
+          5
         ]
       ]
     },
     {
-      "sector": "Residencia 2",
-      "arena": "bedroom",
-      "type": "bed",
-      "tiles": [
-        [
-          71,
-          2
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 2",
-      "arena": "bedroom",
-      "type": "desk",
-      "tiles": [
-        [
-          71,
-          7
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 2",
-      "arena": "bathroom",
-      "type": "toilet",
-      "tiles": [
-        [
-          75,
-          7
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 2",
-      "arena": "bathroom",
-      "type": "shower",
-      "tiles": [
-        [
-          75,
-          2
-        ]
-      ]
-    },
-    {
-      "sector": "Banco",
+      "sector": "Oficina de Correos",
       "arena": "main",
       "type": "table",
       "tiles": [
         [
-          8,
-          11
+          80,
+          23
         ]
       ]
     },
@@ -624,52 +591,8 @@
       "type": "table",
       "tiles": [
         [
-          75,
-          11
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 3",
-      "arena": "bedroom",
-      "type": "bed",
-      "tiles": [
-        [
-          72,
-          15
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 3",
-      "arena": "bedroom",
-      "type": "desk",
-      "tiles": [
-        [
-          72,
-          16
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 3",
-      "arena": "bathroom",
-      "type": "toilet",
-      "tiles": [
-        [
-          86,
-          16
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 3",
-      "arena": "bathroom",
-      "type": "shower",
-      "tiles": [
-        [
-          86,
-          15
+          76,
+          13
         ]
       ]
     },
@@ -679,8 +602,8 @@
       "type": "table",
       "tiles": [
         [
-          8,
-          26
+          9,
+          25
         ]
       ]
     },
@@ -690,7 +613,7 @@
       "type": "table",
       "tiles": [
         [
-          27,
+          26,
           26
         ]
       ]
@@ -701,7 +624,7 @@
       "type": "bookshelf",
       "tiles": [
         [
-          55,
+          56,
           21
         ]
       ]
@@ -712,41 +635,96 @@
       "type": "library table",
       "tiles": [
         [
-          61,
-          26
-        ]
-      ]
-    },
-    {
-      "sector": "Oficina de Correos",
-      "arena": "main",
-      "type": "table",
-      "tiles": [
-        [
-          79,
+          60,
           25
         ]
       ]
     },
     {
-      "sector": "Residencia 4",
-      "arena": "bedroom",
-      "type": "bed",
+      "sector": "Residencia 2",
+      "arena": "bathroom",
+      "type": "toilet",
       "tiles": [
         [
-          79,
-          35
+          7,
+          43
         ]
       ]
     },
     {
-      "sector": "Residencia 4",
+      "sector": "Residencia 2",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          7,
+          36
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 2",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          4,
+          36
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 2",
       "arena": "bedroom",
       "type": "desk",
       "tiles": [
         [
-          79,
+          4,
           43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 3",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          14,
+          44
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 3",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          14,
+          36
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 3",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          12,
+          36
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 3",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          12,
+          44
         ]
       ]
     },
@@ -756,8 +734,8 @@
       "type": "toilet",
       "tiles": [
         [
-          86,
-          43
+          24,
+          44
         ]
       ]
     },
@@ -767,30 +745,30 @@
       "type": "shower",
       "tiles": [
         [
-          86,
-          35
+          24,
+          36
         ]
       ]
     },
     {
-      "sector": "Residencia 5",
+      "sector": "Residencia 4",
       "arena": "bedroom",
       "type": "bed",
       "tiles": [
         [
-          3,
-          38
+          22,
+          36
         ]
       ]
     },
     {
-      "sector": "Residencia 5",
+      "sector": "Residencia 4",
       "arena": "bedroom",
       "type": "desk",
       "tiles": [
         [
-          3,
-          43
+          22,
+          44
         ]
       ]
     },
@@ -798,153 +776,87 @@
       "sector": "Residencia 5",
       "arena": "bathroom",
       "type": "toilet",
-      "tiles": [
-        [
-          8,
-          43
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 5",
-      "arena": "bathroom",
-      "type": "shower",
-      "tiles": [
-        [
-          8,
-          38
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 6",
-      "arena": "bedroom",
-      "type": "bed",
-      "tiles": [
-        [
-          11,
-          38
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 6",
-      "arena": "bedroom",
-      "type": "desk",
-      "tiles": [
-        [
-          11,
-          43
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 6",
-      "arena": "bathroom",
-      "type": "toilet",
-      "tiles": [
-        [
-          15,
-          43
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 6",
-      "arena": "bathroom",
-      "type": "shower",
-      "tiles": [
-        [
-          15,
-          38
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 7",
-      "arena": "bedroom",
-      "type": "bed",
-      "tiles": [
-        [
-          21,
-          38
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 7",
-      "arena": "bedroom",
-      "type": "desk",
-      "tiles": [
-        [
-          21,
-          43
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 7",
-      "arena": "bathroom",
-      "type": "toilet",
-      "tiles": [
-        [
-          26,
-          43
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 7",
-      "arena": "bathroom",
-      "type": "shower",
-      "tiles": [
-        [
-          26,
-          38
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 8",
-      "arena": "bedroom",
-      "type": "bed",
       "tiles": [
         [
           32,
-          38
+          44
         ]
       ]
     },
     {
-      "sector": "Residencia 8",
-      "arena": "bedroom",
-      "type": "desk",
-      "tiles": [
-        [
-          32,
-          46
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 8",
-      "arena": "bathroom",
-      "type": "toilet",
-      "tiles": [
-        [
-          39,
-          46
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 8",
+      "sector": "Residencia 5",
       "arena": "bathroom",
       "type": "shower",
       "tiles": [
         [
-          39,
-          38
+          32,
+          36
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 5",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          27,
+          36
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 5",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          27,
+          44
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 6",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          45,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 6",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          45,
+          36
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 6",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          40,
+          36
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 6",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          40,
+          43
         ]
       ]
     },
@@ -954,63 +866,173 @@
       "type": "table",
       "tiles": [
         [
-          51,
+          55,
+          40
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 7",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          64,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 7",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          64,
+          36
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 7",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          62,
+          36
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 7",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          62,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 8",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          74,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 8",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          74,
+          36
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 8",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          72,
+          36
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 8",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          72,
+          43
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 9",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          86,
+          38
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 9",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          86,
+          34
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 9",
+      "arena": "bedroom",
+      "type": "bed",
+      "tiles": [
+        [
+          80,
+          34
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 9",
+      "arena": "bedroom",
+      "type": "desk",
+      "tiles": [
+        [
+          80,
+          38
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 10",
+      "arena": "bathroom",
+      "type": "toilet",
+      "tiles": [
+        [
+          82,
+          42
+        ]
+      ]
+    },
+    {
+      "sector": "Residencia 10",
+      "arena": "bathroom",
+      "type": "shower",
+      "tiles": [
+        [
+          82,
           41
         ]
       ]
     },
     {
-      "sector": "Residencia 9",
-      "arena": "bedroom",
-      "type": "bed",
-      "tiles": [
-        [
-          62,
-          38
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 9",
-      "arena": "bedroom",
-      "type": "desk",
-      "tiles": [
-        [
-          62,
-          43
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 9",
-      "arena": "bathroom",
-      "type": "toilet",
-      "tiles": [
-        [
-          66,
-          43
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 9",
-      "arena": "bathroom",
-      "type": "shower",
-      "tiles": [
-        [
-          66,
-          38
-        ]
-      ]
-    },
-    {
       "sector": "Residencia 10",
       "arena": "bedroom",
       "type": "bed",
       "tiles": [
         [
-          72,
-          38
+          79,
+          41
         ]
       ]
     },
@@ -1020,42 +1042,29 @@
       "type": "desk",
       "tiles": [
         [
-          72,
-          43
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 10",
-      "arena": "bathroom",
-      "type": "toilet",
-      "tiles": [
-        [
-          75,
-          43
-        ]
-      ]
-    },
-    {
-      "sector": "Residencia 10",
-      "arena": "bathroom",
-      "type": "shower",
-      "tiles": [
-        [
-          75,
-          38
+          79,
+          42
         ]
       ]
     }
   ],
   "spawns": [
     {
+      "sector": "Banco",
+      "arena": "main",
+      "name": "sp",
+      "tile": [
+        6,
+        10
+      ]
+    },
+    {
       "sector": "Residencia 1",
       "arena": "bedroom",
       "name": "sp",
       "tile": [
         24,
-        9
+        10
       ]
     },
     {
@@ -1063,8 +1072,8 @@
       "arena": "main",
       "name": "sp",
       "tile": [
-        37,
-        8
+        38,
+        9
       ]
     },
     {
@@ -1073,25 +1082,16 @@
       "name": "sp",
       "tile": [
         56,
-        8
+        10
       ]
     },
     {
-      "sector": "Residencia 2",
-      "arena": "bedroom",
-      "name": "sp",
-      "tile": [
-        72,
-        4
-      ]
-    },
-    {
-      "sector": "Banco",
+      "sector": "Oficina de Correos",
       "arena": "main",
       "name": "sp",
       "tile": [
-        3,
-        11
+        75,
+        23
       ]
     },
     {
@@ -1099,17 +1099,8 @@
       "arena": "main",
       "name": "sp",
       "tile": [
-        73,
-        11
-      ]
-    },
-    {
-      "sector": "Residencia 3",
-      "arena": "bedroom",
-      "name": "sp",
-      "tile": [
-        73,
-        15
+        74,
+        13
       ]
     },
     {
@@ -1117,8 +1108,8 @@
       "arena": "main",
       "name": "sp",
       "tile": [
-        2,
-        26
+        6,
+        25
       ]
     },
     {
@@ -1126,7 +1117,7 @@
       "arena": "main",
       "name": "sp",
       "tile": [
-        22,
+        24,
         26
       ]
     },
@@ -1135,17 +1126,26 @@
       "arena": "reading room",
       "name": "sp",
       "tile": [
-        56,
-        26
+        57,
+        25
       ]
     },
     {
-      "sector": "Oficina de Correos",
-      "arena": "main",
+      "sector": "Residencia 2",
+      "arena": "bedroom",
       "name": "sp",
       "tile": [
-        74,
-        25
+        5,
+        39
+      ]
+    },
+    {
+      "sector": "Residencia 3",
+      "arena": "bedroom",
+      "name": "sp",
+      "tile": [
+        13,
+        40
       ]
     },
     {
@@ -1153,8 +1153,8 @@
       "arena": "bedroom",
       "name": "sp",
       "tile": [
-        80,
-        39
+        23,
+        40
       ]
     },
     {
@@ -1162,7 +1162,7 @@
       "arena": "bedroom",
       "name": "sp",
       "tile": [
-        4,
+        28,
         40
       ]
     },
@@ -1171,7 +1171,16 @@
       "arena": "bedroom",
       "name": "sp",
       "tile": [
-        12,
+        41,
+        39
+      ]
+    },
+    {
+      "sector": "Oficina de Gobierno",
+      "arena": "main",
+      "name": "sp",
+      "tile": [
+        54,
         40
       ]
     },
@@ -1180,8 +1189,8 @@
       "arena": "bedroom",
       "name": "sp",
       "tile": [
-        22,
-        40
+        63,
+        39
       ]
     },
     {
@@ -1189,17 +1198,8 @@
       "arena": "bedroom",
       "name": "sp",
       "tile": [
-        33,
-        42
-      ]
-    },
-    {
-      "sector": "Oficina de Gobierno",
-      "arena": "main",
-      "name": "sp",
-      "tile": [
-        49,
-        41
+        73,
+        39
       ]
     },
     {
@@ -1207,8 +1207,8 @@
       "arena": "bedroom",
       "name": "sp",
       "tile": [
-        63,
-        40
+        81,
+        36
       ]
     },
     {
@@ -1216,8 +1216,8 @@
       "arena": "bedroom",
       "name": "sp",
       "tile": [
-        73,
-        40
+        80,
+        41
       ]
     }
   ]

@@ -1,5 +1,10 @@
 {
   "Claudeville": {
+    "Banco": {
+      "main": [
+        "table"
+      ]
+    },
     "Residencia 1": {
       "bedroom": [
         "bed",
@@ -22,17 +27,7 @@
         "desk"
       ]
     },
-    "Residencia 2": {
-      "bedroom": [
-        "bed",
-        "desk"
-      ],
-      "bathroom": [
-        "toilet",
-        "shower"
-      ]
-    },
-    "Banco": {
+    "Oficina de Correos": {
       "main": [
         "table"
       ]
@@ -40,16 +35,6 @@
     "Mercado": {
       "main": [
         "table"
-      ]
-    },
-    "Residencia 3": {
-      "bedroom": [
-        "bed",
-        "desk"
-      ],
-      "bathroom": [
-        "toilet",
-        "shower"
       ]
     },
     "Taller de Trabajo": {
@@ -68,9 +53,24 @@
         "library table"
       ]
     },
-    "Oficina de Correos": {
-      "main": [
-        "table"
+    "Residencia 2": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ]
+    },
+    "Residencia 3": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
       ]
     },
     "Residencia 4": {
@@ -103,6 +103,11 @@
         "shower"
       ]
     },
+    "Oficina de Gobierno": {
+      "main": [
+        "table"
+      ]
+    },
     "Residencia 7": {
       "bedroom": [
         "bed",
@@ -121,11 +126,6 @@
       "bathroom": [
         "toilet",
         "shower"
-      ]
-    },
-    "Oficina de Gobierno": {
-      "main": [
-        "table"
       ]
     },
     "Residencia 9": {

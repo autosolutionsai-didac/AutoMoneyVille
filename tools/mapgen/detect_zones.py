@@ -39,12 +39,13 @@ WATER_H = (90, 135)
 WATER_S = 55
 WATER_V = 45
 GREEN_H = (32, 90)
-TREE_V_MAX = 135          # green darker than this = tree/canopy (blocked)
+TREE_V_MAX = 85           # green darker than this = tree/canopy (blocked)
 STREET_S_MAX = 50         # low saturation = gray pavement
 STREET_V_MIN = 95
 DARK_V_MAX = 95           # building frames / partition walls are dark brown
 TILE_FRAC = 0.40          # a tile takes a class if >40% of its pixels match
 MIN_BUILDING_TILES = 30   # contour bbox area in tiles to count as a building
+MIN_KEEP_TILES = 20       # after de-overlap trimming, drop a footprint smaller than this
 ASPECT = (0.22, 4.5)
 
 
@@ -54,38 +55,66 @@ def tile_frac(mask: np.ndarray) -> np.ndarray:
     return m.reshape(H, SQ, W, SQ).mean(axis=(1, 3))
 
 
-def _iou(a, b) -> float:
-    ax0, ay0, ax1, ay1 = a
-    bx0, by0, bx1, by1 = b
-    ix0, iy0 = max(ax0, bx0), max(ay0, by0)
-    ix1, iy1 = min(ax1, bx1), min(ay1, by1)
+def _overlap_tiles(a, b) -> int:
+    """Shared tile-area of two inclusive rects (0 if disjoint)."""
+    ix0, iy0 = max(a[0], b[0]), max(a[1], b[1])
+    ix1, iy1 = min(a[2], b[2]), min(a[3], b[3])
     if ix1 < ix0 or iy1 < iy0:
-        return 0.0
-    inter = (ix1 - ix0 + 1) * (iy1 - iy0 + 1)
-    aa = (ax1 - ax0 + 1) * (ay1 - ay0 + 1)
-    bb = (bx1 - bx0 + 1) * (by1 - by0 + 1)
-    return inter / float(aa + bb - inter)
+        return 0
+    return (ix1 - ix0 + 1) * (iy1 - iy0 + 1)
 
 
-def _contained(inner, outer) -> float:
-    """Fraction of `inner`'s area covered by `outer`."""
-    ix0, iy0 = max(inner[0], outer[0]), max(inner[1], outer[1])
-    ix1, iy1 = min(inner[2], outer[2]), min(inner[3], outer[3])
-    if ix1 < ix0 or iy1 < iy0:
-        return 0.0
-    inter = (ix1 - ix0 + 1) * (iy1 - iy0 + 1)
-    a = (inner[2] - inner[0] + 1) * (inner[3] - inner[1] + 1)
-    return inter / float(a)
+def _trim_away(r, kr):
+    """Shrink rect `r` so it no longer overlaps kept rect `kr`, cutting along the axis
+    with the smaller overlap extent (the likely street/frame seam between two stacked
+    buildings). Mutates and returns `r`; the kept box is authoritative on its edge."""
+    ow = min(r[2], kr[2]) - max(r[0], kr[0]) + 1
+    oh = min(r[3], kr[3]) - max(r[1], kr[1]) + 1
+    if oh <= ow:  # thinner in y -> cut horizontally
+        if r[1] >= kr[1]:
+            r[1] = kr[3] + 1
+        else:
+            r[3] = kr[1] - 1
+    else:  # thinner in x -> cut vertically
+        if r[0] >= kr[0]:
+            r[0] = kr[2] + 1
+        else:
+            r[2] = kr[0] - 1
+    return r
 
 
 def _dedup(boxes):
-    """Drop boxes that overlap (IoU>0.35) or are mostly inside (>0.7) a larger kept box."""
+    """Keep footprints DISJOINT so generate_world's per-sector tile stamping never
+    overwrites a neighbour (an object tile mis-tagged with the wrong sector makes its
+    address unresolvable). Process largest-first; the kept (larger, more confident) box
+    wins the contested seam, and the smaller box is trimmed back to the seam. Only if a
+    box would shrink below MIN_KEEP_TILES (or fully vanish inside another) is it dropped
+    -- so two stacked buildings merged by a thin street/frame both survive, disjoint."""
     boxes = sorted(boxes, key=lambda f: f["area_tiles"], reverse=True)
     kept = []
     for b in boxes:
-        r = b["rect"]
-        if any(_iou(r, k["rect"]) > 0.35 or _contained(r, k["rect"]) > 0.7 for k in kept):
+        r = list(b["rect"])
+        drop = False
+        # trim against every kept box (repeat until stable: a trim can expose a new seam)
+        for _ in range(len(kept) + 1):
+            changed = False
+            for k in kept:
+                if _overlap_tiles(r, k["rect"]):
+                    _trim_away(r, k["rect"])
+                    changed = True
+                    if r[2] <= r[0] or r[3] <= r[1]:
+                        drop = True
+                        break
+            if drop or not changed:
+                break
+        if drop or r[2] <= r[0] or r[3] <= r[1]:
             continue
+        if (r[2] - r[0] + 1) * (r[3] - r[1] + 1) < MIN_KEEP_TILES:
+            continue
+        if any(_overlap_tiles(r, k["rect"]) for k in kept):
+            continue
+        b["rect"] = r
+        b["area_tiles"] = (r[2] - r[0] + 1) * (r[3] - r[1] + 1)
         kept.append(b)
     return kept
 
@@ -137,28 +166,48 @@ def build_arenas_objects(name, rect):
         ix0, iy0, ix1, iy1 = x0, y0, x1, y1
     arenas, objects = [], []
 
+    arena_by_name: dict = {}
+
     def o(arena, typ, tile):
-        objects.append({"sector": name, "arena": arena, "type": typ, "tiles": [list(tile)]})
+        # Clamp every object strictly inside its own arena rect so its engine address
+        # (sector:arena:type) always resolves to a tile tagged with that arena.
+        ar = arena_by_name.get(arena)
+        tx, ty = tile
+        if ar is not None:
+            ax0, ay0, ax1, ay1 = ar["rect"]
+            tx = min(max(tx, ax0), ax1)
+            ty = min(max(ty, ay0), ay1)
+        objects.append({"sector": name, "arena": arena, "type": typ, "tiles": [[tx, ty]]})
+
+    def add_arena(aname, arect):
+        a = {"sector": name, "name": aname, "rect": list(arect)}
+        arenas.append(a)
+        arena_by_name[aname] = a
 
     if name == "Academia de Agentes":
-        arenas.append({"sector": name, "name": "classroom", "rect": [ix0, iy0, ix1, iy1]})
+        add_arena("classroom", [ix0, iy0, ix1, iy1])
         o("classroom", "blackboard", (ix0, iy0))
         o("classroom", "classroom student seating", ((ix0 + ix1) // 2, iy1))
         o("classroom", "desk", (ix1, iy0))
     elif name.startswith("Residencia"):
-        midx = (ix0 + ix1) // 2
-        arenas.append({"sector": name, "name": "bedroom", "rect": [ix0, iy0, midx, iy1]})
-        arenas.append({"sector": name, "name": "bathroom", "rect": [midx + 1, iy0, ix1, iy1]})
+        # A 2-room split needs >=2 columns of interior; otherwise keep one bedroom so
+        # the bathroom never collapses to an empty/degenerate rect.
+        if ix1 - ix0 >= 1:
+            midx = (ix0 + ix1) // 2
+            add_arena("bedroom", [ix0, iy0, midx, iy1])
+            add_arena("bathroom", [midx + 1, iy0, ix1, iy1])
+            o("bathroom", "toilet", (ix1, iy1))
+            o("bathroom", "shower", (ix1, iy0))
+        else:
+            add_arena("bedroom", [ix0, iy0, ix1, iy1])
         o("bedroom", "bed", (ix0, iy0))
         o("bedroom", "desk", (ix0, iy1))
-        o("bathroom", "toilet", (ix1, iy1))
-        o("bathroom", "shower", (ix1, iy0))
     elif name == "Biblioteca":
-        arenas.append({"sector": name, "name": "reading room", "rect": [ix0, iy0, ix1, iy1]})
+        add_arena("reading room", [ix0, iy0, ix1, iy1])
         o("reading room", "bookshelf", (ix0, iy0))
         o("reading room", "library table", ((ix0 + ix1) // 2, (iy0 + iy1) // 2))
     else:
-        arenas.append({"sector": name, "name": "main", "rect": [ix0, iy0, ix1, iy1]})
+        add_arena("main", [ix0, iy0, ix1, iy1])
         o("main", "table", ((ix0 + ix1) // 2, (iy0 + iy1) // 2))
     return arenas, objects
 

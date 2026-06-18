@@ -6,17 +6,17 @@
     },
     "Milo Chen": {
         "maze": "claudeville",
-        "x": 24,
+        "x": 23,
         "y": 24
     },
     "Iris Morgan": {
         "maze": "claudeville",
-        "x": 19,
+        "x": 26,
         "y": 30
     },
     "Theo Grant": {
         "maze": "claudeville",
         "x": 53,
-        "y": 35
+        "y": 36
     }
 }
