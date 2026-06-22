@@ -116,7 +116,63 @@ class HomeViewLiveBackendTests(SimpleTestCase):
         context = mock_render.call_args.args[2]
         self.assertEqual(context["step"], 7)
         self.assertEqual(context["initial_curr_time"], "February 13, 2023, 09:01:10")
+        self.assertEqual(
+            context["persona_names"],
+            [["Nora Vale", "Nora_Vale"], ["Milo Chen", "Milo_Chen"]],
+        )
         self.assertIn(["Nora Vale", 24, 25], context["persona_init_pos"])
+
+    @mock.patch("translator.views.requests.get")
+    @mock.patch("translator.views.open", new_callable=mock.mock_open)
+    @mock.patch("translator.views.os.listdir")
+    @mock.patch("translator.views.os.path.exists")
+    def test_home_falls_back_to_storage_when_live_backend_personas_are_invalid(
+        self, mock_exists, mock_listdir, mock_open_file, mock_get
+    ):
+        mock_exists.return_value = True
+
+        def listdir_side_effect(path):
+            if path.endswith("/personas"):
+                return ["Nora Vale", "Milo Chen", ".hidden"]
+            if path.endswith("/environment"):
+                return ["0.json", "7.json", ".hidden"]
+            return []
+
+        mock_listdir.side_effect = listdir_side_effect
+        mock_open_file.return_value.read.return_value = json.dumps(
+            {
+                "Nora Vale": {"x": 24, "y": 25},
+                "Milo Chen": {"x": 25, "y": 18},
+                "Stale Person": {"x": 1, "y": 1},
+            }
+        )
+        backend_response = mock.Mock()
+        backend_response.json.return_value = {
+            "ok": True,
+            "sim_code": "run_one",
+            "step": 9,
+            "curr_time": "February 13, 2023, 09:01:30",
+            "personas": [
+                {"name": "Nora Vale", "tile": None},
+                {"name": "Milo Chen", "tile": [25]},
+            ],
+        }
+        backend_response.raise_for_status.return_value = None
+        mock_get.return_value = backend_response
+
+        with mock.patch("translator.views.render") as mock_render:
+            views.home(self.factory.get("/simulator_home"))
+
+        context = mock_render.call_args.args[2]
+        self.assertEqual(context["step"], 9)
+        self.assertEqual(
+            context["persona_names"],
+            [["Nora Vale", "Nora_Vale"], ["Milo Chen", "Milo_Chen"]],
+        )
+        self.assertEqual(
+            context["persona_init_pos"],
+            [["Nora Vale", 24, 25], ["Milo Chen", 25, 18]],
+        )
 
     @mock.patch("translator.views.requests.get")
     @mock.patch("translator.views.open")
