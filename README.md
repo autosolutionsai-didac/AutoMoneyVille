@@ -79,17 +79,30 @@ Fork of Stanford's [Generative Agents](https://github.com/joonspk-research/gener
 
 ## Quick Start
 
+One-command launch (kills stale servers, starts both with the right env, waits for health):
+
+```powershell
+# Windows / PowerShell
+git config core.longpaths true            # one-time: the_ville assets have long paths
+powershell -ExecutionPolicy Bypass -File scripts\run_claudeville.ps1
+```
 ```bash
-git clone <repo>
-cd claudeville
-./start.sh
+# Git Bash / WSL / Linux
+./scripts/run_claudeville.sh
 ```
 
-The script will:
-1. Create conda environment if needed
-2. Start Django frontend on http://localhost:8000
-3. Start Flask backend on http://localhost:5000
-4. Open CLI for simulation management
+Then open **http://localhost:8000/simulator_home** and press Play.
+
+> ⚠️ **The frontend MUST run with `DJANGO_DEBUG=True`.** Settings are secure-by-default
+> (`DEBUG=False`), and Django's dev server returns **404 for every `/static/` file** when
+> DEBUG is off → the canvas shows a **black screen with green sprite placeholders**. The
+> launch scripts set it for you; if you start `manage.py runserver` by hand, export it.
+
+The conda-based `./start.sh` also works on unix and:
+1. Creates the conda environment if needed
+2. Starts Django frontend on http://localhost:8000
+3. Starts Flask backend on http://localhost:5000
+4. Opens the CLI for simulation management
 
 When prompted, press Enter for defaults or choose:
 - `c` - Continue last simulation
@@ -133,10 +146,10 @@ conda activate claudeville
 
 ### 2. Start Servers
 
-Terminal 1 (Frontend):
+Terminal 1 (Frontend) — `DJANGO_DEBUG=True` is required so static assets are served:
 ```bash
 cd environment/frontend_server
-python manage.py runserver
+DJANGO_DEBUG=True python manage.py runserver 8000
 ```
 
 Terminal 2 (Backend):
@@ -144,6 +157,41 @@ Terminal 2 (Backend):
 cd reverie/backend_server
 python reverie.py
 ```
+
+## Worlds, economy & smooth playback (Claudeville additions)
+
+### Custom map pipeline (`tools/mapgen/`)
+The `claudeville` world is generated from a single town PNG — no Tiled editor. The renderer
+draws the PNG as a flat background; an invisible tile grid carries navigation. Pipeline
+(run from repo root with `env/Scripts/python.exe`):
+
+```
+canonicalize_map.py <src.png> [rescale]   # -> 2816x1536 canonical bg (88x48 tiles @32px)
+detect_zones.py                            # structural OpenCV: walls=edges/contours, rooms=
+                                           #   per-footprint partitions, objects=furniture blobs
+generate_world.py                          # spec -> 5 collision/sector/arena/object/spawn matrices
+validate_world.py                          # GATE: addresses resolve, connectivity >=98%, no on-wall
+debug_overlay.py                           # out/zones_overlay.png to eyeball alignment
+make_claudeville_base.py [N]               # re-home N personas onto the new collision
+```
+Walls are detected as **edges/dark frames** (not color — brown walls ≈ brown floors), building
+footprints from contours, rooms by splitting the interior along partition walls, and objects are
+placed on real furniture tiles. Switch worlds via `local_config.json` `default_fork`.
+
+### Town Center economy
+Agents propose money-making actions (`town_request` in their step); the **human approves** in the
+Town Center panel (Approve/Reject/Done/Fail). Approved external actions credit revenue on completion
+(from `expected_payoff`); safe research/draft tools auto-resolve in-sim. Agents **see the outcomes of
+their recent requests** in the next step and adapt. Real external side effects (sending email,
+spending) are intentionally NOT wired — approval + ledger only.
+
+### Smooth playback
+- **Live**: a backend *autosim* producer simulates steps ahead of the display into a buffer
+  (`CLAUDEVILLE_BUFFER_AHEAD`, default 20); the frontend replays the buffer steadily. It pauses when
+  nobody is polling (so it doesn't burn LLM tokens on an idle tab). First step is LLM-bound
+  (~1-2 min, shown as "Buffering"; bound by `CLAUDEVILLE_PERSONA_MOVE_TIMEOUT`, default 120s).
+- **Offline replay** (instant, LLM-free): let a run step (per-step movement files are written), then
+  `python reverie/compress_sim_storage.py <sim_code>` → open `/demo/<sim_code>/<step>/<speed>/`.
 
 ## Project Structure
 
