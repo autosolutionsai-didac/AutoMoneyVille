@@ -107,6 +107,9 @@ class ActionDecision:
     game_object: str
     emoji: str
     event: tuple[str, str, str]  # (subject, predicate, object)
+    # LLM-judged importance (1-10) for this action. Used as the poignancy of the
+    # persona's own action event (Gen Agents 1b), replacing the constant fallback.
+    importance: int = 5
 
 
 @dataclass
@@ -148,6 +151,11 @@ class StepResponse:
     raw_json: dict[str, Any] = field(default_factory=dict)
     parse_errors: list[str] = field(default_factory=list)
     continuing: bool = False  # True if LLM signals "no change" to current activity
+    # Dual-layer cognition (HER, arXiv 2601.21459): elicited in the SAME single
+    # step call. system_thinking = brief in-character strategy; inner_monologue =
+    # first-person private thought/emotion. Prompt design only, no training/RL.
+    system_thinking: str | None = None
+    inner_monologue: str | None = None
 
 
 # ============================================================================
@@ -317,6 +325,8 @@ your decisions. The required format is:
 ```json
 {{
   "continuing": false,
+  "system_thinking": "brief in-character strategy: what you're trying to achieve right now and why",
+  "inner_monologue": "a first-person private thought or feeling, in your own voice",
   "action": {{
     "description": "what you are doing",
     "duration_minutes": 30,
@@ -326,7 +336,8 @@ your decisions. The required format is:
       "object": "exact object name from options"
     }},
     "emoji": "1-3 emoji representing your action",
-    "event": ["{name}", "verb", "object of action"]
+    "event": ["{name}", "verb", "object of action"],
+    "importance": 5
   }},
   "social": {{
     "wants_to_talk": false,
@@ -337,6 +348,19 @@ your decisions. The required format is:
   "town_request": null
 }}
 ```
+
+=== INNER LIFE (system_thinking & inner_monologue) ===
+Two private layers accompany every decision (they are never shown to others):
+- "system_thinking": a short, practical in-character plan for this moment.
+- "inner_monologue": one honest first-person thought or emotion you're having.
+Keep both brief (1-2 sentences). They shape who you are over time.
+
+=== ACTION IMPORTANCE ===
+Rate "importance" 1-10 for how significant this action is to your life:
+- 1-2: routine/mundane (idle, brief chores)
+- 4-6: ordinary daily activities
+- 8-10: meaningful, emotional, or life-shaping moments
+Be honest - most actions are ordinary.
 
 === CONTINUING YOUR CURRENT ACTIVITY ===
 If nothing significant has changed and you want to keep doing what you're already doing,
@@ -353,7 +377,7 @@ Example of continuing:
 ```
 
 Required fields: social
-Optional fields: continuing (default false), action (required if continuing is false), thoughts, schedule_update, town_request
+Optional fields: continuing (default false), action (required if continuing is false), thoughts, schedule_update, town_request, system_thinking, inner_monologue
 
 === TOWN CENTER REQUESTS ===
 Use a Town Center request when you need a tool, resource, approval, budget,
@@ -444,6 +468,37 @@ IMPORTANT: Use EXACT location names from the options I provide. Respond with ONL
 """
 
 
+# Max relevant memories rendered into a step prompt (bounded for context budget).
+RELEVANT_MEMORY_RENDER_LIMIT = 8
+
+
+def _format_relevant_memories(relevant_memories: list[Any] | None) -> str:
+    """Render retrieved memory nodes (Gen Agents 1a) as a bounded prompt section.
+
+    Returns an empty string when there is nothing to show so the prompt stays
+    clean. Each line is "[time] description" ordered as provided by retrieval
+    (most relevant first).
+    """
+    if not relevant_memories:
+        return ""
+
+    lines = []
+    for node in relevant_memories[:RELEVANT_MEMORY_RENDER_LIMIT]:
+        desc = getattr(node, "description", "")
+        if not desc:
+            continue
+        created = getattr(node, "created", None)
+        time_str = created.strftime("%b %d %H:%M") if created else ""
+        prefix = f"[{time_str}] " if time_str else ""
+        lines.append(f"- {prefix}{desc}")
+
+    if not lines:
+        return ""
+
+    body = "\n".join(lines)
+    return f"\n=== RELEVANT MEMORIES ===\n{body}\n"
+
+
 def build_step_prompt(
     persona: Persona,
     perceptions: list[str],
@@ -451,6 +506,7 @@ def build_step_prompt(
     accessible_locations: dict[str, Any],  # {sector: {arena: [objects]}}
     conversation_context: list[tuple[str, str]] | None = None,  # [(speaker, line), ...]
     nearby_conversations: list[dict] | None = None,  # [{participants, chat, group_id}]
+    relevant_memories: list[Any] | None = None,  # [ConceptNode, ...] from retrieve_focal
 ) -> str:
     """
     Build a step prompt with minimal world updates.
@@ -665,12 +721,15 @@ Only set "continuing": false with a new action if you have a compelling reason t
 
     town_center_feedback = getattr(scratch, "town_center_feedback", "") or ""
 
+    relevant_memories_section = _format_relevant_memories(relevant_memories)
+
     return f"""TIME: {time_str}
 CURRENT LOCATION: {current_sector} > {current_arena}
 CURRENT ACTIVITY: {current_action}{action_context}
 
 === PERCEPTIONS ===
 {perception_str}
+{relevant_memories_section}
 
 === NEARBY PEOPLE (can talk) ===
 {nearby_str}{in_sight_str}
@@ -941,6 +1000,15 @@ def parse_step_response(
             duration_minutes = 30
         duration_minutes = max(1, min(duration_minutes, 1440))
 
+        # LLM-judged importance (1-10) for this action (Gen Agents 1b). Coerce +
+        # clamp; a bad value falls back to the neutral default of 5.
+        raw_importance = action_data.get("importance", 5)
+        try:
+            importance = int(raw_importance)
+        except (TypeError, ValueError):
+            importance = 5
+        importance = max(1, min(importance, 10))
+
         result.action = ActionDecision(
             description=action_data.get("description", "idle"),
             duration_minutes=duration_minutes,
@@ -949,6 +1017,7 @@ def parse_step_response(
             game_object=obj,
             emoji=action_data.get("emoji", "💭"),
             event=event,
+            importance=importance,
         )
 
     # Parse social
@@ -969,6 +1038,14 @@ def parse_step_response(
                     importance=thought.get("importance", 5),
                 )
             )
+
+    # Parse dual-layer cognition (HER). Both are optional, single call.
+    system_thinking = data.get("system_thinking")
+    if isinstance(system_thinking, str) and system_thinking.strip():
+        result.system_thinking = system_thinking.strip()
+    inner_monologue = data.get("inner_monologue")
+    if isinstance(inner_monologue, str) and inner_monologue.strip():
+        result.inner_monologue = inner_monologue.strip()
 
     # Parse schedule update
     schedule_data = data.get("schedule_update")
@@ -1015,6 +1092,87 @@ def _parse_town_request(request_data: Any, result: StepResponse) -> None:
         rationale=rationale,
         payload=payload,
     )
+
+
+# ============================================================================
+# #####################[SECTION 5b: REFLECTION] ##############################
+# ============================================================================
+
+# Reflection asks for a small number of higher-level insights (Gen Agents, RMM).
+REFLECTION_MIN_INSIGHTS = 2
+REFLECTION_MAX_INSIGHTS = 3
+
+
+@dataclass
+class ReflectionResponse:
+    """Parsed response from a reflection prompt: higher-level insight statements."""
+
+    insights: list[str] = field(default_factory=list)
+    raw_json: dict[str, Any] = field(default_factory=dict)
+    parse_errors: list[str] = field(default_factory=list)
+
+
+def build_reflection_prompt(persona: Persona, source_nodes: list[Any]) -> str:
+    """
+    Build the reflection prompt (the only OCCASIONAL extra LLM call).
+
+    Given the persona's most salient recent memories, ask the model to synthesize
+    2-3 higher-level insight statements about itself, others, or its situation.
+    """
+    name = persona.scratch.name or "you"
+
+    statements = []
+    for i, node in enumerate(source_nodes, start=1):
+        desc = getattr(node, "description", "")
+        if desc:
+            statements.append(f"{i}. {desc}")
+    statements_str = "\n".join(statements) if statements else "(no recent memories)"
+
+    return f"""You are {name}. Step back and reflect on your recent experiences.
+
+=== RECENT MEMORIES ===
+{statements_str}
+
+Based ONLY on these memories, what {REFLECTION_MIN_INSIGHTS}-{REFLECTION_MAX_INSIGHTS} \
+higher-level insights can you draw? Each insight should be a single, reflective \
+first-person statement about what you've learned, noticed, or now believe - going \
+beyond the raw events to a deeper realization.
+
+Respond with ONLY a JSON object:
+```json
+{{
+  "insights": [
+    "insight statement 1",
+    "insight statement 2"
+  ]
+}}
+```
+"""
+
+
+def parse_reflection_response(response_text: str) -> ReflectionResponse:
+    """Parse the JSON insight list from a reflection prompt."""
+    result = ReflectionResponse()
+
+    json_match = re.search(r"\{.*\}", response_text, re.DOTALL)
+    if not json_match:
+        result.parse_errors.append("No JSON object found in response")
+        return result
+
+    try:
+        data = json.loads(json_match.group())
+        result.raw_json = data
+    except json.JSONDecodeError as e:
+        result.parse_errors.append(f"Invalid JSON: {e}")
+        return result
+
+    insights = data.get("insights", [])
+    if isinstance(insights, list):
+        result.insights = [str(i).strip() for i in insights if str(i).strip()]
+    if not result.insights:
+        result.parse_errors.append("No insights returned")
+
+    return result
 
 
 def _fuzzy_match(target: str, options: list[str]) -> str | None:
@@ -1264,6 +1422,7 @@ Write this as your internal thoughts, not a list."""
         valid_objects: dict[str, dict[str, list[str]]],
         conversation_context: list[tuple[str, str]] | None = None,
         nearby_conversations: list[dict] | None = None,
+        relevant_memories: list[Any] | None = None,
     ) -> StepResponse:
         """
         Execute a single simulation step for this persona.
@@ -1280,6 +1439,7 @@ Write this as your internal thoughts, not a list."""
             accessible_locations,
             conversation_context,
             nearby_conversations,
+            relevant_memories,
         )
 
         # Send and parse
@@ -1330,6 +1490,36 @@ Write this as your internal thoughts, not a list."""
 
         # Debug output
         self._print_day_plan_result(result)
+
+        return result
+
+    async def reflect(self, source_nodes: list[Any]) -> ReflectionResponse:
+        """
+        Run a reflection: synthesize higher-level insights from recent memories.
+
+        This is the ONLY occasional extra LLM call beyond the unified step. It is
+        invoked when the persona's importance_trigger_curr drops to <= 0.
+        Returns a ReflectionResponse with 2-3 insight statements.
+        """
+        await self._ensure_initialized()
+
+        prompt = build_reflection_prompt(self.persona, source_nodes)
+        response_text, usage = await self._send_prompt(prompt)
+        result = parse_reflection_response(response_text)
+
+        # Retry once if parse errors
+        if result.parse_errors:
+            retry_prompt = build_retry_prompt(prompt, result.parse_errors)
+            response_text, usage = await self._send_prompt(retry_prompt)
+            result = parse_reflection_response(response_text)
+
+        if DEBUG_VERBOSITY >= 1 and result.insights:
+            color = self._get_persona_color()
+            name_part = cli.c(f"  💭 {self.persona_name}", color, cli.Colors.BOLD)
+            print(f"{name_part} reflected: {len(result.insights)} insight(s)")
+            if DEBUG_VERBOSITY >= 2:
+                for ins in result.insights:
+                    print(cli.c(f"      • {ins}", cli.Colors.DIM))
 
         return result
 

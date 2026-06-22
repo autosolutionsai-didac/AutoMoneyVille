@@ -125,6 +125,23 @@ def perceive(persona, maze):
         desc = f"{s.split(':')[-1]} is {desc}"
         p_event = (s, p, o)
 
+        # 1e ABSTRACTION: avoid duplicate self-action event nodes. If this is the
+        # persona's OWN action and it repeats the most-recent self-action event
+        # (same s/p/o), skip creating a new node - the action simply continues.
+        is_self_action = p_event[0] == f"{persona.name}"
+        if is_self_action and persona.a_mem.seq_event:
+            last_self = next(
+                (
+                    n
+                    for n in persona.a_mem.seq_event
+                    if n.subject == p_event[0] and n.type == "event"
+                ),
+                None,
+            )
+            if last_self is not None and last_self.spo_summary() == p_event:
+                last_self.last_accessed = persona.scratch.curr_time
+                continue
+
         # We retrieve the latest persona.scratch.retention events. If there is
         # something new that is happening (that is, p_event not in latest_events),
         # then we add that event to the a_mem and return it.
@@ -151,7 +168,16 @@ def perceive(persona, maze):
                 )
 
             # Get event poignancy.
-            event_poignancy = generate_poig_score(persona, "event", desc_embedding_in)
+            # 1b LLM IMPORTANCE: for the persona's OWN action, use the LLM-judged
+            # importance attached by move() (curr_action_importance). For perceived
+            # third-party events, fall back to generate_poig_score.
+            action_importance = getattr(persona, "curr_action_importance", None)
+            if is_self_action and action_importance:
+                event_poignancy = action_importance
+            else:
+                event_poignancy = generate_poig_score(
+                    persona, "event", desc_embedding_in
+                )
 
             # If we observe the persona's self chat, we include that in the memory
             # of the persona here.

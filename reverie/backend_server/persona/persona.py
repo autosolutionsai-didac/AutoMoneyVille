@@ -56,6 +56,11 @@ OCCUPIABLE_OBJECTS = {
     "cot",
 }
 from persona.cognitive_modules.perceive import perceive
+from persona.cognitive_modules.reflect import (
+    gather_reflection_sources,
+    store_reflection_insights,
+)
+from persona.cognitive_modules.retrieve import retrieve_focal
 from persona.memory_structures.associative_memory import AssociativeMemory
 from persona.memory_structures.scratch import Scratch
 from persona.memory_structures.spatial_memory import MemoryTree
@@ -85,6 +90,11 @@ class Persona:
         # Claudeville: Unified persona client (one LLM call per step)
         self.unified_client = UnifiedPersonaClient(self)
         self.last_step_response = None
+
+        # Gen Agents 1b: LLM-judged importance for the persona's CURRENT action.
+        # perceive() reads this so the persona's own action event uses the real
+        # importance as poignancy instead of the constant fallback.
+        self.curr_action_importance = None
 
         # Track nearby activity we've already evaluated (to avoid redundant LLM calls)
         # Format: set of (persona_name, activity_description) tuples
@@ -231,6 +241,12 @@ class Persona:
         if hasattr(self, "_encounter_context") and self._encounter_context:
             perceptions = perceptions + [self._encounter_context]
 
+        # Gen Agents 1a: relevance retrieval. Focal keywords come from current
+        # perceptions + current action; we fetch the most relevant memories to
+        # ground this step's decision (no extra LLM call - keyword/recency only).
+        focal_keywords = self._build_focal_keywords(perceptions, nearby_personas)
+        relevant_memories = retrieve_focal(self, focal_keywords, n=8)
+
         step_response = await self.unified_client.step(
             perceptions=perceptions,
             nearby_personas=nearby_personas,
@@ -240,16 +256,31 @@ class Persona:
             valid_objects=valid_objects,
             conversation_context=conversation_context,
             nearby_conversations=nearby_conversations,
+            relevant_memories=relevant_memories,
         )
         self.last_step_response = step_response
 
         # Update acknowledged nearby after LLM call
         self._acknowledged_nearby = set(nearby_personas)
 
+        # Gen Agents 1b: remember this action's LLM-judged importance so perceive()
+        # uses it as the poignancy of the persona's own action event next step.
+        if step_response.action:
+            self.curr_action_importance = step_response.action.importance
+
         # Process the step response (with nearby_personas for validation)
         result = self._process_step_response(
             step_response, maze, personas, nearby_personas
         )
+
+        # Dual-layer cognition (1f): persist the private inner monologue as a
+        # thought so it feeds importance accounting (1b) and reflection (1c).
+        self._store_inner_monologue(step_response)
+
+        # Reflection trigger (1c): once enough salient experience has accumulated
+        # (importance_trigger_curr <= 0), synthesize higher-level insights. This
+        # is the ONLY occasional extra LLM call.
+        await self._maybe_reflect()
 
         # Check if persona is going to sleep - trigger compaction
         if step_response.action:
@@ -1139,6 +1170,106 @@ class Persona:
             return path[1]
 
         return self.scratch.curr_tile
+
+    def _build_focal_keywords(self, perceptions, nearby_personas):
+        """
+        Derive focal keywords (Gen Agents 1a) from current perceptions, the
+        current action, and nearby personas. These drive relevance retrieval.
+
+        Keywords are lowercased single tokens (the associative-memory indexes are
+        lowercase-keyed). We keep this cheap and deterministic - no LLM call.
+        """
+        STOPWORDS = {
+            "the", "a", "an", "is", "are", "was", "were", "to", "of", "in",
+            "on", "at", "and", "or", "with", "for", "you", "your", "i", "it",
+            "this", "that", "be", "as", "from", "by", "has", "have", "had",
+        }
+
+        tokens = set()
+
+        def _add(text):
+            if not text or not isinstance(text, str):
+                return
+            for raw in text.replace(":", " ").split():
+                word = "".join(ch for ch in raw.lower() if ch.isalnum())
+                if len(word) > 2 and word not in STOPWORDS:
+                    tokens.add(word)
+
+        for p in perceptions or []:
+            _add(p)
+
+        # Current action description.
+        _add(self.scratch.act_description)
+
+        # Names of nearby personas (so social context retrieves prior chats).
+        for item in nearby_personas or []:
+            name = item[0] if isinstance(item, (list, tuple)) and item else None
+            if name:
+                for part in str(name).split():
+                    tokens.add(part.lower())
+
+        return tokens
+
+    def _store_inner_monologue(self, step_response):
+        """
+        Store the dual-layer inner monologue (1f) as a thought node so it
+        contributes to importance accounting and is available for reflection.
+        """
+        monologue = getattr(step_response, "inner_monologue", None)
+        if not monologue:
+            return
+
+        created = self.scratch.curr_time
+        expiration = self.scratch.curr_time + datetime.timedelta(days=30)
+        s, p, o = self.scratch.name, "feels", monologue[:50]
+        keywords = {"inner", "monologue", "feeling"}
+
+        # Tie the monologue's importance to the action it accompanies (defaults to
+        # the neutral 5 when no action importance is available).
+        importance = self.curr_action_importance or 5
+
+        node = self.a_mem.add_thought(
+            created,
+            expiration,
+            s,
+            p,
+            o,
+            monologue,
+            keywords,
+            importance,
+            monologue,
+            None,
+        )
+        # The monologue is genuinely new salient experience -> count it toward the
+        # reflection trigger (mirrors perceive's accounting for events).
+        self.scratch.importance_trigger_curr -= importance
+        self.scratch.importance_ele_n += 1
+        return node
+
+    async def _maybe_reflect(self):
+        """
+        Reflection trigger (Gen Agents 1c). When importance_trigger_curr <= 0,
+        gather salient recent nodes, ask the model for 2-3 higher-level insights
+        (the only occasional extra LLM call), store each as a backlinked thought,
+        then reset the trigger.
+        """
+        if self.scratch.importance_trigger_curr > 0:
+            return []
+
+        source_nodes = gather_reflection_sources(self)
+        created_thoughts = []
+        if source_nodes:
+            reflection = await self.unified_client.reflect(source_nodes)
+            if reflection.insights:
+                created_thoughts = store_reflection_insights(
+                    self, reflection.insights, source_nodes
+                )
+
+        # Always reset the trigger so reflection is bounded (Gen Agents): even if
+        # the LLM returned nothing usable, we don't reflect again immediately.
+        self.scratch.importance_trigger_curr = self.scratch.importance_trigger_max
+        self.scratch.importance_ele_n = 0
+        return created_thoughts
 
     def _store_thoughts(self, thoughts):
         """
