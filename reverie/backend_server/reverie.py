@@ -660,6 +660,11 @@ class ReverieServer:
         """Internal step processing (must hold _step_lock)."""
         # Note: We ignore data["step"] - the backend is authoritative.
         # This allows CLI "run" commands to work alongside frontend requests.
+        # Lightweight, additive component timing (EVAL Phase 2): coarse
+        # wall-clock for perceive/position-update, the persona cognitive/move
+        # batch, and serialize. Recorded as one extra "step_timing" ledger event
+        # at the end; it never alters any decision path.
+        _t_step_start = time.perf_counter()
         environment = data.get("environment", {})
 
         # Clean up game object events from previous cycle
@@ -700,6 +705,9 @@ class ReverieServer:
         # Feed each persona the outcomes of their recent Town Center requests so the
         # next decision can adapt (approved -> proceed, rejected -> rethink).
         self._refresh_town_center_feedback()
+
+        # Boundary: perceive / position-update phase complete; cognitive begins.
+        _t_perceive_done = time.perf_counter()
 
         # Run cognitive pipeline for all personas
         movements = {"persona": {}, "meta": {}}
@@ -817,6 +825,9 @@ class ReverieServer:
                 active_personas.append(name)
                 self._submit_latest_town_request(name, submitted_town_requests)
 
+        # Boundary: persona cognitive/move batch complete; serialize begins.
+        _t_move_done = time.perf_counter()
+
         # CONVERSATION SYNCHRONIZATION
         # After all personas have moved in parallel, synchronize their chats.
         # If Klaus is chatting with Maria and Maria is chatting with Klaus,
@@ -885,6 +896,25 @@ class ReverieServer:
             },
         )
         self._record_movement(movements)
+
+        # Additive component timing (EVAL Phase 2). Best-effort: a telemetry
+        # failure must never break a simulation step.
+        try:
+            _t_end = time.perf_counter()
+            self.event_ledger.append(
+                "step_timing",
+                actor="runtime",
+                step=movements["meta"]["step"],
+                sim_time=movements["meta"]["curr_time"],
+                payload={
+                    "perceive_ms": round((_t_perceive_done - _t_step_start) * 1000, 2),
+                    "move_ms": round((_t_move_done - _t_perceive_done) * 1000, 2),
+                    "serialize_ms": round((_t_end - _t_move_done) * 1000, 2),
+                    "total_ms": round((_t_end - _t_step_start) * 1000, 2),
+                },
+            )
+        except Exception:
+            pass
 
         return movements
 
