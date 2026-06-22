@@ -190,6 +190,15 @@ class Maze:
         # self.address_tiles['double studio:recreation:pool table']
         #   == {(29, 14), (31, 11), (30, 14), (32, 11), ...},
         self.address_tiles = dict()
+        # Per-step cache for get_nearby_tiles. Keyed by (tile, vision_r); the
+        # result is a pure function of tile geometry + maze dimensions (it
+        # returns coordinates only, never the mutable per-tile events), so
+        # repeated identical queries within one step are safe to memoize. Must
+        # be cleared every step/tick via clear_step_cache() so it never leaks
+        # across steps (defensive — geometry is step-invariant, but clearing
+        # keeps the cache bounded and the invariant explicit).
+        self._nearby_tiles_cache = {}
+
         for i in range(self.maze_height):
             for j in range(self.maze_width):
                 addresses = []
@@ -311,6 +320,16 @@ class Maze:
         OUTPUT:
           nearby_tiles: a list of tiles that are within the radius.
         """
+        # Per-step memoization: identical (tile, vision_r) queries recur within
+        # a single step (e.g. perceive runs for every persona at the same tile,
+        # and the path-tester reuses the camera tile). The result depends only on
+        # geometry, so a cache hit returns an identical list. Cleared each step
+        # via clear_step_cache() so nothing leaks across steps.
+        cache = getattr(self, "_nearby_tiles_cache", None)
+        cache_key = (tile[0], tile[1], vision_r)
+        if cache is not None and cache_key in cache:
+            return cache[cache_key]
+
         left_end = 0
         if tile[0] - vision_r > left_end:
             left_end = tile[0] - vision_r
@@ -331,7 +350,22 @@ class Maze:
         for i in range(left_end, right_end):
             for j in range(top_end, bottom_end):
                 nearby_tiles += [(i, j)]
+
+        if cache is not None:
+            cache[cache_key] = nearby_tiles
         return nearby_tiles
+
+    def clear_step_cache(self):
+        """
+        Clear per-step spatial caches. Call once at the start of every step so
+        memoized lookups (get_nearby_tiles) never leak across steps. Safe to
+        call even if the cache was never initialized.
+        """
+        cache = getattr(self, "_nearby_tiles_cache", None)
+        if cache is not None:
+            cache.clear()
+        else:
+            self._nearby_tiles_cache = {}
 
     def _is_wall(self, x, y):
         """

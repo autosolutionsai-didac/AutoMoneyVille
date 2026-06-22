@@ -10,7 +10,27 @@ Description: Implements PathFinder class for generative agents path finding.
 # they remain valid on the Python 3.9 floor declared in environment.yaml.
 from __future__ import annotations
 
+import logging
+
 import numpy as np
+
+logger = logging.getLogger(__name__)
+
+# Cache of the STATIC base collision grid (1 = blocked by the maze itself,
+# 0 = passable) keyed by the identity of the maze list object. The maze
+# collision map never changes during a run (only persona/object positions vary,
+# and those are passed per-call via `extra_blocked`), so we build the base grid
+# once and reuse it across PathFinder instances — persona.py constructs a fresh
+# PathFinder every move, which previously rebuilt the full 88x48 grid each time.
+# Keying by id() is safe here because the maze list lives for the whole run; we
+# also store the row/col dimensions and verify them on hit so a recycled id()
+# (after GC of a short-lived maze) can never silently return a stale grid.
+_BASE_COLLISION_CACHE: dict = {}
+
+
+def clear_collision_cache() -> None:
+    """Drop the cached static collision grids (e.g. when a maze is reloaded)."""
+    _BASE_COLLISION_CACHE.clear()
 
 
 class PathFinder:
@@ -33,6 +53,32 @@ class PathFinder:
         self.maze = maze
         self.collision_block_id = collision_block_id
         self.extra_blocked = extra_blocked or set()
+        # Set by _find_path_internal: True when the wave-propagation cap was hit
+        # before the target was reached (i.e. the returned path is a truncated
+        # best-effort, not a complete route). Callers can inspect this to avoid
+        # treating a truncated path as a real one.
+        self.last_path_truncated = False
+
+    def _base_collision_map(self) -> list:
+        """
+        Return the static base collision grid (1 = blocked maze tile, 0 = open),
+        built once per maze object and cached. `extra_blocked` is NOT applied
+        here — it is overlaid per-call so the cache stays purely static.
+
+        The returned grid is shared/cached and MUST NOT be mutated by callers.
+        """
+        key = id(self.maze)
+        rows = len(self.maze)
+        cols = len(self.maze[0]) if rows else 0
+        cached = _BASE_COLLISION_CACHE.get(key)
+        if cached is not None and cached[0] == (rows, cols):
+            return cached[1]
+
+        base_map = []
+        for row in self.maze:
+            base_map.append([1 if cell == self.collision_block_id else 0 for cell in row])
+        _BASE_COLLISION_CACHE[key] = ((rows, cols), base_map)
+        return base_map
 
     def find_path(self, start: tuple, end: tuple) -> list:
         """
@@ -113,21 +159,23 @@ class PathFinder:
         Returns:
             List of (row, col) coordinate tuples forming the path
         """
-        # Build collision map (1 = blocked, 0 = passable)
-        collision_map = []
-        for row_idx, row in enumerate(self.maze):
-            new_row = []
-            for col_idx, cell in enumerate(row):
-                # Check base collision and extra blocked tiles
-                # Note: extra_blocked uses (x, y) format, maze uses (row, col) = (y, x)
-                if (
-                    cell == self.collision_block_id
-                    or (col_idx, row_idx) in self.extra_blocked
+        # Build collision map (1 = blocked, 0 = passable) by overlaying the
+        # dynamic extra_blocked tiles onto the cached STATIC base grid. We copy
+        # each row only when overlaying so the cached base grid is never mutated.
+        # Note: extra_blocked uses (x, y) format, maze uses (row, col) = (y, x).
+        base_map = self._base_collision_map()
+        if self.extra_blocked:
+            collision_map = [list(row) for row in base_map]
+            for (col_idx, row_idx) in self.extra_blocked:
+                if 0 <= row_idx < len(collision_map) and 0 <= col_idx < len(
+                    collision_map[row_idx]
                 ):
-                    new_row.append(1)
-                else:
-                    new_row.append(0)
-            collision_map.append(new_row)
+                    collision_map[row_idx][col_idx] = 1
+        else:
+            # No dynamic blocks: the base grid already equals the final grid.
+            # The wave propagation below only READS collision_map, so sharing
+            # the cached grid is safe and avoids an O(rows*cols) copy per call.
+            collision_map = base_map
 
         # Initialize distance map
         distance_map = []
@@ -138,12 +186,50 @@ class PathFinder:
         start_row, start_col = start
         distance_map[start_row][start_col] = 1
 
-        # Wave propagation with iteration limit
+        # Wave propagation with a maze-size-aware iteration cap.
+        #
+        # Each wave step assigns distance d+1 to all tiles exactly d edges from
+        # the start, so the BFS frontier reaches a target at most `cells` steps
+        # away (every passable tile gets a finite distance within `cells`
+        # iterations, since no tile can be farther than the number of cells).
+        # The old fixed cap of 150 silently truncated any legitimate route
+        # longer than 150 tiles on the 88x48 (=4224-tile) Claudeville maze, so
+        # distant targets were never reached. Bounding by the total tile count
+        # (with a small floor for tiny test mazes) guarantees every reachable
+        # target is found while still terminating on unreachable ones.
+        self.last_path_truncated = False
+        rows = len(collision_map)
+        cols = len(collision_map[0]) if rows else 0
+        max_iterations = max(150, rows * cols)
         step = 0
-        max_iterations = 150
         while distance_map[end[0]][end[1]] == 0 and step < max_iterations:
             step += 1
-            self._propagate_wave(collision_map, distance_map, step)
+            advanced = self._propagate_wave(collision_map, distance_map, step)
+            if not advanced:
+                # Wave stagnated: every tile reachable from the start has been
+                # assigned and the target is among the unreachable. Stopping now
+                # yields the identical (frozen) distance_map the old fixed-cap
+                # loop would have produced, so the traced result is unchanged —
+                # we just skip the wasteful no-op passes and, crucially, do NOT
+                # flag this as a cap-hit truncation (the target is unreachable,
+                # not merely too far).
+                break
+
+        # NON-SILENT truncation: if we exhausted the cap without reaching the
+        # target, the returned path will stop short. Flag it and warn loudly so
+        # a truncated route is never mistaken for a completed one. (A genuinely
+        # unreachable target stops earlier — when no wave can advance — so this
+        # only fires on a real cap hit.)
+        if distance_map[end[0]][end[1]] == 0 and step >= max_iterations:
+            self.last_path_truncated = True
+            logger.warning(
+                "PathFinder: wave propagation hit the %d-iteration cap before "
+                "reaching target (start=%s end=%s); returning a TRUNCATED path. "
+                "The route is incomplete, not a real path.",
+                max_iterations,
+                (start[1], start[0]),
+                (end[1], end[0]),
+            )
 
         # Trace path back from end to start
         row, col = end
@@ -183,7 +269,7 @@ class PathFinder:
 
     def _propagate_wave(
         self, collision_map: list, distance_map: list, step: int
-    ) -> None:
+    ) -> bool:
         """
         Propagate the distance wave one step outward.
 
@@ -191,7 +277,13 @@ class PathFinder:
             collision_map: 2D list where 1 = blocked, 0 = passable
             distance_map: 2D list of distances from start
             step: Current step number in wave propagation
+
+        Returns:
+            True if at least one new tile was assigned this step, False if the
+            wave stagnated (no frontier left to expand). This is purely a
+            termination signal; the distances written are identical regardless.
         """
+        advanced = False
         for i in range(len(distance_map)):
             for j in range(len(distance_map[i])):
                 if distance_map[i][j] == step:
@@ -202,24 +294,29 @@ class PathFinder:
                         and collision_map[i - 1][j] == 0
                     ):
                         distance_map[i - 1][j] = step + 1
+                        advanced = True
                     if (
                         j > 0
                         and distance_map[i][j - 1] == 0
                         and collision_map[i][j - 1] == 0
                     ):
                         distance_map[i][j - 1] = step + 1
+                        advanced = True
                     if (
                         i < len(distance_map) - 1
                         and distance_map[i + 1][j] == 0
                         and collision_map[i + 1][j] == 0
                     ):
                         distance_map[i + 1][j] = step + 1
+                        advanced = True
                     if (
                         j < len(distance_map[i]) - 1
                         and distance_map[i][j + 1] == 0
                         and collision_map[i][j + 1] == 0
                     ):
                         distance_map[i][j + 1] = step + 1
+                        advanced = True
+        return advanced
 
     @staticmethod
     def closest_coordinate(curr: tuple, target_list: list) -> tuple | None:

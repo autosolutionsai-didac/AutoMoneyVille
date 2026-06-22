@@ -6,6 +6,7 @@ File: scratch.py
 Description: Defines the short-term memory module for generative agents.
 """
 
+import copy
 import datetime
 import json
 import os
@@ -529,6 +530,44 @@ class Scratch:
         self.act_start_time = self.curr_time
 
         self.act_path_set = False
+
+    # Fields a single move() may mutate (via add_new_action + path/tile updates).
+    # Used to fully roll back a move that times out mid-flight (5b) so a partial
+    # action/conversation can't poison the next step.
+    _ACTION_STATE_FIELDS = (
+        "curr_tile",
+        "planned_path",
+        "act_path_set",
+        "act_address",
+        "act_start_time",
+        "act_duration",
+        "act_description",
+        "act_pronunciatio",
+        "act_event",
+        "act_obj_description",
+        "act_obj_pronunciatio",
+        "act_obj_event",
+        "chatting_with",
+        "chat",
+        "chatting_with_buffer",
+        "chatting_end_time",
+        "conversation_group_id",
+    )
+
+    def snapshot_action_state(self):
+        """Deep-copy all action/conversation decision fields (5b).
+
+        Lets a timed-out move() be fully rolled back to the pre-step state — the
+        prior restore covered only curr_tile/planned_path/act_path_set, leaving
+        ~14 fields (act_address, chatting_with, chat, ...) half-mutated.
+        """
+        return {f: copy.deepcopy(getattr(self, f, None)) for f in self._ACTION_STATE_FIELDS}
+
+    def restore_action_state(self, snap):
+        """Restore a snapshot_action_state() snapshot (5b timeout rollback)."""
+        for f in self._ACTION_STATE_FIELDS:
+            if f in snap:
+                setattr(self, f, copy.deepcopy(snap[f]))
 
     def act_time_str(self):
         """

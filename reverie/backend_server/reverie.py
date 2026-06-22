@@ -121,6 +121,34 @@ def _are_within_range(tile1: tuple, tile2: tuple, vision_r: int = 4) -> bool:
     return _tile_distance(tile1, tile2) <= vision_r
 
 
+def _atomic_write_json(path: str, payload) -> None:
+    """
+    Write JSON to `path` atomically (5d): serialize to a temp file in the SAME
+    directory, flush+fsync it, then os.replace() it onto the target. os.replace
+    is atomic on both POSIX and Windows, so a crash mid-write can only ever
+    leave either the old complete file or the new complete file — never a
+    half-written, corrupt step file. The temp file is cleaned up on failure.
+    """
+    # Unique temp name in the SAME directory as `path` (it shares the path's
+    # dirname) guarantees a same-filesystem rename and avoids collisions if two
+    # writers ever target the same dir concurrently.
+    tmp_path = f"{path}.{os.getpid()}.{uuid.uuid4().hex}.tmp"
+    try:
+        with open(tmp_path, "w") as outfile:
+            outfile.write(json.dumps(payload, indent=2))
+            outfile.flush()
+            os.fsync(outfile.fileno())
+        os.replace(tmp_path, path)
+    except Exception:
+        # Best-effort cleanup so a failed write never leaves a stray temp file.
+        try:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+        except OSError:
+            pass
+        raise
+
+
 # Backend HTTP server port
 BACKEND_PORT = 5000
 
@@ -369,6 +397,33 @@ class ReverieServer:
             )
         autosim_evt = getattr(self, "_autosim_enabled", None)
         displayed_step = getattr(self, "_displayed_step", self.step - 1)
+
+        # --- Backpressure / stall observability (5c) ---
+        # Additive only: surface enough state for a client/operator to see when
+        # production (the autosim producer) is lagging consumption (the polling
+        # frontend). None of these fields change simulation behavior.
+        min_fill = getattr(self, "_autosim_min_fill", 5)
+        buffer_actual = max(0, self.step - 1 - displayed_step)
+        # Lock-free length read (matches the pending-movements read above): keeps
+        # /health responsive and avoids any chance of deadlock with the producer.
+        history_depth = len(getattr(self, "_movement_history", []))
+        last_poll_at = getattr(self, "_last_poll_at", 0.0)
+        seconds_since_last_poll = (
+            round(time.monotonic() - last_poll_at, 1) if last_poll_at else None
+        )
+        autosim_on = bool(autosim_evt.is_set()) if autosim_evt else False
+        # A stall is when a consumer is actively polling (recent poll) and
+        # autosim is enabled, yet the ahead-buffer is starved below min fill —
+        # i.e. the producer cannot keep up with playback.
+        recently_polled = (
+            seconds_since_last_poll is not None
+            and seconds_since_last_poll
+            <= getattr(self, "_autosim_idle_pause_s", 8)
+        )
+        producer_stalled = bool(
+            autosim_on and recently_polled and buffer_actual < min_fill
+        )
+
         return {
             "ok": True,
             "service": "claudeville-backend",
@@ -393,11 +448,16 @@ class ReverieServer:
             "persona_count": len(self.personas),
             "personas": personas,
             # smooth-playback buffer state (for the frontend's buffering UX)
-            "autosim_enabled": bool(autosim_evt.is_set()) if autosim_evt else False,
+            "autosim_enabled": autosim_on,
             "buffer_ahead_target": getattr(self, "_buffer_ahead", 0),
-            "buffer_ahead_actual": max(0, self.step - 1 - displayed_step),
-            "buffering": (self.step - 1 - displayed_step)
-            < getattr(self, "_autosim_min_fill", 5),
+            "buffer_ahead_actual": buffer_actual,
+            "buffering": buffer_actual < min_fill,
+            # backpressure / stall observability (5c) — additive, no behavior change
+            "buffer_min_fill": min_fill,
+            "movement_history_depth": history_depth,
+            "movement_history_limit": getattr(self, "_movement_history_limit", 0),
+            "seconds_since_last_poll": seconds_since_last_poll,
+            "producer_stalled": producer_stalled,
         }
 
     def _setup_flask_routes(self):
@@ -667,6 +727,11 @@ class ReverieServer:
         _t_step_start = time.perf_counter()
         environment = data.get("environment", {})
 
+        # Reset per-step spatial caches (5e). get_nearby_tiles memoizes within a
+        # step; clearing here guarantees no cross-step leakage. Geometry is
+        # step-invariant so this never changes results — it only bounds the cache.
+        self.maze.clear_step_cache()
+
         # Clean up game object events from previous cycle
         for key, val in self._game_obj_cleanup.items():
             self.maze.turn_event_from_tile_idle(key, val)
@@ -742,18 +807,17 @@ class ReverieServer:
                 handled_personas.add(name)
 
         async def run_persona_move(name, persona):
-            """Run a single persona's move asynchronously."""
-            (
-                next_tile,
-                pronunciatio,
-                description,
-                had_llm_call,
-            ) = await persona.move(
-                self.maze,
-                self.personas,
-                self.personas_tile,
-                self.personas_tile[name],
-                self.curr_time,
+            """
+            Run a single persona's move with its OWN timeout (5b).
+
+            Each persona gets an independent PERSONA_MOVE_TIMEOUT_SECONDS budget
+            (via _move_persona_with_timeout), so one slow/hung persona no longer
+            forces the whole batch into the no-op fallback — the others still
+            produce real results, and a timed-out persona is fully rolled back to
+            its pre-step state and gets the continue-current-action fallback.
+            """
+            next_tile, pronunciatio, description, had_llm_call = (
+                await self._move_persona_with_timeout(name, persona)
             )
             return (
                 name,
@@ -765,7 +829,12 @@ class ReverieServer:
             )
 
         async def run_remaining_personas():
-            """Run remaining personas (not handled by sequential initiative) in parallel."""
+            """Run remaining personas (not handled by sequential initiative) in parallel.
+
+            Per-persona timeouts live inside run_persona_move, so this gather has
+            no outer batch timeout — a single slow persona is isolated to its own
+            task and the others still complete with real results.
+            """
             tasks = [
                 run_persona_move(name, persona)
                 for name, persona in self.personas.items()
@@ -773,12 +842,11 @@ class ReverieServer:
             ]
             return await asyncio.gather(*tasks, return_exceptions=True)
 
-        # Run remaining persona moves in parallel
+        # Run remaining persona moves in parallel. No outer batch timeout: each
+        # persona is bounded individually inside run_persona_move (5b).
         try:
             self._busy_reason = f"processing step {self.step}: moving personas"
-            results = _run_async(
-                run_remaining_personas(), timeout=PERSONA_MOVE_TIMEOUT_SECONDS
-            )
+            results = _run_async(run_remaining_personas())
             # Check for exceptions in results
             for r in results:
                 if isinstance(r, Exception):
@@ -786,16 +854,6 @@ class ReverieServer:
                     import traceback
 
                     traceback.print_exception(type(r), r, r.__traceback__)
-        except asyncio.TimeoutError:
-            cli.print_error(
-                f"Persona move batch timed out after "
-                f"{PERSONA_MOVE_TIMEOUT_SECONDS:.0f}s; continuing current actions."
-            )
-            results = [
-                self._fallback_persona_move_result(name, persona)
-                for name, persona in self.personas.items()
-                if name not in handled_personas
-            ]
         except Exception as e:
             cli.print_error(f"Fatal error in parallel execution: {e}")
             import traceback
@@ -961,6 +1019,47 @@ class ReverieServer:
             False,
         )
 
+    async def _move_persona_with_timeout(self, name, persona):
+        """Run one persona.move() under its OWN PERSONA_MOVE_TIMEOUT_SECONDS (5b).
+
+        On timeout the move task is cancelled+awaited (no leaked task) and the
+        persona's FULL action/conversation decision state is rolled back to the
+        pre-step snapshot — not just curr_tile/planned_path — so a partially
+        applied action (e.g. chatting_with/chat/act_address) can't poison the
+        next step. Returns (next_tile, pronunciatio, description, had_llm_call),
+        the continue-current-action fallback on timeout. Used by BOTH the parallel
+        batch and the sequential-encounter path so neither can hang the step.
+        """
+        snap = persona.scratch.snapshot_action_state()
+        move_task = asyncio.ensure_future(
+            persona.move(
+                self.maze,
+                self.personas,
+                self.personas_tile,
+                self.personas_tile[name],
+                self.curr_time,
+            )
+        )
+        try:
+            return await asyncio.wait_for(
+                move_task, timeout=PERSONA_MOVE_TIMEOUT_SECONDS
+            )
+        except asyncio.TimeoutError:
+            # wait_for already requested cancellation; await so it unwinds (no
+            # pending/leaked task, no "Task was destroyed but pending" warning).
+            try:
+                await move_task
+            except (asyncio.CancelledError, Exception):
+                pass
+            persona.scratch.restore_action_state(snap)
+            cli.print_error(
+                f"Persona '{name}' move timed out after "
+                f"{PERSONA_MOVE_TIMEOUT_SECONDS:.0f}s; continuing current action."
+            )
+            fb = self._fallback_persona_move_result(name, persona)
+            # fb = (name, tile, pronunciatio, description, chat, had_llm_call)
+            return fb[1], fb[2], fb[3], fb[5]
+
     def _movement_step(self, movement: dict) -> int:
         """Return a movement packet step, or -1 for malformed packets."""
         try:
@@ -979,30 +1078,35 @@ class ReverieServer:
         if hasattr(self, "personas_tile") and hasattr(self, "maze") and hasattr(
             self, "sim_code"
         ):
-            self._write_environment_snapshot()
-            self._write_movement_snapshot(movements)
+            # Derive the step from the movement packet (captured before the step
+            # counter was incremented) and use it for BOTH snapshots so the
+            # environment and movement files for a step always agree — reading
+            # self.step here raced/skewed the env file ahead by one (TOCTOU).
+            step = self._movement_step(movements)
+            if step >= 0:
+                self._write_environment_snapshot(step)
+                self._write_movement_snapshot(movements, step)
 
-    def _write_movement_snapshot(self, movements: dict):
+    def _write_movement_snapshot(self, movements: dict, step: int):
         """Persist the full per-step movement packet so a finished run can be compressed
         into a replayable master_movement.json (offline, LLM-free smooth playback)."""
-        step = self._movement_step(movements)
         if step < 0:
             return
         move_dir = f"{fs_storage}/{self.sim_code}/movement"
         os.makedirs(move_dir, exist_ok=True)
-        with open(f"{move_dir}/{step}.json", "w") as outfile:
-            outfile.write(json.dumps(movements, indent=2))
+        _atomic_write_json(f"{move_dir}/{step}.json", movements)
 
-    def _write_environment_snapshot(self):
+    def _write_environment_snapshot(self, step: int):
         """Persist current persona tiles so refreshed browsers start in sync."""
+        if step < 0:
+            return
         env_dir = f"{fs_storage}/{self.sim_code}/environment"
         os.makedirs(env_dir, exist_ok=True)
         snapshot = {
             name: {"maze": self.maze.maze_name, "x": tile[0], "y": tile[1]}
             for name, tile in self.personas_tile.items()
         }
-        with open(f"{env_dir}/{self.step}.json", "w") as outfile:
-            outfile.write(json.dumps(snapshot, indent=2))
+        _atomic_write_json(f"{env_dir}/{step}.json", snapshot)
 
     def _refresh_town_center_feedback(self) -> None:
         """Write each persona's recent Town Center request outcomes onto its scratch so
@@ -1167,13 +1271,7 @@ class ReverieServer:
                     pronunciatio,
                     description,
                     had_llm_call,
-                ) = await persona_first.move(
-                    self.maze,
-                    self.personas,
-                    self.personas_tile,
-                    self.personas_tile[first],
-                    self.curr_time,
-                )
+                ) = await self._move_persona_with_timeout(first, persona_first)
                 results.append(
                     (
                         first,
@@ -1228,13 +1326,7 @@ class ReverieServer:
                         pronunciatio_2,
                         description_2,
                         had_llm_call_2,
-                    ) = await persona_second.move(
-                        self.maze,
-                        self.personas,
-                        self.personas_tile,
-                        self.personas_tile[second],
-                        self.curr_time,
-                    )
+                    ) = await self._move_persona_with_timeout(second, persona_second)
                     results.append(
                         (
                             second,
