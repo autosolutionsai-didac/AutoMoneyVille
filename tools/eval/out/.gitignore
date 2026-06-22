@@ -1,3 +1,5 @@
 # Generated evaluation artifacts — keep the directory, ignore the outputs.
 *.metrics.json
 *.report.md
+*.emergence.json
+*.emergence.md

@@ -4,10 +4,14 @@ Usage:
     python -m tools.eval.analyze_run <sim_code>
     python tools/eval/analyze_run.py <sim_code>
     python tools/eval/analyze_run.py latest:claudeville_v1_2026
+    python tools/eval/analyze_run.py <sim_code> --emergence
 
 Pure structural analysis only (no LLM). Writes:
     tools/eval/out/<sim_code>.metrics.json
     tools/eval/out/<sim_code>.report.md
+With --emergence, also writes (Phase 6d):
+    tools/eval/out/<sim_code>.emergence.json
+    tools/eval/out/<sim_code>.emergence.md
 """
 
 from __future__ import annotations
@@ -20,10 +24,12 @@ from pathlib import Path
 # the repo root is importable so the "tools.eval" package resolves.
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from tools.eval import emergence as emergence_mod
     from tools.eval import metrics as metrics_mod
     from tools.eval import report as report_mod
     from tools.eval.run_loader import load_run
 else:
+    from . import emergence as emergence_mod
     from . import metrics as metrics_mod
     from . import report as report_mod
     from .run_loader import load_run
@@ -82,13 +88,25 @@ def main(argv: list[str] | None = None) -> int:
         "sim_code",
         help="Run sim_code, run-dir path, or 'latest[:prefix]'.",
     )
+    parser.add_argument(
+        "--emergence",
+        action="store_true",
+        help="Also compute the Phase 6d emergence report (trajectories).",
+    )
     args = parser.parse_args(argv)
     try:
         payload = analyze(args.sim_code)
+        if args.emergence:
+            emg = emergence_mod.analyze(args.sim_code)
+            payload["_emergence_outputs"] = emg.get("_outputs", {})
     except (FileNotFoundError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     _print_summary(payload)
+    if args.emergence:
+        eo = payload.get("_emergence_outputs", {})
+        print(f"  wrote: {eo.get('emergence_json')}")
+        print(f"  wrote: {eo.get('emergence_md')}")
     return 0
 
 

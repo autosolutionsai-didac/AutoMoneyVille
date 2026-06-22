@@ -293,10 +293,14 @@ def social_network(run: RunData) -> dict[str, Any]:
 
     for _step, packet in sorted(run.movement.items()):
         meta = packet.get("meta", {}) if isinstance(packet, dict) else {}
-        convs = meta.get("conversations", {}) or {}
+        convs = meta.get("conversations", {}) if isinstance(meta, dict) else {}
+        if not isinstance(convs, dict):
+            convs = {}
         step_pairs: set[tuple[str, str]] = set()
 
         for group in convs.values():
+            if not isinstance(group, dict):
+                continue
             participants = [str(p) for p in group.get("participants", []) if p]
             if len(participants) >= 2:
                 group_sizes.append(len(participants))
@@ -305,7 +309,12 @@ def social_network(run: RunData) -> dict[str, Any]:
 
         # Augment from per-persona chat transcripts (covers runs where
         # conversations metadata is sparse but chat lines exist).
-        for name, pdata in (packet.get("persona", {}) or {}).items():
+        persona_map = packet.get("persona", {}) if isinstance(packet, dict) else {}
+        if not isinstance(persona_map, dict):
+            persona_map = {}
+        for name, pdata in persona_map.items():
+            if not isinstance(pdata, dict):
+                continue
             speakers = set(_iter_chat_pairs(pdata.get("chat")))
             speakers.add(name)
             speakers.discard("")

@@ -9,21 +9,35 @@ from typing import Any
 try:
     from .economy import RequestLedger, RequestState, RewardLedger, ToolRegistry
     from .scenario_config import load_scenario
+    from .world_arbiter import WorldArbiter, build_arbiter
 except ImportError:
     from economy import RequestLedger, RequestState, RewardLedger, ToolRegistry
     from scenario_config import load_scenario
+    from world_arbiter import WorldArbiter, build_arbiter
 
 
 class TownCenterStore:
     """Persistent local store for the governed money-agent control plane."""
 
-    def __init__(self, root: str | Path, scenario_id: str = "startup_team_v1"):
+    def __init__(
+        self,
+        root: str | Path,
+        scenario_id: str = "startup_team_v1",
+        *,
+        arbiter: WorldArbiter | None = None,
+    ):
         self.root = Path(root) / "town_center"
         self.scenario_id = scenario_id
         self.scenario = load_scenario(scenario_id)
         self.tool_registry = ToolRegistry.default()
         self.requests = RequestLedger(self.root / "requests.jsonl")
         self.rewards = RewardLedger(self.root / "rewards.jsonl")
+        # Phase 6c: optional Game-Master arbiter. Constructed ONLY when explicitly
+        # passed or enabled via CLAUDEVILLE_WORLD_ARBITER. None (the default) keeps
+        # the legacy approval/reward path byte-for-byte unchanged.
+        self.arbiter: WorldArbiter | None = arbiter or build_arbiter(
+            self.scenario.get("real_world_policy")
+        )
 
     def submit_request(
         self,
@@ -67,6 +81,60 @@ class TownCenterStore:
         if current_request:
             self._award_transition_reward(current_request, state, note)
         return transition
+
+    def adjudicate_request(
+        self, request_id: str, *, use_llm: bool = False
+    ) -> dict[str, Any] | None:
+        """Adjudicate a request with the Game-Master arbiter, if one is configured.
+
+        Returns the verdict dict (verdict / rationale / reward_adjustment /
+        confidence / source) and applies the reward adjustment to the ledger, or
+        None when no arbiter is configured (the default) — in which case the
+        caller falls back to the unchanged human-approval path. Behavior-
+        preserving: with the arbiter OFF this method is a no-op returning None.
+        """
+        if self.arbiter is None:
+            return None
+        request = self._find_current_request(request_id)
+        if not request:
+            return None
+
+        risk_level = self._risk_level_for(request)
+        objective = str(self.scenario.get("objective", ""))
+        if use_llm:
+            verdict = self.arbiter.adjudicate_llm(
+                request, objective=objective, risk_level=risk_level
+            )
+        else:
+            verdict = self.arbiter.adjudicate(request, risk_level=risk_level)
+
+        adjustment = int(verdict.reward_adjustment)
+        if adjustment:
+            reference_id = f"{request_id}:arbiter:{verdict.verdict}"
+            already = any(
+                r.get("reference_id") == reference_id
+                for r in self.rewards.read_all()
+            )
+            if not already:
+                self.rewards.award(
+                    actor=str(request.get("actor") or "team"),
+                    points=adjustment,
+                    source=f"arbiter_{verdict.verdict}",
+                    evidence=verdict.rationale,
+                    reference_id=reference_id,
+                )
+        return verdict.to_dict()
+
+    def _risk_level_for(self, request: dict[str, Any]) -> str:
+        """Best-effort risk tier for a request from its requested tool."""
+        payload = request.get("payload") or {}
+        tool = payload.get("tool") or payload.get("requested_tool")
+        if tool:
+            try:
+                return self.tool_registry.get(str(tool)).risk_level
+            except KeyError:
+                pass
+        return "high"
 
     def award_reward(
         self,
