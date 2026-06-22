@@ -499,6 +499,50 @@ def _format_relevant_memories(relevant_memories: list[Any] | None) -> str:
     return f"\n=== RELEVANT MEMORIES ===\n{body}\n"
 
 
+def _activity_state(activity: str) -> str:
+    """Classify a nearby persona's activity as sleeping / busy / idle (3c).
+
+    Heuristic, prompt-level only: lets the LLM weight wants_to_talk (don't greet
+    sleepers; a busy person may not want to chat). No hard gating.
+    """
+    act = (activity or "").lower()
+    if "sleep" in act or "asleep" in act or "in bed" in act or "napping" in act:
+        return "sleeping"
+    if not act or "idle" in act or "is idle" == act:
+        return "idle"
+    return "busy"
+
+
+def _social_readiness_note(persona: Persona, name: str, activity: str) -> str:
+    """Build a compact familiarity/affinity + activity-state annotation (3c).
+
+    Returns a parenthetical like "(asleep; close friend)" appended to a nearby
+    person's line so the model prefers known/liked people and avoids sleepers.
+    """
+    bits = []
+    state = _activity_state(activity)
+    if state == "sleeping":
+        bits.append("asleep - don't disturb")
+    elif state == "busy":
+        bits.append("occupied")
+
+    rec = None
+    r_mem = getattr(persona, "r_mem", None)
+    if r_mem is not None:
+        rec = r_mem.get(name)
+    if rec:
+        sentiment = rec.get("sentiment", "neutral")
+        fam = int(rec.get("familiarity", 0))
+        if fam <= 0:
+            bits.append(f"{sentiment}")
+        else:
+            bits.append(f"{sentiment}, familiarity {fam}")
+    else:
+        bits.append("a stranger to you")
+
+    return f" ({'; '.join(bits)})" if bits else ""
+
+
 def build_step_prompt(
     persona: Persona,
     perceptions: list[str],
@@ -507,6 +551,8 @@ def build_step_prompt(
     conversation_context: list[tuple[str, str]] | None = None,  # [(speaker, line), ...]
     nearby_conversations: list[dict] | None = None,  # [{participants, chat, group_id}]
     relevant_memories: list[Any] | None = None,  # [ConceptNode, ...] from retrieve_focal
+    relationship_block: str | None = None,  # PEOPLE YOU KNOW block (Phase 3a/3e)
+    recall_snippets: list[str] | None = None,  # prior-chat recall gists (Phase 3b)
 ) -> str:
     """
     Build a step prompt with minimal world updates.
@@ -559,14 +605,24 @@ def build_step_prompt(
             name, activity = item
             distance = 0  # Assume close if no distance provided
 
+        # _get_nearby_personas supplies activity as a (predicate, object) tuple;
+        # render it to a readable string so both display and the Phase-3 social
+        # readiness logic (which lowercases the activity) work on a str.
+        if isinstance(activity, (tuple, list)):
+            activity = " ".join(str(a) for a in activity if a)
+
         if distance <= CONVERSATION_INIT_RANGE:
             close_personas.append((name, activity))
         else:
             distant_personas.append((name, activity, distance))
 
     if close_personas:
+        # Phase 3c: annotate each nearby person with perceived activity state
+        # (busy/idle/sleeping) + your familiarity/affinity so the model weights
+        # wants_to_talk sensibly (don't greet sleepers; prefer known/liked).
         nearby_str = "\n".join(
-            f"- {name}: {activity}" for name, activity in close_personas
+            f"- {name}: {activity}{_social_readiness_note(persona, name, activity)}"
+            for name, activity in close_personas
         )
     else:
         nearby_str = "(no one within talking range)"
@@ -576,6 +632,7 @@ def build_step_prompt(
     if distant_personas:
         in_sight_str = "\nIN SIGHT (approach to talk):\n" + "\n".join(
             f"- {name}: {activity} (~{distance} tiles away)"
+            f"{_social_readiness_note(persona, name, activity)}"
             for name, activity, distance in distant_personas
         )
 
@@ -608,11 +665,29 @@ def build_step_prompt(
         is_group = len(speakers) > 2
 
         if is_group:
-            # Group conversation - note the state, let persona decide
+            # Group conversation - note the state, let persona decide.
+            # Phase 3d: surface participants + a light turn-taking nudge so the
+            # model addresses quiet members and doesn't dominate the floor.
+            participant_list = ", ".join(sorted(speakers))
+            spoke_recently = {spk for spk, _ in conversation_context[-3:]}
+            quiet_members = sorted(speakers - spoke_recently - {scratch.name})
+            quiet_note = ""
+            if quiet_members:
+                quiet_note = (
+                    " Quiet so far: "
+                    + ", ".join(quiet_members)
+                    + " - consider drawing them in."
+                )
             if last_speaker == scratch.name:
-                turn_hint = "(You spoke last. The others haven't responded yet.)"
+                turn_hint = (
+                    f"(Group chat with {participant_list}. You spoke last - "
+                    f"give others room to reply, don't dominate.{quiet_note})"
+                )
             else:
-                turn_hint = f"({last_speaker} just spoke.)"
+                turn_hint = (
+                    f"(Group chat with {participant_list}. {last_speaker} just "
+                    f"spoke.{quiet_note})"
+                )
         else:
             # Two-person conversation - note whose turn, but persona decides how to react
             if last_speaker == scratch.name:
@@ -707,7 +782,11 @@ You're working but there are NO CUSTOMERS or people around.
 Someone is nearby! You may:
 1. Continue your current activity (if it makes sense)
 2. Greet or interact with them (set wants_to_talk: true)
-3. Change what you're doing based on the social situation"""
+3. Change what you're doing based on the social situation
+
+Weigh the social cues: don't wake or interrupt someone marked asleep; an
+occupied person may not want to chat. Prefer people you know and like, and let
+your shared history (PEOPLE YOU KNOW / RECALL above) shape what you say."""
     elif scratch.act_duration and scratch.act_start_time:
         elapsed = (scratch.curr_time - scratch.act_start_time).total_seconds() / 60
         remaining = scratch.act_duration - elapsed
@@ -723,13 +802,23 @@ Only set "continuing": false with a new action if you have a compelling reason t
 
     relevant_memories_section = _format_relevant_memories(relevant_memories)
 
+    # Phase 3a/3e: compact "PEOPLE YOU KNOW (nearby)" section + Phase 3b recall
+    # of the last conversation with each nearby acquaintance. Both are passed in
+    # pre-rendered from persona state (no embeddings, no extra LLM call).
+    people_you_know_section = relationship_block or ""
+    recall_section = ""
+    if recall_snippets:
+        recall_body = "\n".join(f"- {s}" for s in recall_snippets if s)
+        if recall_body:
+            recall_section = f"\n=== RECALL (prior conversations) ===\n{recall_body}\n"
+
     return f"""TIME: {time_str}
 CURRENT LOCATION: {current_sector} > {current_arena}
 CURRENT ACTIVITY: {current_action}{action_context}
 
 === PERCEPTIONS ===
 {perception_str}
-{relevant_memories_section}
+{relevant_memories_section}{people_you_know_section}{recall_section}
 
 === NEARBY PEOPLE (can talk) ===
 {nearby_str}{in_sight_str}
@@ -1423,6 +1512,8 @@ Write this as your internal thoughts, not a list."""
         conversation_context: list[tuple[str, str]] | None = None,
         nearby_conversations: list[dict] | None = None,
         relevant_memories: list[Any] | None = None,
+        relationship_block: str | None = None,
+        recall_snippets: list[str] | None = None,
     ) -> StepResponse:
         """
         Execute a single simulation step for this persona.
@@ -1440,6 +1531,8 @@ Write this as your internal thoughts, not a list."""
             conversation_context,
             nearby_conversations,
             relevant_memories,
+            relationship_block=relationship_block,
+            recall_snippets=recall_snippets,
         )
 
         # Send and parse

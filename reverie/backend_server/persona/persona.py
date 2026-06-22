@@ -62,6 +62,7 @@ from persona.cognitive_modules.reflect import (
 )
 from persona.cognitive_modules.retrieve import retrieve_focal
 from persona.memory_structures.associative_memory import AssociativeMemory
+from persona.memory_structures.relationship_memory import RelationshipMemory
 from persona.memory_structures.scratch import Scratch
 from persona.memory_structures.spatial_memory import MemoryTree
 from persona.prompt_template.claude_structure import StepResponse, UnifiedPersonaClient
@@ -86,6 +87,11 @@ class Persona:
         # <scratch> is the persona's scratch (short term memory) space.
         scratch_saved = f"{folder_mem_saved}/bootstrap_memory/scratch.json"
         self.scratch = Scratch(scratch_saved)
+        # Phase 3: relationship / theory-of-mind memory. Persisted alongside the
+        # other bootstrap_memory artifacts (relationships.json). Heuristic + LLM
+        # text driven, keyword-keyed, NO embeddings (D-002).
+        rel_saved = f"{folder_mem_saved}/bootstrap_memory"
+        self.r_mem = RelationshipMemory(rel_saved)
 
         # Claudeville: Unified persona client (one LLM call per step)
         self.unified_client = UnifiedPersonaClient(self)
@@ -128,6 +134,10 @@ class Persona:
         # to Python variables.
         f_scratch = f"{save_folder}/scratch.json"
         self.scratch.save(f_scratch)
+
+        # Phase 3: relationship memory persists as relationships.json in the
+        # same bootstrap_memory folder as the other artifacts.
+        self.r_mem.save(save_folder)
 
     def perceive(self, maze):
         """
@@ -247,6 +257,13 @@ class Persona:
         focal_keywords = self._build_focal_keywords(perceptions, nearby_personas)
         relevant_memories = retrieve_focal(self, focal_keywords, n=8)
 
+        # Phase 3: relationship recall (3b) + the "people you know" block (3a/3e)
+        # for nearby personas we already have a social record for. Derived from
+        # stored state - no extra LLM call (D-002).
+        relationship_block, recall_snippets = self._build_social_context(
+            nearby_personas
+        )
+
         step_response = await self.unified_client.step(
             perceptions=perceptions,
             nearby_personas=nearby_personas,
@@ -257,6 +274,8 @@ class Persona:
             conversation_context=conversation_context,
             nearby_conversations=nearby_conversations,
             relevant_memories=relevant_memories,
+            relationship_block=relationship_block,
+            recall_snippets=recall_snippets,
         )
         self.last_step_response = step_response
 
@@ -1209,6 +1228,73 @@ class Persona:
                     tokens.add(part.lower())
 
         return tokens
+
+    def _nearby_known_names(self, nearby_personas):
+        """Names of currently-nearby personas we already have a record for.
+
+        Used to scope the relationship block / recall to people present now
+        (plus any active conversation partner, who may be just out of vision).
+        """
+        names = []
+        seen = set()
+
+        def _consider(name):
+            if not name or name in seen:
+                return
+            seen.add(name)
+            names.append(name)
+
+        for item in nearby_personas or []:
+            name = item[0] if isinstance(item, (list, tuple)) and item else None
+            _consider(name)
+        # Active conversation partner is socially "present" even if positioning
+        # drifted them past vision this step.
+        _consider(self.scratch.chatting_with)
+        return names
+
+    def _build_social_context(self, nearby_personas):
+        """Build the Phase-3 social context fed into the step prompt.
+
+        Returns (relationship_block, recall_snippets):
+          - relationship_block (str): the "PEOPLE YOU KNOW (nearby)" section
+            rendered from RelationshipMemory for nearby known personas (3a/3e).
+          - recall_snippets (list[str]): "last time you talked to X..." gists
+            pulled from a_mem.get_last_chat for nearby known personas (3b).
+
+        No LLM call (D-002): both are derived from already-stored state.
+        """
+        known_names = [
+            n for n in self._nearby_known_names(nearby_personas) if self.r_mem.get(n)
+        ]
+        relationship_block = self.r_mem.to_prompt_block(known_names)
+
+        recall_snippets = []
+        for name in known_names:
+            chat_node = self.a_mem.get_last_chat(name)
+            if not chat_node:
+                continue
+            snippet = self._summarize_last_chat(name, chat_node)
+            if snippet:
+                recall_snippets.append(snippet)
+
+        return relationship_block, recall_snippets
+
+    def _summarize_last_chat(self, name, chat_node):
+        """Render a one-line recall gist from a prior chat ConceptNode (3b)."""
+        created = getattr(chat_node, "created", None)
+        when = created.strftime("%b %d %H:%M") if created else "earlier"
+        filling = getattr(chat_node, "filling", None) or []
+        # Pull the last couple of exchanged lines as the recalled gist.
+        tail = []
+        for entry in filling[-2:]:
+            if isinstance(entry, (list, tuple)) and len(entry) >= 2:
+                tail.append(f"{entry[0]}: {entry[1]}")
+        if tail:
+            return f"Last talk with {name} ({when}): " + " / ".join(tail)
+        desc = getattr(chat_node, "description", "")
+        if desc:
+            return f"Last talk with {name} ({when}): {desc}"
+        return ""
 
     def _store_inner_monologue(self, step_response):
         """

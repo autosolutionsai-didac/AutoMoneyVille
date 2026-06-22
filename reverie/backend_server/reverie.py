@@ -1624,6 +1624,23 @@ class ReverieServer:
             filling=chat_lines,
         )
 
+        # Phase 3: update this persona's relationship model from the real
+        # interaction. Heuristic (no LLM, no embeddings - D-002): bump
+        # familiarity, nudge affinity, extract a topic gist. We update toward
+        # every OTHER speaker in the chat so multi-party conversations register
+        # for all participants, not just the primary partner.
+        r_mem = getattr(persona, "r_mem", None)
+        if r_mem is not None:
+            others = {partner}
+            for entry in chat_lines:
+                if isinstance(entry, (list, tuple)) and len(entry) >= 1:
+                    speaker = entry[0]
+                    if speaker and speaker != s:
+                        others.add(speaker)
+            for other in others:
+                if other:
+                    r_mem.note_from_chat(other, chat_lines, when=created)
+
         cli.print_info(f"  Stored conversation: {s} <-> {partner} ({num_lines} lines)")
 
     def _autosim_loop(self):

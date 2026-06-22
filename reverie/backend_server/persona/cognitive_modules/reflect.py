@@ -79,4 +79,30 @@ def store_reflection_insights(persona, insights, source_nodes):
             list(source_ids),
         )
         made.append(node)
+        # Phase 3 (optional): if a reflection insight is about someone we already
+        # know, record it as a first-person belief on the relationship model.
+        # Reuses Phase-1 reflection output -- no new LLM call (D-002).
+        _maybe_refine_belief(persona, text)
     return made
+
+
+def _maybe_refine_belief(persona, insight_text):
+    """Attach an insight as a belief about a known persona it mentions (3).
+
+    Heuristic: if the insight text contains the name of a persona we already
+    have a relationship record for, store the insight as a short first-person
+    belief about them. Safe no-op when the persona has no relationship memory.
+    """
+    r_mem = getattr(persona, "r_mem", None)
+    if r_mem is None or not getattr(r_mem, "relationships", None):
+        return
+    lowered = insight_text.lower()
+    for rec in list(r_mem.relationships.values()):
+        rec_name = rec.get("name") or ""
+        if not rec_name:
+            continue
+        # Match on any token of the recorded name (first name is enough).
+        if any(
+            part and part.lower() in lowered for part in rec_name.split()
+        ):
+            r_mem.add_belief(rec_name, insight_text[:120])
