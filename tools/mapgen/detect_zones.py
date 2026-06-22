@@ -47,6 +47,11 @@ TILE_FRAC = 0.40          # a tile takes a class if >40% of its pixels match
 MIN_BUILDING_TILES = 30   # contour bbox area in tiles to count as a building
 MIN_KEEP_TILES = 20       # after de-overlap trimming, drop a footprint smaller than this
 ASPECT = (0.22, 4.5)
+# --- interior room/furniture detection (Phase 1 fidelity) ---
+FURN_DARK = 0.14          # interior tile is furniture if its dark-pixel fraction exceeds this
+PARTITION_FRAC = 0.55     # an interior row/col is a partition wall if this fraction of its tiles are dark
+MAX_SPLIT_DEPTH = 2       # cap recursion -> at most ~4 rooms per building
+BATH_BLUE_H = (90, 130)   # blue-ish tiled floor -> bathroom hint
 
 
 def tile_frac(mask: np.ndarray) -> np.ndarray:
@@ -157,59 +162,211 @@ def assign_names(footprints):
     return names
 
 
-def build_arenas_objects(name, rect):
-    """Arenas inset 1 tile (perimeter stays an opaque wall = the drawn frame).
-    Objects placed on interior corner tiles (must lie inside their arena)."""
+def _interior(rect, indoor=None):
+    """Inset the footprint by the 1-tile wall ring, then (if an indoor-floor mask is
+    given) trim edge rows/cols that contain NO indoor floor — these are the building's
+    yard/entrance/street captured inside the contour bbox, not real interior."""
+    x0, y0, x1, y1 = rect
+    ix0, iy0, ix1, iy1 = x0 + 1, y0 + 1, x1 - 1, y1 - 1
+    if ix1 < ix0 or iy1 < iy0:
+        ix0, iy0, ix1, iy1 = x0, y0, x1, y1
+    if indoor is not None:
+        while iy1 > iy0 and not indoor[iy1, ix0 : ix1 + 1].any():
+            iy1 -= 1
+        while iy0 < iy1 and not indoor[iy0, ix0 : ix1 + 1].any():
+            iy0 += 1
+        while ix1 > ix0 and not indoor[iy0 : iy1 + 1, ix1].any():
+            ix1 -= 1
+        while ix0 < ix1 and not indoor[iy0 : iy1 + 1, ix0].any():
+            ix0 += 1
+    return (ix0, iy0, ix1, iy1)
+
+
+def _split_rooms(interior, fd):
+    """Split an interior rect into disjoint floor sub-rects = rooms, cutting along the
+    strongest interior partition wall (a row/col of mostly-dark tiles). The excluded
+    partition tiles stay walls (footprint-minus-arena), matching the drawn interior walls."""
+    rooms, stack = [], [(interior, 0)]
+    while stack:
+        (ix0, iy0, ix1, iy1), depth = stack.pop()
+        best = None  # (axis, idx, score)
+        if depth < MAX_SPLIT_DEPTH and (ix1 - ix0 + 1) >= 5 and (iy1 - iy0 + 1) >= 5:
+            for cx in range(ix0 + 2, ix1 - 1):  # interior columns, not against a wall
+                s = float((fd[iy0 : iy1 + 1, cx] > 0.3).mean())
+                if s >= PARTITION_FRAC and (best is None or s > best[2]):
+                    best = ("v", cx, s)
+            for cy in range(iy0 + 2, iy1 - 1):
+                s = float((fd[cy, ix0 : ix1 + 1] > 0.3).mean())
+                if s >= PARTITION_FRAC and (best is None or s > best[2]):
+                    best = ("h", cy, s)
+        if best is None:
+            rooms.append((ix0, iy0, ix1, iy1))
+            continue
+        ax, idx, _ = best
+        halves = (
+            [(ix0, iy0, idx - 1, iy1), (idx + 1, iy0, ix1, iy1)]
+            if ax == "v"
+            else [(ix0, iy0, ix1, idx - 1), (ix0, idx + 1, ix1, iy1)]
+        )
+        for r in halves:
+            if r[2] - r[0] + 1 >= 2 and r[3] - r[1] + 1 >= 2:
+                stack.append((r, depth + 1))
+    return rooms or [interior]
+
+
+def _anchor(rect, kind):
+    x0, y0, x1, y1 = rect
+    return {
+        "tl": (x0, y0), "tr": (x1, y0), "bl": (x0, y1), "br": (x1, y1),
+        "top": ((x0 + x1) // 2, y0), "center": ((x0 + x1) // 2, (y0 + y1) // 2),
+    }.get(kind, ((x0 + x1) // 2, (y0 + y1) // 2))
+
+
+ROOM_OBJECTS = {
+    "bedroom": [("bed", "tl"), ("desk", "bl")],
+    "bathroom": [("toilet", "br"), ("shower", "tr")],
+    "classroom": [("blackboard", "top"), ("classroom student seating", "center"), ("desk", "tr")],
+    "reading room": [("bookshelf", "top"), ("library table", "center")],
+    "living room": [("sofa", "center")],
+    "office": [("desk", "center")],
+    "study": [("desk", "center")],
+    "main": [("counter", "top")],
+}
+
+
+def _name_rooms(building, rooms, fblue):
+    """Assign room names from the detected sub-rects, guaranteeing the addresses the
+    persona base needs (every Residencia has a 'bedroom'; Academia has a 'classroom')."""
+    rooms = sorted(rooms, key=lambda r: (r[2] - r[0] + 1) * (r[3] - r[1] + 1), reverse=True)
+    named = []
+    if building.startswith("Residencia"):
+        bath_done = False
+        for i, r in enumerate(rooms):
+            x0, y0, x1, y1 = r
+            blue = float(fblue[y0 : y1 + 1, x0 : x1 + 1].mean())
+            if i == 0:
+                named.append((r, "bedroom"))
+            elif blue > 0.18 and not bath_done:
+                named.append((r, "bathroom"))
+                bath_done = True
+            elif not bath_done:
+                named.append((r, "bathroom"))
+                bath_done = True
+            else:
+                named.append((r, "living room"))
+    elif building == "Academia de Agentes":
+        for i, r in enumerate(rooms):
+            named.append((r, "classroom" if i == 0 else "office"))
+    elif building == "Biblioteca":
+        for i, r in enumerate(rooms):
+            named.append((r, "reading room" if i == 0 else "study"))
+    else:
+        for i, r in enumerate(rooms):
+            named.append((r, "main" if i == 0 else "room"))
+    # de-duplicate repeated names with a numeric suffix
+    seen: dict = {}
+    out = []
+    for r, n in named:
+        seen[n] = seen.get(n, 0) + 1
+        out.append((r, n if seen[n] == 1 else f"{n} {seen[n]}"))
+    return out
+
+
+def _detect_rooms_objects(name, rect, fd, furn, fblue, indoor):
+    """Partition-split rooms + furniture-aware object placement (Phase 1 fidelity)."""
+    rooms = _name_rooms(name, _split_rooms(_interior(rect, indoor), fd), fblue)
+    arenas, objects, used = [], [], set()
+
+    def place(arena_name, arect, typ, kind):
+        ax0, ay0, ax1, ay1 = arect
+        cells = [
+            (x, y)
+            for y in range(ay0, ay1 + 1)
+            for x in range(ax0, ax1 + 1)
+            if (x, y) not in used and bool(indoor[y][x])  # never place on yard/street
+        ]
+        if not cells:  # degenerate room (all non-indoor) -> skip this object
+            return
+        furn_cells = [c for c in cells if bool(furn[c[1]][c[0]])]
+        pool = furn_cells or cells  # prefer a real furniture tile; else any free floor tile
+        axp, ayp = _anchor(arect, kind)
+        x, y = min(pool, key=lambda t: abs(t[0] - axp) + abs(t[1] - ayp))
+        used.add((x, y))
+        objects.append({"sector": name, "arena": arena_name, "type": typ, "tiles": [[x, y]]})
+
+    has_bath = any(n == "bathroom" or n.startswith("bathroom") for _, n in rooms)
+    for arect, aname in rooms:
+        arenas.append({"sector": name, "name": aname, "rect": list(arect)})
+        base = aname.rsplit(" ", 1)[0] if aname[-1:].isdigit() else aname
+        for typ, kind in ROOM_OBJECTS.get(base, [("table", "center")]):
+            place(aname, arect, typ, kind)
+    # every Residencia needs a reachable toilet even when only one room was detected
+    if name.startswith("Residencia") and not has_bath:
+        bedroom = next((a for a in arenas if a["name"] == "bedroom"), arenas[0])
+        place(bedroom["name"], bedroom["rect"], "toilet", "br")
+        place(bedroom["name"], bedroom["rect"], "shower", "tr")
+    return arenas, objects
+
+
+def _generic_rooms_objects(name, rect):
+    """Robust fallback: the original generic room/object layout (never fails)."""
     x0, y0, x1, y1 = rect
     ix0, iy0, ix1, iy1 = x0 + 1, y0 + 1, x1 - 1, y1 - 1
     if ix1 <= ix0 or iy1 <= iy0:
         ix0, iy0, ix1, iy1 = x0, y0, x1, y1
-    arenas, objects = [], []
-
-    arena_by_name: dict = {}
+    arenas, objects, by = [], [], {}
 
     def o(arena, typ, tile):
-        # Clamp every object strictly inside its own arena rect so its engine address
-        # (sector:arena:type) always resolves to a tile tagged with that arena.
-        ar = arena_by_name.get(arena)
+        ar = by.get(arena)
         tx, ty = tile
         if ar is not None:
             ax0, ay0, ax1, ay1 = ar["rect"]
-            tx = min(max(tx, ax0), ax1)
-            ty = min(max(ty, ay0), ay1)
+            tx, ty = min(max(tx, ax0), ax1), min(max(ty, ay0), ay1)
         objects.append({"sector": name, "arena": arena, "type": typ, "tiles": [[tx, ty]]})
 
-    def add_arena(aname, arect):
+    def add(aname, arect):
         a = {"sector": name, "name": aname, "rect": list(arect)}
         arenas.append(a)
-        arena_by_name[aname] = a
+        by[aname] = a
 
     if name == "Academia de Agentes":
-        add_arena("classroom", [ix0, iy0, ix1, iy1])
+        add("classroom", [ix0, iy0, ix1, iy1])
         o("classroom", "blackboard", (ix0, iy0))
         o("classroom", "classroom student seating", ((ix0 + ix1) // 2, iy1))
         o("classroom", "desk", (ix1, iy0))
     elif name.startswith("Residencia"):
-        # A 2-room split needs >=2 columns of interior; otherwise keep one bedroom so
-        # the bathroom never collapses to an empty/degenerate rect.
         if ix1 - ix0 >= 1:
             midx = (ix0 + ix1) // 2
-            add_arena("bedroom", [ix0, iy0, midx, iy1])
-            add_arena("bathroom", [midx + 1, iy0, ix1, iy1])
+            add("bedroom", [ix0, iy0, midx, iy1])
+            add("bathroom", [midx + 1, iy0, ix1, iy1])
             o("bathroom", "toilet", (ix1, iy1))
             o("bathroom", "shower", (ix1, iy0))
         else:
-            add_arena("bedroom", [ix0, iy0, ix1, iy1])
+            add("bedroom", [ix0, iy0, ix1, iy1])
         o("bedroom", "bed", (ix0, iy0))
         o("bedroom", "desk", (ix0, iy1))
     elif name == "Biblioteca":
-        add_arena("reading room", [ix0, iy0, ix1, iy1])
+        add("reading room", [ix0, iy0, ix1, iy1])
         o("reading room", "bookshelf", (ix0, iy0))
         o("reading room", "library table", ((ix0 + ix1) // 2, (iy0 + iy1) // 2))
     else:
-        add_arena("main", [ix0, iy0, ix1, iy1])
+        add("main", [ix0, iy0, ix1, iy1])
         o("main", "table", ((ix0 + ix1) // 2, (iy0 + iy1) // 2))
     return arenas, objects
+
+
+def build_arenas_objects(name, rect, fd=None, furn=None, fblue=None, indoor=None):
+    """Dispatcher: detection-based rooms/objects, with the generic layout as fallback so
+    world generation never fails the validation gate."""
+    if fd is None or furn is None or fblue is None or indoor is None:
+        return _generic_rooms_objects(name, rect)
+    try:
+        arenas, objects = _detect_rooms_objects(name, rect, fd, furn, fblue, indoor)
+        if not arenas:
+            raise ValueError("no rooms detected")
+        return arenas, objects
+    except Exception:
+        return _generic_rooms_objects(name, rect)
 
 
 def main() -> None:
@@ -231,6 +388,11 @@ def main() -> None:
         (Vh < DARK_V_MAX) & (green == 0) & (water == 0)
     ).astype(np.uint8) * 255
     fd = tile_frac(dark)  # per-tile dark-wall fraction (for perimeter-frame test)
+    furn = fd > FURN_DARK  # per-tile furniture flag (dark blobs inside a room = furniture)
+    blue = (
+        (Hh >= BATH_BLUE_H[0]) & (Hh <= BATH_BLUE_H[1]) & (Sh > 40) & (Vh > 40)
+    ).astype(np.uint8) * 255
+    fblue = tile_frac(blue)  # per-tile blue/tiled-floor fraction (bathroom hint)
 
     # --- building footprints from the dark wall/frame mask ---
     closed = cv2.morphologyEx(
@@ -275,6 +437,9 @@ def main() -> None:
 
     # --- outdoor collision draft (1 = blocked): water, trees blocked; street/grass walkable ---
     fw, ft, fs, fg = (tile_frac(m) for m in (water, tree, street, green))
+    # indoor floor: inside a building, NOT pavement/grass/water/tree -> real interior.
+    # Used to keep rooms + objects + spawns off the yard/entrance captured in a footprint.
+    indoor = (fs < 0.4) & (fg < 0.4) & (fw < 0.3) & (ft < 0.3)
     grid = [[0] * W for _ in range(H)]
     for ty in range(H):
         for tx in range(W):
@@ -294,18 +459,28 @@ def main() -> None:
     sectors, arenas, objects, spawns = [], [], [], []
     for name, f in zip(names, footprints):
         sectors.append({"name": name, "rect": f["rect"]})
-        a, o = build_arenas_objects(name, f["rect"])
+        a, o = build_arenas_objects(name, f["rect"], fd, furn, fblue, indoor)
         arenas.extend(a)
         objects.extend(o)
-    # one spawn per sector at a safe interior tile (left-middle, never an object corner)
+    # one spawn per sector on a walkable floor tile (never an object/furniture tile)
+    obj_tiles = {(t[0], t[1]) for o in objects for t in o.get("tiles", [])}
     for name, f in zip(names, footprints):
-        x0, y0, x1, y1 = f["rect"]
         ar = next((a for a in arenas if a["sector"] == name), None)
         if not ar:
             continue
         ax0, ay0, ax1, ay1 = ar["rect"]
-        sx = min(ax1, ax0 + 1)
-        sy = (ay0 + ay1) // 2
+        cells = [
+            (x, y) for y in range(ay0, ay1 + 1) for x in range(ax0, ax1 + 1)
+            if (x, y) not in obj_tiles
+        ]
+        floor = (
+            [c for c in cells if bool(indoor[c[1]][c[0]]) and not bool(furn[c[1]][c[0]])]
+            or [c for c in cells if bool(indoor[c[1]][c[0]])]
+            or cells
+        )
+        if not floor:
+            continue
+        sx, sy = floor[len(floor) // 2]
         spawns.append({"sector": name, "arena": ar["name"], "name": "sp", "tile": [sx, sy]})
     spec = {
         "world_name": "Claudeville",
@@ -341,6 +516,16 @@ def main() -> None:
             ov, name, (x0 * SQ + 4, y0 * SQ + 22),
             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1,
         )
+    # detected rooms (cyan) + object tiles (yellow dots, labelled)
+    for a in arenas:
+        x0, y0, x1, y1 = a["rect"]
+        cv2.rectangle(
+            ov, (x0 * SQ + 2, y0 * SQ + 2), ((x1 + 1) * SQ - 2, (y1 + 1) * SQ - 2),
+            (255, 255, 0), 1,
+        )
+    for ob in objects:
+        for tx, ty in ob.get("tiles", []):
+            cv2.circle(ov, (tx * SQ + SQ // 2, ty * SQ + SQ // 2), 6, (0, 220, 255), -1)
     for tx in range(W + 1):
         cv2.line(ov, (tx * SQ, 0), (tx * SQ, H * SQ), (0, 0, 0), 1)
     for ty in range(H + 1):

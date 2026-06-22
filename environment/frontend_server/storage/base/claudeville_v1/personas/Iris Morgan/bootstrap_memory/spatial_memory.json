@@ -2,6 +2,9 @@
   "Claudeville": {
     "Banco": {
       "main": [
+        "counter"
+      ],
+      "room": [
         "table"
       ]
     },
@@ -13,10 +16,19 @@
       "bathroom": [
         "toilet",
         "shower"
+      ],
+      "living room": [
+        "sofa"
       ]
     },
     "Universidad": {
       "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ],
+      "room 2": [
         "table"
       ]
     },
@@ -25,25 +37,46 @@
         "blackboard",
         "classroom student seating",
         "desk"
+      ],
+      "office": [
+        "desk"
+      ],
+      "office 2": [
+        "desk"
       ]
     },
     "Oficina de Correos": {
       "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ],
+      "room 2": [
         "table"
       ]
     },
     "Mercado": {
       "main": [
-        "table"
+        "counter"
       ]
     },
     "Taller de Trabajo": {
       "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ],
+      "room 2": [
         "table"
       ]
     },
     "Sala de Acuerdos": {
       "main": [
+        "counter"
+      ],
+      "room": [
         "table"
       ]
     },
@@ -51,14 +84,18 @@
       "reading room": [
         "bookshelf",
         "library table"
+      ],
+      "study": [
+        "desk"
+      ],
+      "study 2": [
+        "desk"
       ]
     },
     "Residencia 2": {
       "bedroom": [
         "bed",
-        "desk"
-      ],
-      "bathroom": [
+        "desk",
         "toilet",
         "shower"
       ]
@@ -66,9 +103,7 @@
     "Residencia 3": {
       "bedroom": [
         "bed",
-        "desk"
-      ],
-      "bathroom": [
+        "desk",
         "toilet",
         "shower"
       ]
@@ -76,9 +111,7 @@
     "Residencia 4": {
       "bedroom": [
         "bed",
-        "desk"
-      ],
-      "bathroom": [
+        "desk",
         "toilet",
         "shower"
       ]
@@ -91,6 +124,9 @@
       "bathroom": [
         "toilet",
         "shower"
+      ],
+      "living room": [
+        "sofa"
       ]
     },
     "Residencia 6": {
@@ -101,19 +137,23 @@
       "bathroom": [
         "toilet",
         "shower"
+      ],
+      "living room": [
+        "sofa"
       ]
     },
     "Oficina de Gobierno": {
       "main": [
+        "counter"
+      ],
+      "room": [
         "table"
       ]
     },
     "Residencia 7": {
       "bedroom": [
         "bed",
-        "desk"
-      ],
-      "bathroom": [
+        "desk",
         "toilet",
         "shower"
       ]
@@ -121,9 +161,7 @@
     "Residencia 8": {
       "bedroom": [
         "bed",
-        "desk"
-      ],
-      "bathroom": [
+        "desk",
         "toilet",
         "shower"
       ]
@@ -141,9 +179,7 @@
     "Residencia 10": {
       "bedroom": [
         "bed",
-        "desk"
-      ],
-      "bathroom": [
+        "desk",
         "toilet",
         "shower"
       ]
