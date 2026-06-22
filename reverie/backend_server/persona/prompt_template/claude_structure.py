@@ -663,6 +663,8 @@ Time remaining: {int(remaining)} minutes
 Unless something important changed, use "continuing": true to keep doing what you're doing.
 Only set "continuing": false with a new action if you have a compelling reason to change."""
 
+    town_center_feedback = getattr(scratch, "town_center_feedback", "") or ""
+
     return f"""TIME: {time_str}
 CURRENT LOCATION: {current_sector} > {current_arena}
 CURRENT ACTIVITY: {current_action}{action_context}
@@ -686,6 +688,7 @@ If you need a tool, approval, resource, budget, account access, or external
 real-world action, include a Town Center request in `town_request`. External
 contact, posting, spending, account changes, and purchases require human approval;
 do not claim they are completed before approval.
+{town_center_feedback}
 
 === REALITY CONSTRAINTS ===
 PHYSICAL:

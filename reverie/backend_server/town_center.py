@@ -141,6 +141,7 @@ class TownCenterStore:
     def _award_transition_reward(
         self, request: dict[str, Any], state: RequestState, note: str
     ) -> dict[str, Any] | None:
+        revenue_cents = 0
         if state == RequestState.APPROVED:
             points = 1
             source = "request_approved"
@@ -149,6 +150,10 @@ class TownCenterStore:
             points = 3
             source = "request_completed"
             outcome_valence = 6
+            # Real revenue only from completed external actions (approval-required);
+            # internal drafts/research earn effort points but no money.
+            if request.get("approval_required"):
+                revenue_cents = _payoff_cents(request.get("payload") or {})
         elif state == RequestState.REJECTED:
             points = -1
             source = "request_rejected"
@@ -176,9 +181,23 @@ class TownCenterStore:
             points=points,
             source=source,
             evidence=evidence,
+            revenue_cents=revenue_cents,
             reference_id=reference_id,
             outcome_valence=outcome_valence,
         )
+
+    def recent_requests_for(
+        self, actor: str, limit: int = 3
+    ) -> list[dict[str, Any]]:
+        """Most-recent requests proposed by `actor`, with their current state — used to
+        feed request outcomes back into the agent's next decision."""
+        norm = _normalize_actor(actor)
+        mine = [
+            r
+            for r in self._current_requests(self.requests.read_all())
+            if _normalize_actor(str(r.get("actor", ""))) == norm
+        ]
+        return mine[-limit:]
 
     def _canonical_actor(self, actor: str) -> str:
         normalized = _normalize_actor(actor)
@@ -191,3 +210,17 @@ class TownCenterStore:
 
 def _normalize_actor(actor: str) -> str:
     return str(actor).replace("_", " ").strip().lower()
+
+
+def _payoff_cents(payload: dict[str, Any]) -> int:
+    """Best-effort parse of an expected payoff (dollars) from a request payload into
+    cents. Accepts a number or a string like '$50', '50 USD', '1,200'."""
+    import re
+
+    val = payload.get("expected_payoff", payload.get("payoff"))
+    if val is None:
+        return 0
+    if isinstance(val, (int, float)):
+        return max(0, int(round(float(val) * 100)))
+    match = re.search(r"(\d+(?:\.\d+)?)", str(val).replace(",", ""))
+    return int(round(float(match.group(1)) * 100)) if match else 0

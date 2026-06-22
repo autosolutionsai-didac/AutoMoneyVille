@@ -37,6 +37,21 @@ def submit_town_request_from_step(
         payload=payload,
     )
 
+    # Safe (no-approval) tools resolve in-sim immediately: the agent did the
+    # research/draft itself, so auto-complete and credit the effort. Risky/external
+    # tools stay PROPOSED and wait for human approval. (Sim policy, kept out of the
+    # store so submit_request stays a pure PROPOSED append.)
+    if not request.get("approval_required", True):
+        try:
+            town_center.transition_request(
+                request["id"],
+                "completed",
+                reviewer="auto",
+                note="auto-completed (safe tool, no approval needed)",
+            )
+        except Exception:
+            pass
+
     if event_ledger:
         event_ledger.append(
             "town_request_submitted",

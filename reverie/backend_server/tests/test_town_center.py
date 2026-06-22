@@ -49,6 +49,45 @@ class TownCenterStoreTests(unittest.TestCase):
                 any(tool["name"] == "send_email" for tool in snapshot["tools"])
             )
 
+    def test_completed_external_action_credits_revenue_from_expected_payoff(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = TownCenterStore(Path(tmp), scenario_id="startup_team_v1")
+            req = store.submit_request(
+                actor="Felix Reed",
+                request_type="external_action",
+                title="Send signed proposal",
+                rationale="Client asked for the proposal in writing.",
+                payload={"tool": "send_email", "expected_payoff": "$50"},
+            )
+            store.transition_request(req["id"], RequestState.APPROVED, reviewer="human", note="ok")
+            store.transition_request(req["id"], RequestState.COMPLETED, reviewer="human", note="sent")
+
+            score = store.snapshot()["team_score"]
+            self.assertEqual(score["points"], 4)  # +1 approved, +3 completed
+            self.assertEqual(score["revenue_cents"], 5000)  # $50 on completion
+
+    def test_recent_requests_for_returns_actor_requests_with_state(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = TownCenterStore(Path(tmp), scenario_id="startup_team_v1")
+            req = store.submit_request(
+                actor="Iris Morgan",
+                request_type="external_action",
+                title="Post launch announcement",
+                rationale="Wants to publish to the company account.",
+                payload={"tool": "post_content"},
+            )
+            store.transition_request(req["id"], RequestState.REJECTED, reviewer="human", note="too early")
+            # a different actor's request must not leak in
+            store.submit_request(
+                actor="Theo Grant", request_type="tool", title="Other", rationale="x",
+                payload={"tool": "web_research"},
+            )
+
+            recent = store.recent_requests_for("Iris Morgan")
+            self.assertEqual(len(recent), 1)
+            self.assertEqual(recent[0]["title"], "Post launch announcement")
+            self.assertEqual(recent[0]["current_state"], "rejected")
+
     def test_agent_names_are_canonicalized_for_requests_and_rewards(self):
         with tempfile.TemporaryDirectory() as tmp:
             store = TownCenterStore(Path(tmp), scenario_id="startup_team_v1")

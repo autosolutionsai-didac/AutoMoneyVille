@@ -94,6 +94,32 @@ class AgentTownRequestSubmissionTests(unittest.TestCase):
             self.assertEqual(events[0]["actor"], "Theo Grant")
             self.assertEqual(events[0]["payload"]["request_id"], request["id"])
 
+    def test_safe_tool_request_auto_completes_in_sim(self):
+        from reverie.backend_server.agent_requests import (
+            submit_town_request_from_step,
+        )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            store = TownCenterStore(root, scenario_id="startup_team_v1")
+            step_response = SimpleNamespace(
+                town_request=SimpleNamespace(
+                    request_type="tool",
+                    title="Research payment-ops niches",
+                    rationale="Read-only research surfaces service opportunities.",
+                    payload={"tool": "web_research"},
+                )
+            )
+
+            submit_town_request_from_step(store, actor="Milo Chen", step_response=step_response)
+
+            snapshot = store.snapshot()
+            self.assertEqual(snapshot["requests"][0]["current_state"], "completed")
+            # auto-completed safe tool earns effort points but no revenue
+            self.assertEqual(snapshot["team_score"]["points"], 3)
+            self.assertEqual(snapshot["team_score"]["revenue_cents"], 0)
+            self.assertEqual(len(snapshot["approval_queue"]), 0)
+
     def test_submit_latest_town_request_clears_persona_response_after_recording(self):
         try:
             from reverie.backend_server.agent_requests import submit_latest_town_request

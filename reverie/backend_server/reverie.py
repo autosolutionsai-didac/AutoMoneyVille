@@ -697,6 +697,10 @@ class ReverieServer:
                 )
                 self.maze.remove_event_from_tile(blank, new_tile)
 
+        # Feed each persona the outcomes of their recent Town Center requests so the
+        # next decision can adapt (approved -> proceed, rejected -> rethink).
+        self._refresh_town_center_feedback()
+
         # Run cognitive pipeline for all personas
         movements = {"persona": {}, "meta": {}}
         submitted_town_requests = []
@@ -934,6 +938,28 @@ class ReverieServer:
         }
         with open(f"{env_dir}/{self.step}.json", "w") as outfile:
             outfile.write(json.dumps(snapshot, indent=2))
+
+    def _refresh_town_center_feedback(self) -> None:
+        """Write each persona's recent Town Center request outcomes onto its scratch so
+        the step prompt can surface them and the agent learns from approvals/rejections."""
+        for persona in self.personas.values():
+            try:
+                recent = self.town_center.recent_requests_for(persona.name, limit=3)
+            except Exception:
+                recent = []
+            lines = []
+            for r in recent:
+                state = str(r.get("current_state", "proposed")).upper()
+                line = f'- "{r.get("title", "request")}" -> {state}'
+                note = r.get("last_note")
+                if note:
+                    line += f" (reviewer note: {note})"
+                lines.append(line)
+            persona.scratch.town_center_feedback = (
+                "Outcomes of your recent Town Center requests:\n" + "\n".join(lines)
+                if lines
+                else ""
+            )
 
     def _submit_latest_town_request(
         self, persona_name: str, submitted_town_requests: list[dict]
