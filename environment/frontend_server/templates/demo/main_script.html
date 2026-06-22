@@ -82,6 +82,11 @@
 
 	// <tile_width> is the width of one individual tile (tiles are square)
 	let tile_width = 32;
+	// World selector: the_ville renders a Tiled tilemap; other worlds (e.g. claudeville)
+	// render a flat PNG background. Map pixel size comes from the view context.
+	let curr_maze = "{{ maze_name|default:'the_ville' }}";
+	let map_width_px = {{ map_width_px|default:4480 }};
+	let map_height_px = {{ map_height_px|default:3200 }};
 	// Important: tile_width % movement_speed has to be 0.
 	// <movement_speed> determines how fast we move at each upate cylce.
 	let movement_speed = {{play_speed}};
@@ -127,6 +132,7 @@
 	  //       png file that contains the tileset.
 	  //       Also IMPORTANT: when you create a tileset in Tiled, always be
 	  //       sure to check the "embedded" option.
+	  if (curr_maze === "the_ville") {
 	  this.load.image("blocks_1", "{% static 'assets/the_ville/visuals/map_assets/blocks/blocks_1.png' %}");
 	  this.load.image("walls", "{% static 'assets/the_ville/visuals/map_assets/v1/Room_Builder_32x32.png' %}");
 	  this.load.image("interiors_pt1", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt1.png' %}");
@@ -146,6 +152,10 @@
 
 	  // Joon: This is the export json file you get from Tiled.
 	  this.load.tilemapTiledJSON("map", "{% static 'assets/the_ville/visuals/the_ville_jan7.json' %}");
+	  } else {
+	  // Other worlds render a single flat background PNG (assets/<maze>/visuals/<maze>_bg.png)
+	  this.load.image("world_bg", "{% static 'assets/' %}" + curr_maze + "/visuals/" + curr_maze + "_bg.png");
+	  }
 
 	  // An atlas is a way to pack multiple images together into one texture. I'm
 	  // using it to load all the player animations (walking left, walking right,
@@ -169,6 +179,8 @@
 	}
 
 	function create() {
+	  let worldW, worldH;
+	  if (curr_maze === "the_ville") {
 	  const map = this.make.tilemap({ key: "map" });
 	  // Joon: Logging map is really helpful for debugging here:
 	  //       console.log(map);
@@ -239,6 +251,14 @@
 	  collisionsLayer.setDepth(-1);
 	  foregroundL1Layer.setDepth(2);
 	  foregroundL2Layer.setDepth(2);
+	  worldW = map.widthInPixels;
+	  worldH = map.heightInPixels;
+	  } else {
+	  // Flat PNG background world (e.g. claudeville).
+	  this.add.image(0, 0, "world_bg").setOrigin(0, 0).setDepth(-1);
+	  worldW = map_width_px;
+	  worldH = map_height_px;
+	  }
 
 	  // *** SET UP CAMERA ***
 	  // "player" is to be set as the center of mass for our "camera." We
@@ -257,7 +277,7 @@
 	  // Setting up the camera.
 	  const camera = this.cameras.main;
 	  camera.startFollow(player);
-	  camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+	  camera.setBounds(0, 0, worldW, worldH);
 	  cursors = this.input.keyboard.createCursorKeys();
 
 	  // *** SET UP PERSONAS ***
@@ -384,7 +404,7 @@
     	let curr_pronunciatio = pronunciatios[Object.keys(personas)[i]];
     	let curr_speech_bubble = speech_bubbles[Object.keys(personas)[i]];
 
-    	if (curr_persona_name.replace("_", " ") in all_movement[step]) {
+    	if (all_movement[step] && curr_persona_name.replace("_", " ") in all_movement[step]) {
     		if (execute_count == execute_count_max) {
     			let curr_x = all_movement[step][curr_persona_name.replace("_", " ")]["movement"][0]
 	        let curr_y = all_movement[step][curr_persona_name.replace("_", " ")]["movement"][1]

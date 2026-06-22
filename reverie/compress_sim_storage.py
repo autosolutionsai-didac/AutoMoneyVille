@@ -6,35 +6,40 @@ Description: Compresses a simulation for replay demos.
 """
 
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
 
-# Add backend_server to path for utils import
-sys.path.insert(0, str(Path(__file__).parent / "backend_server"))
-
-from utils.file_utils import create_folder_if_not_there, find_filenames  # noqa: E402
+# Resolve storage roots from this script's location so compress works from any CWD.
+# Runs live under storage/runs/<sim> (matches fs_storage_runs); recordings go to
+# compressed_storage/<sim> for the demo/replay views.
+_FE = (Path(__file__).resolve().parent.parent / "environment" / "frontend_server")
+_RUNS = _FE / "storage" / "runs"
+_COMPRESSED = _FE / "compressed_storage"
 
 
 def compress(sim_code):
-    sim_storage = f"../environment/frontend_server/storage/{sim_code}"
-    compressed_storage = f"../environment/frontend_server/compressed_storage/{sim_code}"
+    sim_storage = str(_RUNS / sim_code)
+    compressed_storage = str(_COMPRESSED / sim_code)
     persona_folder = sim_storage + "/personas"
     move_folder = sim_storage + "/movement"
     meta_file = sim_storage + "/reverie/meta.json"
 
-    persona_names = []
-    for i in find_filenames(persona_folder, ""):
-        x = i.split("/")[-1].strip()
-        if x[0] != ".":
-            persona_names += [x]
+    if not Path(move_folder).exists():
+        raise SystemExit(
+            f"No movement/ folder in {sim_storage}; run the sim first "
+            "(per-step movement files are written as it steps)."
+        )
 
     max_move_count = max(
-        [
-            int(i.split("/")[-1].split(".")[0])
-            for i in find_filenames(move_folder, "json")
-        ]
+        int(p.stem) for p in Path(move_folder).glob("*.json") if p.stem.isdigit()
     )
+
+    # Active personas = those present in the movement stream (a base may ship more
+    # persona folders than the run actually simulated).
+    with open(f"{move_folder}/0.json") as json_file:
+        persona_names = list(json.load(json_file)["persona"].keys())
 
     persona_last_move = dict()
     master_move = dict()
@@ -68,13 +73,19 @@ def compress(sim_code):
                         "chat": i_move_dict[p]["chat"],
                     }
 
-    create_folder_if_not_there(compressed_storage)
+    os.makedirs(compressed_storage, exist_ok=True)
     with open(f"{compressed_storage}/master_movement.json", "w") as outfile:
         outfile.write(json.dumps(master_move, indent=2))
 
-    shutil.copyfile(meta_file, f"{compressed_storage}/meta.json")
-    shutil.copytree(persona_folder, f"{compressed_storage}/personas/")
+    if Path(meta_file).exists():
+        shutil.copyfile(meta_file, f"{compressed_storage}/meta.json")
+    shutil.copytree(
+        persona_folder, f"{compressed_storage}/personas/", dirs_exist_ok=True
+    )
+    print(f"compressed {max_move_count + 1} steps -> {compressed_storage}")
 
 
 if __name__ == "__main__":
-    compress("July1_the_ville_isabella_maria_klaus-step-3-9")
+    if len(sys.argv) < 2:
+        raise SystemExit("usage: python compress_sim_storage.py <sim_code>")
+    compress(sys.argv[1])

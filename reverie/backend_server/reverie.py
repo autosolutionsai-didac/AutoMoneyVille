@@ -927,6 +927,18 @@ class ReverieServer:
             self, "sim_code"
         ):
             self._write_environment_snapshot()
+            self._write_movement_snapshot(movements)
+
+    def _write_movement_snapshot(self, movements: dict):
+        """Persist the full per-step movement packet so a finished run can be compressed
+        into a replayable master_movement.json (offline, LLM-free smooth playback)."""
+        step = self._movement_step(movements)
+        if step < 0:
+            return
+        move_dir = f"{fs_storage}/{self.sim_code}/movement"
+        os.makedirs(move_dir, exist_ok=True)
+        with open(f"{move_dir}/{step}.json", "w") as outfile:
+            outfile.write(json.dumps(movements, indent=2))
 
     def _write_environment_snapshot(self):
         """Persist current persona tiles so refreshed browsers start in sync."""

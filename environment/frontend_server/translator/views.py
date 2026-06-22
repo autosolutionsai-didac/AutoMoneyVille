@@ -72,6 +72,16 @@ def _world_render_context(backend):
     }
 
 
+# Map pixel sizes for offline views (demo/replay) where no live backend is available.
+_MAZE_DIMS = {"the_ville": (4480, 3200), "claudeville": (2816, 1536)}
+
+
+def _world_render_context_for_maze(maze_name):
+    """Render context for offline replay views, keyed by the recording's maze_name."""
+    w, h = _MAZE_DIMS.get(maze_name, _MAZE_DIMS["the_ville"])
+    return {"maze_name": maze_name, "map_width_px": w, "map_height_px": h}
+
+
 # =============================================================================
 # API Endpoints (New HTTP-based communication)
 # =============================================================================
@@ -339,6 +349,7 @@ def demo(request, sim_code, step, play_speed="2"):
         "play_speed": play_speed,
         "mode": "demo",
     }
+    context.update(_world_render_context_for_maze(meta.get("maze_name", "the_ville")))
     template = "demo/demo.html"
 
     return render(request, template, context)
@@ -370,14 +381,7 @@ def home(request):
 
     # NOTE: Removed os.remove(f_curr_step) - keep file so browser refresh works
 
-    persona_names = []
-    persona_names_set = set()
-    personas_dir = f"storage/runs/{sim_code}/personas"
-    for x in os.listdir(personas_dir):
-        if not x.startswith("."):
-            persona_names.append([x, x.replace(" ", "_")])
-            persona_names_set.add(x)
-
+    live_persona_names = []
     persona_init_pos = []
     if backend and backend.get("sim_code") == sim_code:
         step = backend.get("step", step)
@@ -385,10 +389,20 @@ def home(request):
         for persona in backend.get("personas", []):
             name = persona.get("name")
             tile = persona.get("tile")
-            if name in persona_names_set and tile and len(tile) >= 2:
+            if name and tile and len(tile) >= 2:
+                live_persona_names.append([name, name.replace(" ", "_")])
                 persona_init_pos += [[name, tile[0], tile[1]]]
 
+    persona_names = live_persona_names
     if not persona_init_pos:
+        persona_names = []
+        persona_names_set = set()
+        personas_dir = f"storage/runs/{sim_code}/personas"
+        for x in os.listdir(personas_dir):
+            if not x.startswith("."):
+                persona_names.append([x, x.replace(" ", "_")])
+                persona_names_set.add(x)
+
         env_dir = f"storage/runs/{sim_code}/environment"
         file_count = [
             int(f.split(".")[0])
