@@ -116,6 +116,11 @@ def build_synthetic_run(root: Path) -> Path:
          "payload": {"request_id": "req_offer"}},
         {"id": "e5", "type": "town_request_submitted", "actor": "Theo Grant", "step": 2,
          "payload": {"request_id": "req_email"}},
+        # Phase 4e: two identity-drift checkpoints for Milo across day boundaries.
+        {"id": "e6", "type": "identity_drift", "actor": "Milo Chen", "step": 3,
+         "payload": {"drift_score": 0.2, "drift_note": "mostly in character"}},
+        {"id": "e7", "type": "identity_drift", "actor": "Milo Chen", "step": 5,
+         "payload": {"drift_score": 0.5, "drift_note": "drifting toward sales"}},
     ]
     _write_jsonl(run / "events.jsonl", events)
 
@@ -191,7 +196,7 @@ class EvalHarnessTests(unittest.TestCase):
 
     def test_run_loads_all_artifacts(self):
         self.assertEqual(self.rundata.sim_code, "synthetic_run")
-        self.assertEqual(len(self.rundata.events), 6)
+        self.assertEqual(len(self.rundata.events), 8)
         self.assertEqual(len(self.rundata.movement), 3)
         self.assertEqual(self.rundata.memory_counts.get("Milo Chen"), 2)
         self.assertEqual(set(self.rundata.persona_names), {"Milo Chen", "Iris Morgan", "Theo Grant"})
@@ -252,6 +257,19 @@ class EvalHarnessTests(unittest.TestCase):
     def test_gini_helper(self):
         self.assertEqual(metrics_mod.gini([5, 5, 5]), 0.0)
         self.assertGreater(metrics_mod.gini([0, 0, 10]), 0.0)
+
+    def test_identity_drift_metric(self):
+        drift = self.metrics["identity_drift"]
+        self.assertEqual(drift["actors_with_checkpoints"], 1)
+        milo = drift["per_actor"]["Milo Chen"]
+        self.assertEqual(milo["checkpoint_count"], 2)
+        # Latest checkpoint wins for "latest_drift"; max/mean over both.
+        self.assertEqual(milo["latest_drift"], 0.5)
+        self.assertEqual(milo["max_drift"], 0.5)
+        self.assertEqual(milo["mean_drift"], 0.35)
+        self.assertEqual(milo["latest_note"], "drifting toward sales")
+        # Mean-latest summarized across personas with checkpoints.
+        self.assertEqual(drift["mean_latest_drift"], 0.5)
 
     def test_day_traces_and_judge_parse(self):
         traces = build_day_traces(self.rundata)

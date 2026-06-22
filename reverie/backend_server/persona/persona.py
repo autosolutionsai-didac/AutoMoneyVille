@@ -62,6 +62,7 @@ from persona.cognitive_modules.reflect import (
 )
 from persona.cognitive_modules.retrieve import retrieve_focal
 from persona.memory_structures.associative_memory import AssociativeMemory
+from persona.memory_structures.goal_memory import GoalMemory
 from persona.memory_structures.relationship_memory import RelationshipMemory
 from persona.memory_structures.scratch import Scratch
 from persona.memory_structures.spatial_memory import MemoryTree
@@ -92,10 +93,32 @@ class Persona:
         # text driven, keyword-keyed, NO embeddings (D-002).
         rel_saved = f"{folder_mem_saved}/bootstrap_memory"
         self.r_mem = RelationshipMemory(rel_saved)
+        # Phase 4: multi-day goal / commitment memory. Persisted alongside the
+        # other bootstrap_memory artifacts (goals.json). Carried across day
+        # rollover so unfinished goals/promises no longer evaporate. Heuristic +
+        # occasional-call driven, NO embeddings (D-002), NO per-step LLM call.
+        goal_saved = f"{folder_mem_saved}/bootstrap_memory"
+        self.g_mem = GoalMemory(goal_saved)
 
         # Claudeville: Unified persona client (one LLM call per step)
         self.unified_client = UnifiedPersonaClient(self)
         self.last_step_response = None
+
+        # Phase 4e: snapshot the ORIGINAL innate/learned traits so the
+        # day-boundary identity-drift comparison always measures against who the
+        # persona STARTED as (not the slowly-evolving current values). Captured
+        # once into scratch (which persists) so a day-2+ reload keeps the same
+        # baseline instead of re-snapshotting the already-evolved values.
+        if self.scratch.initial_innate is None:
+            self.scratch.initial_innate = self.scratch.innate
+        if self.scratch.initial_learned is None:
+            self.scratch.initial_learned = self.scratch.learned
+        self.initial_innate = self.scratch.initial_innate
+        self.initial_learned = self.scratch.initial_learned
+        # Phase 4e: most recent day-boundary identity-drift result, set by
+        # _update_identity_at_day_boundary and consumed (then cleared) by the
+        # runtime, which emits it as an `identity_drift` ledger event.
+        self.last_identity_drift = None
 
         # Gen Agents 1b: LLM-judged importance for the persona's CURRENT action.
         # perceive() reads this so the persona's own action event uses the real
@@ -138,6 +161,10 @@ class Persona:
         # Phase 3: relationship memory persists as relationships.json in the
         # same bootstrap_memory folder as the other artifacts.
         self.r_mem.save(save_folder)
+
+        # Phase 4: multi-day goal memory persists as goals.json in the same
+        # bootstrap_memory folder.
+        self.g_mem.save(save_folder)
 
     def perceive(self, maze):
         """
@@ -757,7 +784,18 @@ class Persona:
         """
         date_str = self.scratch.curr_time.strftime("%A, %B %d, %Y")
 
-        # Call LLM to generate personalized daily plan
+        # Phase 4a: carry unfinished goals/promises into the new day. We do NOT
+        # wipe them (unlike daily_req). This is the explicit carry-over seam; the
+        # day-planning prompt already surfaces these open goals so the new plan
+        # honors them.
+        carried = self.g_mem.carry_over(new_day=self.scratch.curr_time)
+        if carried and self._debug_enabled():
+            cli.print_info(
+                f"  {self.name}: {carried} open goal(s) carried into new day"
+            )
+
+        # Call LLM to generate personalized daily plan (occasional call — the new
+        # day's goals will be folded into the multi-day backlog below).
         day_plan = await self.unified_client.plan_day(date_str)
 
         if day_plan.parse_errors:
@@ -770,6 +808,24 @@ class Persona:
             ]
             self.scratch.f_daily_schedule = schedule
             self.scratch.f_daily_schedule_hourly_org = schedule[:]
+
+        # Phase 4a/4b: register today's planned goals into the multi-day backlog
+        # (GoalMemory dedupes by text, so restating a carried-over goal is a no-op
+        # rather than a duplicate). These persist beyond today.
+        for goal_text in self.scratch.daily_req or []:
+            self.g_mem.add(
+                goal_text, kind="goal", source="day plan", when=self.scratch.curr_time
+            )
+
+        # Phase 4b: apply any goal progress / sub-goal decomposition the day plan
+        # produced (no extra LLM call — it rode the existing day-planning call).
+        self._apply_goal_updates(getattr(day_plan, "goal_updates", None))
+
+        # Phase 4d/4e: evolve identity + measure drift at the day boundary. This
+        # reuses an OCCASIONAL day-boundary call (no per-step LLM call). Skipped
+        # on the very first day (no lived experience yet to drift from).
+        if new_day != "First day":
+            await self._update_identity_at_day_boundary()
 
         # Add plan to memory
         thought = f"This is {self.scratch.name}'s plan for {date_str}"
@@ -788,6 +844,119 @@ class Persona:
         self.a_mem.add_thought(
             created, expiration, s, p, o, thought, keywords, 5, thought, None
         )
+
+    def _debug_enabled(self) -> bool:
+        """True if persona debug output is on (avoids importing at module top)."""
+        from persona.prompt_template.claude_structure import DEBUG_VERBOSITY
+
+        return DEBUG_VERBOSITY >= 1
+
+    def _match_goal(self, update):
+        """Resolve a GoalUpdate to a GoalMemory record by id, then fuzzy text."""
+        if update.goal_id:
+            rec = self.g_mem.get(update.goal_id)
+            if rec is not None:
+                return rec
+        text = (update.goal_text or "").strip().lower()
+        if not text:
+            return None
+        for rec in self.g_mem.get_active():
+            rec_text = rec.get("text", "").strip().lower()
+            if rec_text == text or text in rec_text or rec_text in text:
+                return rec
+        return None
+
+    def _apply_goal_updates(self, goal_updates):
+        """Apply day-plan goal progress / sub-goal updates to GoalMemory (4b).
+
+        Matches each update to an existing goal (by id or fuzzy text) and applies
+        progress, status, a note, and any sub-goal decomposition. No LLM call.
+        """
+        if not goal_updates:
+            return
+        when = self.scratch.curr_time
+        for update in goal_updates:
+            rec = self._match_goal(update)
+            if rec is None:
+                continue
+            gid = rec["id"]
+            if update.progress is not None:
+                self.g_mem.update_progress(
+                    gid, update.progress, note=update.note, when=when
+                )
+            elif update.note:
+                self.g_mem.add_note(gid, update.note, when=when)
+            if update.status:
+                # progress >= 1.0 auto-marks the goal done; don't let a stale
+                # explicit status revert it to open (which would make a finished
+                # goal resurface every day). Honor explicit status otherwise.
+                progress_done = update.progress is not None and update.progress >= 1.0
+                if not (progress_done and update.status != "done"):
+                    self.g_mem.mark(gid, update.status, when=when)
+            if update.sub_goals:
+                self.g_mem.set_sub_goals(gid, update.sub_goals, when=when)
+
+    async def _update_identity_at_day_boundary(self):
+        """Evolve identity (4d) and compute identity drift (4e) at day rollover.
+
+        Reuses the OCCASIONAL day-boundary call (NOT per-step). The persona's
+        `currently` (and slowly `learned`) evolve from lived experience and are
+        persisted; the identity-stable-set is refreshed; and a drift score in
+        [0, 1] vs the ORIGINAL traits is stashed on ``self.last_identity_drift``
+        for the runtime to emit into the ledger so the eval harness can read it.
+        """
+        try:
+            update = await self.unified_client.update_identity(
+                self.initial_innate or "", self.initial_learned or ""
+            )
+        except Exception as exc:  # never let identity evolution break a day
+            cli.print_error(f"  {self.name}: identity update failed: {exc}")
+            return
+
+        # On a parse error, DON'T persist the (possibly garbage) evolved traits,
+        # but STILL emit a drift checkpoint below: parse_identity_update_response
+        # clamps drift_score to a safe value, and silently emitting nothing would
+        # leave the eval harness blind on every malformed day.
+        parse_failed = bool(update.parse_errors)
+        if not parse_failed:
+            # Persist slow identity evolution. `currently` evolves freely;
+            # `learned` evolves only if the model returned a changed value (it is
+            # asked to repeat unchanged traits otherwise).
+            if update.currently:
+                self.scratch.currently = update.currently
+            if update.learned:
+                self.scratch.learned = update.learned
+            # Maintain identity markers (the anchor surfaced in prompts). Stored
+            # on scratch so they persist via save()/load().
+            if update.identity_markers:
+                self.scratch.identity_markers = update.identity_markers[:4]
+
+        # Stash drift for the runtime to emit (event_ledger lives in reverie, not
+        # the persona). Keys match the ledger payload exactly (no rename step).
+        # Also record a thought so drift shows up in memory/eval.
+        when = self.scratch.curr_time
+        drift_note = update.drift_note or "identity drift checkpoint"
+        if parse_failed:
+            drift_note = f"[parse-error] {drift_note}"
+        self.last_identity_drift = {
+            "drift_score": update.drift_score,
+            "drift_note": drift_note,
+            "sim_time": when.strftime("%B %d, %Y, %H:%M:%S") if when else None,
+        }
+        if when is not None:
+            expiration = when + datetime.timedelta(days=30)
+            self.a_mem.add_thought(
+                when,
+                expiration,
+                self.scratch.name,
+                "identity_drift",
+                f"{update.drift_score:.2f}",
+                f"Identity drift {update.drift_score:.2f}: {drift_note}",
+                {"identity", "drift", "self"},
+                6,
+                drift_note,
+                None,
+            )
 
     def _set_default_schedule(self):
         """Set a default schedule when LLM planning fails."""

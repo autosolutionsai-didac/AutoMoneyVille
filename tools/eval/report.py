@@ -71,6 +71,8 @@ def render_markdown(metrics: dict[str, Any]) -> str:
     parts.append(_render_coherence(metrics.get("request_coherence", {})))
     parts.append(_render_contribution(metrics.get("contribution", {})))
     parts.append(_render_network(metrics.get("social_network", {})))
+    if metrics.get("identity_drift", {}).get("actors_with_checkpoints"):
+        parts.append(_render_identity_drift(metrics.get("identity_drift", {})))
 
     if "believability_judge" in metrics:
         parts.append(_render_judge(metrics["believability_judge"]))
@@ -253,6 +255,34 @@ def _render_network(n: dict[str, Any]) -> str:
                 ],
             )
         )
+    return "\n".join(out)
+
+
+def _render_identity_drift(d: dict[str, Any]) -> str:
+    out = [_h(2, "Identity Drift (Phase 4)")]
+    out.append(
+        f"- Mean latest drift (0=in-character, 1=off-character): "
+        f"**{d.get('mean_latest_drift', 0)}** "
+        f"across {d.get('actors_with_checkpoints', 0)} personas\n"
+    )
+    rows = []
+    for actor, info in sorted(d.get("per_actor", {}).items()):
+        rows.append(
+            [
+                actor,
+                info.get("checkpoint_count", 0),
+                info.get("latest_drift", 0),
+                info.get("mean_drift", 0),
+                info.get("max_drift", 0),
+                (info.get("latest_note", "")[:48]),
+            ]
+        )
+    out.append(
+        _table(
+            ["Persona", "#Checks", "Latest", "Mean", "Max", "Latest note"],
+            rows,
+        )
+    )
     return "\n".join(out)
 
 

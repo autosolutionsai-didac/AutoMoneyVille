@@ -44,6 +44,16 @@ class Scratch:
         self.currently = None
         self.lifestyle = None
         self.living_area = None
+        # Phase 4d: identity markers — short first-person "who I am right now"
+        # statements maintained at the day boundary from lived experience. They
+        # populate the identity-stable-set (get_str_iss) so the ISS reflects who
+        # the persona has BECOME, not just the static bootstrap traits.
+        self.identity_markers = []
+        # Phase 4e: the ORIGINAL bootstrap innate/learned traits, snapshotted
+        # once and persisted so the identity-drift baseline never moves as the
+        # current traits slowly evolve (None until first captured by Persona).
+        self.initial_innate = None
+        self.initial_learned = None
 
         # REFLECTION VARIABLES
         self.recency_w = 1
@@ -185,6 +195,10 @@ class Scratch:
             self.currently = scratch_load["currently"]
             self.lifestyle = scratch_load["lifestyle"]
             self.living_area = scratch_load["living_area"]
+            # Backward-compatible: bootstrap personas predate identity_markers.
+            self.identity_markers = scratch_load.get("identity_markers", []) or []
+            self.initial_innate = scratch_load.get("initial_innate")
+            self.initial_learned = scratch_load.get("initial_learned")
 
             self.recency_w = scratch_load["recency_w"]
             self.relevance_w = scratch_load["relevance_w"]
@@ -262,6 +276,9 @@ class Scratch:
         scratch["currently"] = self.currently
         scratch["lifestyle"] = self.lifestyle
         scratch["living_area"] = self.living_area
+        scratch["identity_markers"] = self.identity_markers
+        scratch["initial_innate"] = self.initial_innate
+        scratch["initial_learned"] = self.initial_learned
 
         scratch["recency_w"] = self.recency_w
         scratch["relevance_w"] = self.relevance_w
@@ -408,7 +425,15 @@ class Scratch:
         commonset += f"Currently: {self.currently}\n"
         commonset += f"Lifestyle: {self.lifestyle}\n"
         commonset += f"Daily plan requirement: {self.daily_plan_req}\n"
-        commonset += f"Current Date: {self.curr_time.strftime('%A %B %d')}\n"
+        # Phase 4d: identity markers reflect who the persona has BECOME through
+        # lived experience (maintained at the day boundary). Included so the ISS
+        # is a living identity anchor, not just the static bootstrap traits.
+        if self.identity_markers:
+            markers = "; ".join(str(m) for m in self.identity_markers if m)
+            if markers:
+                commonset += f"Self-identity: {markers}\n"
+        if self.curr_time:
+            commonset += f"Current Date: {self.curr_time.strftime('%A %B %d')}\n"
         return commonset
 
     def get_str_name(self):

@@ -302,6 +302,11 @@ def build_initial_prompt(
 
     scenario_section = _get_scenario_context(persona)
 
+    # Phase 4d: identity anchor (ISS) + Phase 4a: open multi-day goals, so the
+    # persona stays coherent and remembers its commitments across sessions.
+    iss_section = _get_iss_section(persona)
+    goals_section = _get_goals_block(persona)
+
     return f"""You are {name}, a {age}-year-old living in Smallville.
 
 === WHO YOU ARE ===
@@ -311,7 +316,7 @@ Lifestyle: {lifestyle}
 Home: {living_area}
 Current focus: {currently}
 Daily plan requirement: {daily_plan_req}
-
+{iss_section}{goals_section}
 === THE WORLD ===
 You live in a small town called Smallville. Time passes naturally. You interact
 with neighbors, maintain daily routines, and make your own decisions about how
@@ -802,6 +807,10 @@ Only set "continuing": false with a new action if you have a compelling reason t
 
     relevant_memories_section = _format_relevant_memories(relevant_memories)
 
+    # Phase 4a: a short active-goals reminder so the persona keeps its multi-day
+    # commitments in view step to step (read from GoalMemory, no LLM call).
+    goals_step_section = _get_goals_step_line(persona)
+
     # Phase 3a/3e: compact "PEOPLE YOU KNOW (nearby)" section + Phase 3b recall
     # of the last conversation with each nearby acquaintance. Both are passed in
     # pre-rendered from persona state (no embeddings, no extra LLM call).
@@ -818,7 +827,7 @@ CURRENT ACTIVITY: {current_action}{action_context}
 
 === PERCEPTIONS ===
 {perception_str}
-{relevant_memories_section}{people_you_know_section}{recall_section}
+{relevant_memories_section}{goals_step_section}{people_you_know_section}{recall_section}
 
 === NEARBY PEOPLE (can talk) ===
 {nearby_str}{in_sight_str}
@@ -892,6 +901,14 @@ def build_day_planning_prompt(persona: Persona, date_str: str) -> str:
     currently = scratch.currently or "nothing in particular"
     daily_plan_req = scratch.daily_plan_req or "none"
 
+    # Phase 4d: surface the identity-stable-set so the plan honors who the
+    # persona is (and has become). get_str_iss is now maintained, not dead code.
+    iss_section = _get_iss_section(persona)
+
+    # Phase 4a/4b: carry open multi-day goals & promises into day planning so the
+    # new day's plan honors unfinished commitments instead of starting fresh.
+    goals_section = _get_goals_block(persona)
+
     return f"""You are {name}, a {age}-year-old.
 
 === WHO YOU ARE ===
@@ -901,13 +918,15 @@ Lifestyle: {lifestyle}
 Home: {living_area}
 Current focus: {currently}
 Daily plan requirement: {daily_plan_req}
-
+{iss_section}{goals_section}
 === TODAY ===
 Today is {date_str}. Plan your day.
 
 Based on your lifestyle and personality, decide:
 1. What time do you wake up? (Consider: are you an early bird or night owl?)
 2. What are your main goals for today? (as many as make sense for you)
+   IMPORTANT: honor your ongoing goals & commitments above — make progress on
+   unfinished goals and keep any promises you owe people.
 3. What is your hourly schedule?
 
 Respond with JSON only:
@@ -928,6 +947,14 @@ Respond with JSON only:
     {{"activity": "evening relaxation", "duration_minutes": 120}},
     {{"activity": "prepare for bed", "duration_minutes": 30}},
     {{"activity": "sleeping", "duration_minutes": 300}}
+  ],
+  "goal_updates": [
+    {{"goal_text": "an ongoing goal from above", "progress": 0.5, "status": "active",
+      "note": "what's left to do",
+      "sub_goals": [
+        {{"text": "first step", "status": "done", "progress": 1.0}},
+        {{"text": "next step", "status": "active", "progress": 0.0}}
+      ]}}
   ]
 }}
 ```
@@ -937,7 +964,27 @@ IMPORTANT:
 - Start with sleeping until your wake_up_hour
 - Honor any explicit daily plan requirement above
 - Be specific about activities based on your personality and goals
+- "goal_updates" is OPTIONAL: only include it to update progress on the ongoing
+  goals listed above, or to break a large project into ordered sub-goals (mark
+  steps as done/active/blocked). Omit it if you have no ongoing goals.
 - Respond with ONLY the JSON, no other text."""
+
+
+@dataclass
+class GoalUpdate:
+    """A progress / decomposition update for one ongoing goal (Phase 4b).
+
+    Matched back to a GoalMemory record by ``goal_id`` (preferred) or fuzzy
+    ``goal_text`` so the day-plan / reflection can advance a multi-day goal and
+    break a project into ordered sub-goals — without any extra LLM call.
+    """
+
+    goal_id: str | None = None
+    goal_text: str | None = None
+    progress: float | None = None
+    status: str | None = None
+    note: str | None = None
+    sub_goals: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -947,8 +994,57 @@ class DayPlanResponse:
     wake_up_hour: int = 7
     daily_goals: list[str] = field(default_factory=list)
     schedule: list[tuple[str, int]] = field(default_factory=list)
+    goal_updates: list[GoalUpdate] = field(default_factory=list)
     raw_json: dict[str, Any] = field(default_factory=dict)
     parse_errors: list[str] = field(default_factory=list)
+
+
+def _parse_goal_updates(data: dict[str, Any]) -> list[GoalUpdate]:
+    """Parse an optional ``goal_updates`` list from a day-plan response (4b)."""
+    updates: list[GoalUpdate] = []
+    raw = data.get("goal_updates", [])
+    if not isinstance(raw, list):
+        return updates
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        gid = item.get("goal_id")
+        text = item.get("goal_text") or item.get("text")
+        if not gid and not text:
+            continue
+        progress = item.get("progress")
+        if progress is not None:
+            try:
+                progress = max(0.0, min(1.0, float(progress)))
+            except (TypeError, ValueError):
+                progress = None
+        sub_goals = []
+        raw_subs = item.get("sub_goals", [])
+        if isinstance(raw_subs, list):
+            for sub in raw_subs:
+                if isinstance(sub, dict) and str(sub.get("text", "")).strip():
+                    sub_goals.append(
+                        {
+                            "text": str(sub["text"]).strip(),
+                            "status": str(sub.get("status", "active")).strip(),
+                            "progress": sub.get("progress", 0.0),
+                        }
+                    )
+                elif isinstance(sub, str) and sub.strip():
+                    sub_goals.append(
+                        {"text": sub.strip(), "status": "active", "progress": 0.0}
+                    )
+        updates.append(
+            GoalUpdate(
+                goal_id=str(gid) if gid else None,
+                goal_text=str(text) if text else None,
+                progress=progress,
+                status=(str(item["status"]).strip() if item.get("status") else None),
+                note=(str(item["note"]).strip() if item.get("note") else None),
+                sub_goals=sub_goals,
+            )
+        )
+    return updates
 
 
 def parse_day_planning_response(response_text: str) -> DayPlanResponse:
@@ -998,6 +1094,9 @@ def parse_day_planning_response(response_text: str) -> DayPlanResponse:
                 result.schedule.append((str(activity), duration))
             elif isinstance(item, (list, tuple)) and len(item) >= 2:
                 result.schedule.append((str(item[0]), int(item[1])))
+
+    # Parse optional goal progress / decomposition updates (Phase 4b).
+    result.goal_updates = _parse_goal_updates(data)
 
     # Validate total duration (should be ~1440 minutes)
     total = sum(d for _, d in result.schedule)
@@ -1264,6 +1363,294 @@ def parse_reflection_response(response_text: str) -> ReflectionResponse:
     return result
 
 
+# ============================================================================
+# #####################[SECTION 5c: STRUCTURED COMPACTION] ###################
+# ============================================================================
+# MemGPT core-memory: replace the free-text compaction summary with a SCHEMA
+# that explicitly preserves commitments/promises, key relationships (names +
+# sentiment), open goals + progress, and identity markers. A human-readable
+# rendering is kept too, so nothing like "I promised Alice X" can be silently
+# dropped when context is compacted. No extra LLM call — this reuses the
+# existing compaction summary call, only changing what it asks for and parses.
+
+
+@dataclass
+class CompactionSummary:
+    """Structured, lossless-by-design memory carried across a compaction.
+
+    Fields mirror what MUST survive a context reset. ``narrative`` is a free-text
+    rendering for the model to read back; the structured fields guarantee the
+    machine-critical bits (promises, relationships, goals, identity) persist.
+    """
+
+    narrative: str = ""
+    commitments: list[str] = field(default_factory=list)
+    relationships: list[dict[str, Any]] = field(default_factory=list)
+    open_goals: list[dict[str, Any]] = field(default_factory=list)
+    identity_markers: list[str] = field(default_factory=list)
+    mood: str = ""
+    raw_json: dict[str, Any] = field(default_factory=dict)
+    parse_errors: list[str] = field(default_factory=list)
+
+    def to_prompt_text(self) -> str:
+        """Render a human-readable block to re-seed the post-compaction session.
+
+        This is what gets injected as the persona's memories in the next initial
+        prompt, so it must read naturally while still listing every preserved
+        commitment, relationship, goal, and identity marker.
+        """
+        parts: list[str] = []
+        if self.narrative:
+            parts.append(self.narrative.strip())
+        if self.commitments:
+            parts.append(
+                "Active commitments / promises:\n"
+                + "\n".join(f"- {c}" for c in self.commitments)
+            )
+        if self.relationships:
+            rel_lines = []
+            for rel in self.relationships:
+                name = rel.get("name", "?")
+                sentiment = rel.get("sentiment", "")
+                note = rel.get("note", "")
+                line = f"- {name}"
+                if sentiment:
+                    line += f" ({sentiment})"
+                if note:
+                    line += f": {note}"
+                rel_lines.append(line)
+            parts.append("Key relationships:\n" + "\n".join(rel_lines))
+        if self.open_goals:
+            goal_lines = []
+            for g in self.open_goals:
+                text = g.get("text", "")
+                pct = g.get("progress")
+                if isinstance(pct, (int, float)):
+                    pct_str = f" ({int(round(float(pct) * 100))}%)"
+                else:
+                    pct_str = ""
+                goal_lines.append(f"- {text}{pct_str}")
+            parts.append("Open goals & progress:\n" + "\n".join(goal_lines))
+        if self.identity_markers:
+            parts.append(
+                "Who I am right now:\n"
+                + "\n".join(f"- {m}" for m in self.identity_markers)
+            )
+        if self.mood:
+            parts.append(f"Current mood: {self.mood}")
+        return "\n\n".join(parts)
+
+
+def build_compaction_prompt(persona: Persona | None = None) -> str:
+    """Build the STRUCTURED compaction prompt (reuses the existing compact call).
+
+    Asks the model for a JSON object preserving the machine-critical memory plus
+    a free-text narrative, instead of the old free-text-only summary.
+    """
+    return """You are about to lose your detailed short-term memory. Write a \
+memory summary so nothing important is forgotten. Respond with ONLY a JSON \
+object in exactly this shape:
+
+```json
+{
+  "narrative": "a first-person paragraph of how today went, your mood, and what you plan next",
+  "commitments": [
+    "every promise or commitment you've made and not yet fulfilled (e.g. 'I promised Alice I'd help her move on Saturday')"
+  ],
+  "relationships": [
+    {"name": "person", "sentiment": "close|friendly|neutral|wary|hostile", "note": "what matters about them"}
+  ],
+  "open_goals": [
+    {"text": "an unfinished goal", "progress": 0.4}
+  ],
+  "identity_markers": [
+    "short statements of who you are right now / how you've changed"
+  ],
+  "mood": "your current overall mood in a word or two"
+}
+```
+
+Be exhaustive about commitments and open_goals — those MUST survive. Respond \
+with ONLY the JSON, no other text."""
+
+
+def parse_compaction_summary(response_text: str) -> CompactionSummary:
+    """Parse the structured compaction JSON, tolerating a free-text fallback.
+
+    If the response is not valid JSON, the whole text is kept as the narrative
+    so a malformed compaction never loses the summary entirely.
+    """
+    result = CompactionSummary()
+
+    json_match = re.search(r"\{.*\}", response_text or "", re.DOTALL)
+    if not json_match:
+        result.narrative = (response_text or "").strip()
+        result.parse_errors.append("No JSON object found; kept text as narrative")
+        return result
+
+    try:
+        data = json.loads(json_match.group())
+        result.raw_json = data
+    except json.JSONDecodeError as e:
+        result.narrative = (response_text or "").strip()
+        result.parse_errors.append(f"Invalid JSON: {e}; kept text as narrative")
+        return result
+
+    result.narrative = str(data.get("narrative", "") or "").strip()
+    result.mood = str(data.get("mood", "") or "").strip()
+
+    commitments = data.get("commitments", [])
+    if isinstance(commitments, list):
+        result.commitments = [str(c).strip() for c in commitments if str(c).strip()]
+
+    rels = data.get("relationships", [])
+    if isinstance(rels, list):
+        for rel in rels:
+            if isinstance(rel, dict) and str(rel.get("name", "")).strip():
+                result.relationships.append(
+                    {
+                        "name": str(rel.get("name", "")).strip(),
+                        "sentiment": str(rel.get("sentiment", "") or "").strip(),
+                        "note": str(rel.get("note", "") or "").strip(),
+                    }
+                )
+
+    goals = data.get("open_goals", [])
+    if isinstance(goals, list):
+        for g in goals:
+            if isinstance(g, dict) and str(g.get("text", "")).strip():
+                progress = g.get("progress", 0.0)
+                try:
+                    progress = max(0.0, min(1.0, float(progress)))
+                except (TypeError, ValueError):
+                    progress = 0.0
+                result.open_goals.append(
+                    {"text": str(g["text"]).strip(), "progress": progress}
+                )
+            elif isinstance(g, str) and g.strip():
+                result.open_goals.append({"text": g.strip(), "progress": 0.0})
+
+    markers = data.get("identity_markers", [])
+    if isinstance(markers, list):
+        result.identity_markers = [
+            str(m).strip() for m in markers if str(m).strip()
+        ]
+
+    return result
+
+
+# ============================================================================
+# #####################[SECTION 5d: IDENTITY EVOLUTION & DRIFT] ##############
+# ============================================================================
+# MemGPT-style identity anchor + a lightweight drift metric. Both ride the
+# OCCASIONAL day-boundary / reflection calls (no per-step LLM call, D-002).
+
+
+@dataclass
+class IdentityUpdateResponse:
+    """Parsed day-boundary identity evolution + drift comparison.
+
+    - currently/learned: optional refreshed identity fields (slow evolution).
+    - identity_markers:  short statements feeding get_str_iss.
+    - drift_score:       float in [0, 1], how far recent behavior has drifted
+      from the persona's INITIAL innate/learned traits (0 = on-character).
+    - drift_note:        one-line explanation of the drift judgment.
+    """
+
+    currently: str | None = None
+    learned: str | None = None
+    identity_markers: list[str] = field(default_factory=list)
+    drift_score: float = 0.0
+    drift_note: str = ""
+    raw_json: dict[str, Any] = field(default_factory=dict)
+    parse_errors: list[str] = field(default_factory=list)
+
+
+def build_identity_update_prompt(
+    persona: Persona, initial_innate: str, initial_learned: str
+) -> str:
+    """Build the day-boundary identity evolution + drift prompt.
+
+    Compares recent behavior against the persona's ORIGINAL traits and asks for
+    a small, grounded identity update plus a drift score. Reuses the occasional
+    day-boundary call — there is no new per-step call.
+    """
+    scratch = persona.scratch
+    name = scratch.name or "you"
+    currently = scratch.currently or "nothing in particular"
+
+    # Recent salient memories (already stored — no retrieval LLM call).
+    recent = _get_recent_memories(persona) or "(no notable recent memories)"
+
+    return f"""You are {name}. The day is ending. Reflect on who you are becoming.
+
+=== YOUR ORIGINAL CORE (when you began) ===
+Innate traits: {initial_innate}
+Learned traits: {initial_learned}
+
+=== YOUR CURRENT FOCUS ===
+{currently}
+
+=== WHAT YOU ACTUALLY DID / FELT RECENTLY ===
+{recent}
+
+Based on your lived experience, respond with ONLY a JSON object:
+```json
+{{
+  "currently": "an updated one-sentence description of what you are focused on now",
+  "learned": "your learned traits, only slightly evolved if your experience warrants it (otherwise repeat them)",
+  "identity_markers": [
+    "2-4 short first-person statements of who you are right now"
+  ],
+  "drift_score": 0.0,
+  "drift_note": "one sentence: how consistent has your recent behavior been with your ORIGINAL innate/learned traits? 0.0 = fully in character, 1.0 = completely off-character"
+}}
+```
+Respond with ONLY the JSON, no other text."""
+
+
+def parse_identity_update_response(response_text: str) -> IdentityUpdateResponse:
+    """Parse the identity evolution + drift JSON, clamping the drift score."""
+    result = IdentityUpdateResponse()
+
+    json_match = re.search(r"\{.*\}", response_text or "", re.DOTALL)
+    if not json_match:
+        result.parse_errors.append("No JSON object found in response")
+        return result
+
+    try:
+        data = json.loads(json_match.group())
+        result.raw_json = data
+    except json.JSONDecodeError as e:
+        result.parse_errors.append(f"Invalid JSON: {e}")
+        return result
+
+    currently = data.get("currently")
+    if isinstance(currently, str) and currently.strip():
+        result.currently = currently.strip()
+    learned = data.get("learned")
+    if isinstance(learned, str) and learned.strip():
+        result.learned = learned.strip()
+
+    markers = data.get("identity_markers", [])
+    if isinstance(markers, list):
+        result.identity_markers = [str(m).strip() for m in markers if str(m).strip()]
+
+    # Clamp drift into [0, 1]; a bad value falls back to 0.0 (assume in-character).
+    raw_drift = data.get("drift_score", 0.0)
+    try:
+        result.drift_score = max(0.0, min(1.0, float(raw_drift)))
+    except (TypeError, ValueError):
+        result.drift_score = 0.0
+        result.parse_errors.append(f"Invalid drift_score {raw_drift!r}; defaulted to 0")
+
+    note = data.get("drift_note")
+    if isinstance(note, str):
+        result.drift_note = note.strip()
+
+    return result
+
+
 def _fuzzy_match(target: str, options: list[str]) -> str | None:
     """Find closest match for target in options.
 
@@ -1298,7 +1685,12 @@ class UnifiedPersonaClient:
         self.persona = persona
         self.persona_name = persona.name
         self._initialized = False
+        # Human-readable rendering of the last structured compaction (or None).
+        # Injected into the next initial prompt to re-seed the session.
         self._compaction_summary: str | None = None
+        # The structured CompactionSummary object itself, so callers can wire its
+        # preserved commitments/goals back into goal/relationship memory.
+        self.last_compaction: CompactionSummary | None = None
 
     async def _get_or_create_client(self) -> ClaudeSDKClient:
         """Get existing client or create new one for this persona."""
@@ -1412,18 +1804,29 @@ class UnifiedPersonaClient:
                 + cli.c(f" COMPACTION at {tokens:,} tokens", cli.Colors.BRIGHT_YELLOW)
             )
 
-        # Ask model to summarize
-        summary_prompt = """Please create a memory summary including:
-1. How you feel about people you've met
-2. Your current mood and concerns
-3. What you plan to do next
-4. Any promises or commitments
-5. Key events from today
+        # Ask the model for a STRUCTURED summary (MemGPT core-memory) so nothing
+        # like "I promised Alice X" is lost in free text. We keep a human-readable
+        # rendering to re-seed the next session, AND the parsed object so the
+        # runtime can fold preserved commitments/goals back into goal memory.
+        summary_prompt = build_compaction_prompt(self.persona)
+        summary_text, _ = await self._send_prompt(summary_prompt)
+        parsed = parse_compaction_summary(summary_text)
+        # Retry once on a parse failure (mirrors update_identity): a malformed
+        # JSON summary would otherwise drop ALL structured commitments/goals and
+        # keep only narrative text, silently losing "must-survive" data.
+        if parsed.parse_errors:
+            retry_prompt = build_retry_prompt(summary_prompt, parsed.parse_errors)
+            summary_text, _ = await self._send_prompt(retry_prompt)
+            parsed = parse_compaction_summary(summary_text)
+        self.last_compaction = parsed
+        rendered = parsed.to_prompt_text()
+        # Fall back to the raw text if structured parse produced nothing usable.
+        self._compaction_summary = rendered or (summary_text or "").strip()
 
-Write this as your internal thoughts, not a list."""
-
-        summary, _ = await self._send_prompt(summary_prompt)
-        self._compaction_summary = summary
+        # Fold the preserved structured memory back into the persona's durable
+        # stores so commitments/goals survive the reset in MEMORY, not just in
+        # the prompt text (no LLM call — reuses the summary just produced).
+        self._absorb_compaction(parsed)
 
         # Disconnect and recreate client
         if self.persona_name in _persona_clients:
@@ -1613,6 +2016,66 @@ Write this as your internal thoughts, not a list."""
             if DEBUG_VERBOSITY >= 2:
                 for ins in result.insights:
                     print(cli.c(f"      • {ins}", cli.Colors.DIM))
+
+        return result
+
+    def _absorb_compaction(self, parsed: CompactionSummary) -> None:
+        """Fold a structured compaction back into durable persona memory.
+
+        Commitments and open goals preserved by the compaction are written into
+        the persona's GoalMemory so they survive the context reset even if the
+        rendered text is later truncated. Idempotent: GoalMemory dedupes by text.
+        No LLM call (reuses the summary just produced).
+        """
+        g_mem = getattr(self.persona, "g_mem", None)
+        if g_mem is None:
+            return
+        when = getattr(self.persona.scratch, "curr_time", None)
+        for commitment in parsed.commitments:
+            g_mem.add(commitment, kind="promise", source="compaction", when=when)
+        for goal in parsed.open_goals:
+            rec = g_mem.add(goal.get("text", ""), kind="goal", when=when)
+            if rec is not None and isinstance(goal.get("progress"), (int, float)):
+                g_mem.update_progress(rec["id"], goal["progress"], when=when)
+
+        # Flush immediately: compaction happens at sleep, far from the next full
+        # persona.save(), so a crash in between would otherwise lose these
+        # re-seeded commitments. Best-effort (no dir bound -> no-op).
+        try:
+            g_mem.persist()
+        except Exception:
+            pass
+
+    async def update_identity(
+        self, initial_innate: str, initial_learned: str
+    ) -> IdentityUpdateResponse:
+        """Day-boundary identity evolution + drift comparison (4d/4e).
+
+        Reuses an OCCASIONAL day-boundary call (NOT per-step): compares recent
+        behavior against the persona's ORIGINAL innate/learned traits, returning
+        an optionally-evolved currently/learned, identity markers, and a drift
+        score in [0, 1]. The caller persists the evolution and emits the drift.
+        """
+        await self._ensure_initialized()
+
+        prompt = build_identity_update_prompt(
+            self.persona, initial_innate, initial_learned
+        )
+        response_text, _ = await self._send_prompt(prompt)
+        result = parse_identity_update_response(response_text)
+
+        if result.parse_errors:
+            retry_prompt = build_retry_prompt(prompt, result.parse_errors)
+            response_text, _ = await self._send_prompt(retry_prompt)
+            result = parse_identity_update_response(response_text)
+
+        if DEBUG_VERBOSITY >= 1 and not result.parse_errors:
+            color = self._get_persona_color()
+            name_part = cli.c(f"  🧭 {self.persona_name}", color, cli.Colors.BOLD)
+            print(
+                f"{name_part} identity drift {result.drift_score:.2f}"
+                + (f" — {result.drift_note}" if DEBUG_VERBOSITY >= 2 else "")
+            )
 
         return result
 
@@ -2141,6 +2604,59 @@ def _get_scenario_context(persona: Persona) -> str:
     if not scenario_context:
         return ""
     return f"\n{scenario_context.strip()}\n"
+
+
+def _get_iss_section(persona: Persona) -> str:
+    """Render the identity-stable-set (4d) as a prompt section, or "".
+
+    Wraps scratch.get_str_iss() — previously unused — so the persona's stable
+    identity anchor is surfaced where identity matters (initial + day planning).
+    """
+    scratch = getattr(persona, "scratch", None)
+    get_iss = getattr(scratch, "get_str_iss", None)
+    if not callable(get_iss):
+        return ""
+    try:
+        iss = get_iss()
+    except Exception:
+        return ""
+    if not iss or not iss.strip():
+        return ""
+    return f"\n=== IDENTITY ANCHOR (who you are) ===\n{iss.strip()}\n"
+
+
+def _get_goals_block(persona: Persona) -> str:
+    """Render the persona's open multi-day goals/commitments block (4a/4b), or "".
+
+    Reads GoalMemory.to_prompt_block — no LLM call, no embeddings (D-002).
+    """
+    g_mem = getattr(persona, "g_mem", None)
+    if g_mem is None:
+        return ""
+    to_block = getattr(g_mem, "to_prompt_block", None)
+    if not callable(to_block):
+        return ""
+    try:
+        return to_block() or ""
+    except Exception:
+        return ""
+
+
+def _get_goals_step_line(persona: Persona) -> str:
+    """Render a short one-line active-goals reminder for the step prompt (4a)."""
+    g_mem = getattr(persona, "g_mem", None)
+    if g_mem is None:
+        return ""
+    to_line = getattr(g_mem, "to_step_line", None)
+    if not callable(to_line):
+        return ""
+    try:
+        line = to_line() or ""
+    except Exception:
+        return ""
+    if not line:
+        return ""
+    return f"\n=== ONGOING GOALS ===\n{line}\n"
 
 
 def _format_remaining_schedule(scratch) -> str:

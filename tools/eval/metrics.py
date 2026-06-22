@@ -403,6 +403,57 @@ def activity(run: RunData) -> dict[str, Any]:
     }
 
 
+def identity_drift(run: RunData) -> dict[str, Any]:
+    """Per-persona identity-drift trajectory from `identity_drift` ledger events.
+
+    Phase 4e emits an `identity_drift` event at each day boundary carrying a
+    drift score in [0, 1] (0 = behavior fully consistent with the persona's
+    ORIGINAL innate/learned traits, 1 = completely off-character) plus a note.
+    This summarizes those checkpoints so the harness can flag personas whose
+    behavior has drifted from who they started as.
+    """
+    per_actor: dict[str, dict[str, Any]] = {}
+    for ev in run.events:
+        if ev.get("type") != "identity_drift":
+            continue
+        actor = ev.get("actor") or "unknown"
+        payload = ev.get("payload", {}) or {}
+        score = payload.get("drift_score")
+        try:
+            score = max(0.0, min(1.0, float(score)))
+        except (TypeError, ValueError):
+            continue
+        bucket = per_actor.setdefault(
+            actor, {"checkpoints": [], "notes": []}
+        )
+        bucket["checkpoints"].append(score)
+        note = payload.get("drift_note")
+        if note:
+            bucket["notes"].append(str(note))
+
+    summary: dict[str, Any] = {}
+    all_latest: list[float] = []
+    for actor, bucket in per_actor.items():
+        scores = bucket["checkpoints"]
+        latest = scores[-1] if scores else 0.0
+        all_latest.append(latest)
+        summary[actor] = {
+            "checkpoint_count": len(scores),
+            "latest_drift": round(latest, 4),
+            "mean_drift": round(sum(scores) / len(scores), 4) if scores else 0.0,
+            "max_drift": round(max(scores), 4) if scores else 0.0,
+            "latest_note": bucket["notes"][-1] if bucket["notes"] else "",
+        }
+
+    return {
+        "per_actor": summary,
+        "actors_with_checkpoints": len(summary),
+        "mean_latest_drift": round(sum(all_latest) / len(all_latest), 4)
+        if all_latest
+        else 0.0,
+    }
+
+
 def compute_metrics(run: RunData) -> dict[str, Any]:
     """Assemble the full structural-metrics payload for a run."""
     return {
@@ -421,6 +472,7 @@ def compute_metrics(run: RunData) -> dict[str, Any]:
         "contribution": contribution(run),
         "social_network": social_network(run),
         "activity": activity(run),
+        "identity_drift": identity_drift(run),
     }
 
 

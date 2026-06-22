@@ -897,6 +897,29 @@ class ReverieServer:
         )
         self._record_movement(movements)
 
+        # Phase 4e: emit any pending day-boundary identity-drift checkpoints so
+        # the eval harness can read them (a persona stashes its drift result on
+        # last_identity_drift at the day rollover). Best-effort and cleared after
+        # emission so each checkpoint is recorded once.
+        for name, persona in self.personas.items():
+            drift = getattr(persona, "last_identity_drift", None)
+            if not drift:
+                continue
+            try:
+                self.event_ledger.append(
+                    "identity_drift",
+                    actor=name,
+                    step=movements["meta"]["step"],
+                    sim_time=drift.get("sim_time") or movements["meta"]["curr_time"],
+                    payload={
+                        "drift_score": drift.get("drift_score", 0.0),
+                        "drift_note": drift.get("drift_note", ""),
+                    },
+                )
+            except Exception:
+                pass
+            persona.last_identity_drift = None
+
         # Additive component timing (EVAL Phase 2). Best-effort: a telemetry
         # failure must never break a simulation step.
         try:
@@ -1640,6 +1663,22 @@ class ReverieServer:
             for other in others:
                 if other:
                     r_mem.note_from_chat(other, chat_lines, when=created)
+
+        # Phase 4a: capture commitments this persona MADE during the conversation
+        # into multi-day goal memory (heuristic, keyword-only — D-002, no LLM, no
+        # embeddings) so a promise like "I'll help you tomorrow" outlives the day.
+        g_mem = getattr(persona, "g_mem", None)
+        if g_mem is not None:
+            try:
+                promises = g_mem.capture_promises_from_chat(
+                    s, chat_lines, partner=partner, when=created
+                )
+                if promises:
+                    cli.print_info(
+                        f"  {s}: captured {len(promises)} promise(s) -> goal memory"
+                    )
+            except Exception as exc:  # promise capture must never break a step
+                cli.print_error(f"  promise capture failed for {s}: {exc}")
 
         cli.print_info(f"  Stored conversation: {s} <-> {partner} ({num_lines} lines)")
 
