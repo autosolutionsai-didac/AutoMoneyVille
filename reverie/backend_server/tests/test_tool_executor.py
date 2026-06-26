@@ -10,6 +10,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from unittest import mock
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
@@ -123,6 +124,81 @@ class MemoryFeedbackTests(unittest.TestCase):
             rs._feed_tool_result_to_persona(persona, None)
             rs._feed_tool_result_to_persona(persona, {"summary": ""})
             self.assertEqual(len(amem.id_to_node), 0)
+
+
+class _FakeResp:
+    def __init__(self, payload, status=200):
+        self._payload = payload
+        self.status = status
+
+    def raise_for_status(self):
+        if self.status >= 400:
+            raise RuntimeError(f"HTTP {self.status}")
+
+    def json(self):
+        return self._payload
+
+
+_EXA_PAYLOAD = {
+    "results": [
+        {
+            "title": "Agency client onboarding pain",
+            "url": "https://example.com/a",
+            "text": "Small agencies struggle with manual client onboarding workflows...",
+        },
+        {
+            "title": "Done-for-you onboarding builds",
+            "url": "https://example.com/b",
+            "highlights": ["fast setup", "retainer upsell path"],
+        },
+    ]
+}
+
+
+class ExaSearchTests(unittest.TestCase):
+    """web_research executes REAL Exa search when configured, else an honest stub.
+    Mocked HTTP — no live key required."""
+
+    def test_live_results_mapped_and_tagged(self):
+        with mock.patch.dict(
+            os.environ,
+            {"CLAUDEVILLE_SEARCH_BACKEND": "exa", "CLAUDEVILLE_SEARCH_API_KEY": "k"},
+            clear=False,
+        ), mock.patch("requests.post", return_value=_FakeResp(_EXA_PAYLOAD)):
+            r = execute("web_research", {"query": "agency onboarding"})
+        self.assertTrue(r.ok)
+        self.assertTrue(r.evidence.get("live"))
+        self.assertEqual(len(r.evidence.get("sources", [])), 2)
+        self.assertIn("onboarding", r.detail.lower())
+
+    def test_http_error_falls_back_to_honest_stub(self):
+        with mock.patch.dict(
+            os.environ,
+            {"CLAUDEVILLE_SEARCH_BACKEND": "exa", "CLAUDEVILLE_SEARCH_API_KEY": "k"},
+            clear=False,
+        ), mock.patch("requests.post", side_effect=RuntimeError("network down")):
+            r = execute("web_research", {"query": "x"})
+        self.assertTrue(r.ok)  # never raises
+        self.assertFalse(r.evidence.get("live"))
+        self.assertIn("no live search", r.summary)
+
+    def test_missing_key_is_stub(self):
+        with mock.patch.dict(
+            os.environ,
+            {"CLAUDEVILLE_SEARCH_BACKEND": "exa", "CLAUDEVILLE_SEARCH_API_KEY": ""},
+            clear=False,
+        ):
+            r = execute("web_research", {"query": "x"})
+        self.assertFalse(r.evidence.get("live"))
+
+    def test_unknown_backend_is_stub(self):
+        with mock.patch.dict(
+            os.environ,
+            {"CLAUDEVILLE_SEARCH_BACKEND": "bogus", "CLAUDEVILLE_SEARCH_API_KEY": "k"},
+            clear=False,
+        ):
+            r = execute("web_research", {"query": "x"})
+        self.assertFalse(r.evidence.get("live"))
 
 
 if __name__ == "__main__":

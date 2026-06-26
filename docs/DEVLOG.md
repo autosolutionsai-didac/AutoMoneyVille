@@ -10,11 +10,32 @@
 > not just the diff. A reusable entry template lives at the [bottom](#how-to-add-an-entry).
 
 **Status at last update:** research prototype, not yet live. Direction: **building toward real-world money**
-(staged, safety-first). Stage 0 (safety/foundation) + Stage 1 (execution layer) landed; the 6-phase roadmap
-+ auto-save are pushed to `origin/main` (auth blocker resolved).
-**Test baseline:** 186 backend + 13 eval + 9 emergence + 34 Django, all green; `ruff` clean.
+(staged, safety-first). Stage 0/1 + 10-person society + coordination + real-search wiring pushed to
+`origin/main` (commit `235cbc40` + the Exa commit).
+**Test baseline:** 192 backend + 13 eval + 9 emergence + 34 Django, all green; `ruff` clean.
 
 ---
+
+## 2026-06-26 — Real web search (Exa) wired into the execution layer
+
+- `tool_executor._run_search` now dispatches on `CLAUDEVILLE_SEARCH_BACKEND` (extensible map) to a real
+  **Exa** adapter (`requests` → `POST https://api.exa.ai/search`, `x-api-key`, maps `results[]` →
+  `{title,url,snippet}`). **Never raises**: missing key / unknown provider / network / HTTP / parse error →
+  `[]` → the honest "no live search" stub (no fabrication). Results still sanitized (LLM-1) + fed into the
+  requesting persona's memory.
+- **Live check:** the integration is correct — a real call authenticated and reached Exa, but the account
+  returned **HTTP 402 `NO_MORE_CREDITS`** ("top up at dashboard.exa.ai"). The fallback behaved exactly as
+  designed (stub, live=False). Added a `logging.warning` so an operator can tell out-of-credits/bad-key from
+  a code bug (no longer a silent swallow). **Action: top up Exa credits, then set
+  `CLAUDEVILLE_SEARCH_BACKEND=exa` + `CLAUDEVILLE_SEARCH_API_KEY` in `.env`** (gitignored) to go live.
+- Tests: 4 mocked-HTTP cases (live mapping + tagged `evidence.live`, HTTP-error→stub, missing-key→stub,
+  unknown-backend→stub). `.env.example` documents the vars (placeholder only — no secret). 192 backend green.
+- **Security:** the key lives only in `.env`; never committed/echoed. (Key was shared in chat → consider
+  rotating it.)
+
+---
+
+## 2026-06-26 — Full 10-person roster + team coordination
 
 ## 2026-06-26 — Full 10-person roster + team coordination
 

@@ -22,9 +22,12 @@ configured search client; handlers never raise (errors become a failed ToolResul
 
 from __future__ import annotations
 
+import logging
 import os
 from dataclasses import dataclass, field
 from typing import Any, Callable
+
+logger = logging.getLogger(__name__)
 
 try:
     from text_safety import sanitize_external as _sanitize_external
@@ -75,21 +78,78 @@ class ToolResult:
         return self.summary
 
 
-# --- search backend (pluggable; real only when explicitly configured) ----------
+# --- search backend (pluggable; real only when a provider + key are configured) ---
+
+EXA_ENDPOINT = "https://api.exa.ai/search"
+_SEARCH_TIMEOUT = 10
+_SNIPPET_MAX = 400
+
+
+def _exa_search(query: str, api_key: str) -> list[dict[str, str]]:
+    """Live Exa search -> [{title,url,snippet}]. Imports requests lazily so the
+    module loads even where requests is unavailable; any failure propagates to
+    _run_search, which swallows it into the honest stub."""
+    import requests
+
+    resp = requests.post(
+        EXA_ENDPOINT,
+        headers={"x-api-key": api_key, "Content-Type": "application/json"},
+        json={
+            "query": query,
+            "numResults": 5,
+            "contents": {"text": {"maxCharacters": _SNIPPET_MAX}},
+        },
+        timeout=_SEARCH_TIMEOUT,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    out: list[dict[str, str]] = []
+    for hit in (data.get("results") or [])[:5]:
+        if not isinstance(hit, dict):
+            continue
+        highlights = hit.get("highlights")
+        if isinstance(highlights, list) and highlights:
+            snippet = " … ".join(str(h) for h in highlights[:3])
+        else:
+            snippet = str(hit.get("text") or hit.get("summary") or "")
+        out.append(
+            {
+                "title": str(hit.get("title") or "").strip(),
+                "url": str(hit.get("url") or "").strip(),
+                "snippet": snippet.strip()[:_SNIPPET_MAX],
+            }
+        )
+    return out
+
+
+# provider name -> adapter(query, api_key) -> list[{title,url,snippet}]
+_SEARCH_PROVIDERS = {"exa": _exa_search}
+
 
 def _run_search(query: str) -> list[dict[str, str]]:
-    """Return search hits as [{title,url,snippet}], or [] if no backend is wired.
+    """Return live search hits as [{title,url,snippet}], or [] (-> honest stub).
 
-    Real providers are intentionally NOT hardcoded — set CLAUDEVILLE_SEARCH_BACKEND
-    and implement the call for your provider/key here. Kept empty by default so the
-    research handler returns an honest 'no live search' stub rather than fiction.
+    Returns [] on missing provider/key OR any error (network/HTTP/parse) — it never
+    raises and never fabricates results. Provider selected by CLAUDEVILLE_SEARCH_BACKEND
+    (defaults to 'exa' when a key is present); key from CLAUDEVILLE_SEARCH_API_KEY.
     """
-    backend = os.environ.get("CLAUDEVILLE_SEARCH_BACKEND", "").strip().lower()
-    if not backend or not query:
+    query = (query or "").strip()
+    if not query:
         return []
-    # Placeholder for a wired provider (e.g., Exa/SerpAPI/Bing). Until one is
-    # implemented for `backend`, return [] so the caller emits the honest stub.
-    return []
+    api_key = os.environ.get("CLAUDEVILLE_SEARCH_API_KEY", "").strip()
+    backend = os.environ.get("CLAUDEVILLE_SEARCH_BACKEND", "").strip().lower()
+    if not backend and api_key:
+        backend = "exa"  # sensible default when only a key is provided
+    provider = _SEARCH_PROVIDERS.get(backend)
+    if provider is None or not api_key:
+        return []
+    try:
+        return provider(query, api_key)
+    except Exception as e:
+        # Never raise (honest stub still applies) but log WHY so an operator can
+        # tell a real failure (e.g., 402 out-of-credits, bad key) from a code bug.
+        logger.warning("live search via '%s' failed; falling back to stub: %s", backend, e)
+        return []
 
 
 def _format_results(results: list[dict[str, str]]) -> str:
