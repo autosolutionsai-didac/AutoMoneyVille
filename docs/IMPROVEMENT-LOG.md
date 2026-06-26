@@ -73,18 +73,39 @@ Ran the full stack end-to-end via the `env/` venv (no conda → `start.sh` unuse
 
 ---
 
+### Roadmap reconciliation (2026-06-25)
+
+After Phase A, a **6-phase believability/society roadmap** shipped (commits `f6650752`→`844c72ae`; see
+[DEVLOG.md](DEVLOG.md)) plus periodic auto-save and an LLM-1 safety fix. This closed/advanced several audit
+findings the burndown below still listed as open — recorded here so state isn't mis-read:
+
+| Finding | New status | Evidence |
+|---------|-----------|----------|
+| MEM-1 (retrieval ignores relevance) | ✅ closed | Phase 1 `f6650752`: `cognitive_modules/retrieve.py::retrieve_focal` (keyword×recency×importance) feeds the `=== RELEVANT MEMORIES ===` step section. |
+| MEM-2 (poignancy hardcoded; reflection inert) | ✅ closed | Phase 1: LLM-judged importance → `ConceptNode.poignancy` (perceive.py); `persona._maybe_reflect` fires at the trigger. |
+| MEM-3 (silent pathfinding failure) | ✅ closed | Phase 5 `087a843e`: `max(150, w*h)` bound + non-silent truncation sentinel/log. |
+| ARCH-2 (move timeout abandons coroutines) | 🟦 mitigated | Phase 5: per-persona `_move_persona_with_timeout` cancels+awaits + full scratch rollback. Root determinism (ARCH-1) still open. |
+| ARCH-5 (`/simulate` synchronous) | ✅ closed | Phase 5: autosim buffer + backpressure; `/simulate` is a no-op echo when autosim is on. |
+| LLM-1 (agent-to-agent prompt injection) | ✅ closed | 2026-06-25: `_sanitize_external` + UNTRUSTED framing of conversation/recall text (`test_prompt_injection.py`). |
+| OPS-4 (core untested) | 🟦 partial | Roadmap added ~110 backend + 22 eval/emergence tests (cognition/relationships/goals/robustness/society/auto-save); inherited maze/path_finder/perceive still thin. |
+
+Test baseline now: **173 backend + 13 eval + 9 emergence + 34 Django**, green; ruff clean.
+
+---
+
 ## Findings burndown
 
 Mirror of the audit register (§2 of [PHASE-1-AUDIT.md](PHASE-1-AUDIT.md)). Status: ⬜ open · 🟦 in progress · ✅ closed · ⏸️ deferred (link a decision). Update as work lands.
+**Note (2026-06-25):** the row statuses below predate the roadmap reconciliation table above — trust that table where they differ; a full row-by-row refresh is pending.
 
 ### CRITICAL (0/6 closed)
 | ID | Title | Status | Notes |
 |----|-------|--------|-------|
-| ARCH-1 | Parallel personas mutate shared world state | ⬜ | Phase C; ARCH-2 is interim mitigation |
-| ARCH-2 | Move timeout abandons coroutines | ⬜ | Phase B |
-| LLM-1 | Agent-to-agent prompt injection | ⬜ | Phase B (G4) |
-| MEM-1 | Retrieval ignores relevance (dead keyword index) | ⬜ | Phase B; blocked on D-001 |
-| MEM-2 | Poignancy/importance hardcoded; reflection inert | ⬜ | Phase B; blocked on D-001 |
+| ARCH-1 | Parallel personas mutate shared world state | ⬜ | Still open — determinism (D-006 snapshot→decide→apply) not built |
+| ARCH-2 | Move timeout abandons coroutines | 🟦 | Mitigated (Phase 5 per-persona timeout + rollback); root tied to ARCH-1 |
+| LLM-1 | Agent-to-agent prompt injection | ✅ | Closed 2026-06-25 — `_sanitize_external` + UNTRUSTED framing + tests |
+| MEM-1 | Retrieval ignores relevance (dead keyword index) | ✅ | Closed (Phase 1 `f6650752`) — `retrieve_focal` wired into step prompt |
+| MEM-2 | Poignancy/importance hardcoded; reflection inert | ✅ | Closed (Phase 1) — LLM importance → poignancy; `_maybe_reflect` fires |
 | OPS-1 | CSRF disabled + `@csrf_exempt` everywhere | ✅ | Closed 2026-06-16 — middleware on, exemptions dropped, token wired, live-verified |
 
 ### HIGH (0/19 closed)

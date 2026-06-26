@@ -49,7 +49,10 @@ class TownCenterStoreTests(unittest.TestCase):
                 any(tool["name"] == "send_email" for tool in snapshot["tools"])
             )
 
-    def test_completed_external_action_credits_revenue_from_expected_payoff(self):
+    def test_revenue_requires_human_evidence_not_self_report(self):
+        # Stage 1 de-fiction: completing a request earns effort points but does
+        # NOT credit revenue from the agent's self-reported expected_payoff.
+        # Revenue is credited ONLY via human-confirmed record_delivery evidence.
         with tempfile.TemporaryDirectory() as tmp:
             store = TownCenterStore(Path(tmp), scenario_id="startup_team_v1")
             req = store.submit_request(
@@ -64,7 +67,71 @@ class TownCenterStoreTests(unittest.TestCase):
 
             score = store.snapshot()["team_score"]
             self.assertEqual(score["points"], 4)  # +1 approved, +3 completed
-            self.assertEqual(score["revenue_cents"], 5000)  # $50 on completion
+            self.assertEqual(score["revenue_cents"], 0)  # no self-reported revenue
+
+            # Human confirms delivery with evidence -> the ONLY revenue path.
+            store.record_delivery(
+                req["id"], revenue_cents=5000, evidence="client paid invoice #12"
+            )
+            self.assertEqual(store.snapshot()["team_score"]["revenue_cents"], 5000)
+            # Idempotent: re-recording the same delivery does not double-credit.
+            store.record_delivery(req["id"], revenue_cents=5000, evidence="dup")
+            self.assertEqual(store.snapshot()["team_score"]["revenue_cents"], 5000)
+
+    def test_completed_request_executes_tool_and_attaches_result(self):
+        # Stage 1: completing a request runs its tool via the execution layer and
+        # attaches the (sanitized) result + actor to the transition for grounding.
+        with tempfile.TemporaryDirectory() as tmp:
+            store = TownCenterStore(Path(tmp), scenario_id="startup_team_v1")
+            req = store.submit_request(
+                actor="Milo Chen",
+                request_type="research",
+                title="market scan",
+                rationale="find niches",
+                payload={"tool": "web_research", "query": "agency onboarding pain"},
+            )
+            t = store.transition_request(
+                req["id"], RequestState.COMPLETED, reviewer="auto", note="done"
+            )
+            self.assertIn("tool_result", t)
+            self.assertEqual(t["tool_result"]["tool"], "web_research")
+            self.assertTrue(t["tool_result"]["ok"])
+            self.assertEqual(t.get("actor"), "Milo Chen")
+
+    def test_outbound_completion_is_dry_run(self):
+        # An approved outbound action executes only as a dry-run (nothing sent).
+        with tempfile.TemporaryDirectory() as tmp:
+            store = TownCenterStore(Path(tmp), scenario_id="startup_team_v1")
+            req = store.submit_request(
+                actor="Theo Grant",
+                request_type="external_action",
+                title="email a lead",
+                rationale="follow up",
+                payload={"tool": "send_email", "recipient": "lead@acme.com"},
+            )
+            store.transition_request(req["id"], RequestState.APPROVED, reviewer="human", note="ok")
+            t = store.transition_request(req["id"], RequestState.COMPLETED, reviewer="human", note="sent")
+            self.assertTrue(t["tool_result"]["dry_run"])
+
+    def test_recent_team_deliverables_excludes_self(self):
+        # Coordination: a persona sees teammates' deliverables, not its own, so
+        # work can pipeline (research -> offer -> outreach).
+        with tempfile.TemporaryDirectory() as tmp:
+            store = TownCenterStore(Path(tmp), scenario_id="startup_team_v1")
+            a = store.submit_request(
+                actor="Milo Chen", request_type="research", title="market scan",
+                rationale="x", payload={"tool": "web_research"},
+            )
+            store.transition_request(a["id"], RequestState.COMPLETED, reviewer="auto", note="done")
+            store.submit_request(
+                actor="Iris Morgan", request_type="offer", title="offer draft",
+                rationale="y", payload={"tool": "offer_draft"},
+            )
+            team = store.recent_team_deliverables("Iris Morgan")
+            titles = [r["title"] for r in team]
+            self.assertIn("market scan", titles)
+            self.assertNotIn("offer draft", titles)  # excludes self
+            self.assertTrue(all(r["actor"] != "Iris Morgan" for r in team))
 
     def test_recent_requests_for_returns_actor_requests_with_state(self):
         with tempfile.TemporaryDirectory() as tmp:

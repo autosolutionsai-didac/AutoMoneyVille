@@ -1,0 +1,14 @@
+{
+  "amara cole": {
+    "name": "Amara Cole",
+    "familiarity": 1,
+    "affinity": 0.1,
+    "sentiment": "neutral",
+    "last_topics": [],
+    "beliefs": [
+      "watches the cost of what they request"
+    ],
+    "last_interaction": null,
+    "times_talked": 0
+  }
+}

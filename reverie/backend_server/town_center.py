@@ -7,10 +7,12 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from . import tool_executor
     from .economy import RequestLedger, RequestState, RewardLedger, ToolRegistry
     from .scenario_config import load_scenario
     from .world_arbiter import WorldArbiter, build_arbiter
 except ImportError:
+    import tool_executor
     from economy import RequestLedger, RequestState, RewardLedger, ToolRegistry
     from scenario_config import load_scenario
     from world_arbiter import WorldArbiter, build_arbiter
@@ -78,9 +80,28 @@ class TownCenterStore:
             reviewer=reviewer,
             note=note,
         )
+        # Stage 1: a completed request actually EXECUTES its tool (read-only
+        # research runs for real or returns an honest stub; outbound/spend tools
+        # are dry-run only). The result is attached so callers can ground the
+        # requesting persona's memory in the real outcome.
+        if current_request and state == RequestState.COMPLETED:
+            transition["tool_result"] = self._execute_request_tool(current_request)
+            transition["actor"] = current_request.get("actor")
         if current_request:
             self._award_transition_reward(current_request, state, note)
         return transition
+
+    def _execute_request_tool(self, request: dict[str, Any]) -> dict[str, Any]:
+        """Run the request's tool via the execution layer; return a result dict."""
+        payload = request.get("payload") or {}
+        tool = payload.get("tool") or payload.get("requested_tool")
+        # Carry the request title as a query hint for research tools.
+        exec_payload = dict(payload)
+        exec_payload.setdefault("query", request.get("title", ""))
+        result = tool_executor.execute(
+            tool, exec_payload, persona_name=str(request.get("actor") or "")
+        )
+        return result.to_dict()
 
     def adjudicate_request(
         self, request_id: str, *, use_llm: bool = False
@@ -218,10 +239,10 @@ class TownCenterStore:
             points = 3
             source = "request_completed"
             outcome_valence = 6
-            # Real revenue only from completed external actions (approval-required);
-            # internal drafts/research earn effort points but no money.
-            if request.get("approval_required"):
-                revenue_cents = _payoff_cents(request.get("payload") or {})
+            # Stage 1 de-fiction: revenue is NO LONGER credited from the agent's
+            # self-reported `expected_payoff`. Completing a request earns effort
+            # points only; real revenue is credited solely via `record_delivery`
+            # against human-confirmed evidence (see below). revenue_cents stays 0.
         elif state == RequestState.REJECTED:
             points = -1
             source = "request_rejected"
@@ -254,6 +275,39 @@ class TownCenterStore:
             outcome_valence=outcome_valence,
         )
 
+    def record_delivery(
+        self,
+        request_id: str,
+        *,
+        revenue_cents: int,
+        evidence: str,
+        reviewer: str = "human",
+    ) -> dict[str, Any] | None:
+        """Credit HUMAN-CONFIRMED revenue against a delivered request (Stage 1.4).
+
+        This is the ONLY path to `revenue_cents`, replacing the old self-reported
+        `expected_payoff` credit. It requires an explicit amount + evidence from a
+        human reviewer and is idempotent per request. Returns the reward row, or
+        None if already recorded.
+        """
+        revenue_cents = max(0, int(revenue_cents or 0))
+        request = self._find_current_request(request_id)
+        actor = str((request or {}).get("actor") or "team")
+        reference_id = f"{request_id}:delivered"
+        if any(
+            r.get("reference_id") == reference_id for r in self.rewards.read_all()
+        ):
+            return None
+        return self.rewards.award(
+            actor=actor,
+            points=0,
+            source="revenue_confirmed",
+            evidence=f"delivered ({reviewer}): {evidence}",
+            revenue_cents=revenue_cents,
+            reference_id=reference_id,
+            outcome_valence=8,
+        )
+
     def recent_requests_for(
         self, actor: str, limit: int = 3
     ) -> list[dict[str, Any]]:
@@ -266,6 +320,26 @@ class TownCenterStore:
             if _normalize_actor(str(r.get("actor", ""))) == norm
         ]
         return mine[-limit:]
+
+    def recent_team_deliverables(
+        self, exclude_actor: str, limit: int = 4
+    ) -> list[dict[str, Any]]:
+        """Recent requests by OTHER team members (most-recent first), so a persona
+        can SEE and BUILD ON what teammates produced — enabling research → offer →
+        outreach handoffs that isolated, self-only feedback never surfaced. Prefers
+        completed/approved deliverables over still-proposed ones."""
+        norm = _normalize_actor(exclude_actor)
+        others = [
+            r
+            for r in self._current_requests(self.requests.read_all())
+            if _normalize_actor(str(r.get("actor", ""))) != norm
+        ]
+        done = [
+            r
+            for r in others
+            if str(r.get("current_state", "")).lower() in ("completed", "approved")
+        ]
+        return (done or others)[-limit:]
 
     def _canonical_actor(self, actor: str) -> str:
         normalized = _normalize_actor(actor)

@@ -43,12 +43,16 @@ def submit_town_request_from_step(
     # store so submit_request stays a pure PROPOSED append.)
     if not request.get("approval_required", True):
         try:
-            town_center.transition_request(
+            transition = town_center.transition_request(
                 request["id"],
                 "completed",
                 reviewer="auto",
                 note="auto-completed (safe tool, no approval needed)",
             )
+            # Carry the executed tool's result so the caller can ground the
+            # requesting persona's memory in the real outcome (Stage 1).
+            if isinstance(transition, dict) and transition.get("tool_result"):
+                request["tool_result"] = transition["tool_result"]
         except Exception:
             pass
 

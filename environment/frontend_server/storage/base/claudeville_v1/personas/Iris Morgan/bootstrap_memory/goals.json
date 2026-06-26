@@ -1,0 +1,44 @@
+{
+  "next_id": 4,
+  "goals": {
+    "g1": {
+      "id": "g1",
+      "text": "Turn the validated pain into a specific service package",
+      "kind": "goal",
+      "status": "active",
+      "progress": 0.0,
+      "created_day": "2023-02-13",
+      "target_day": null,
+      "source": "persona seed",
+      "notes": [],
+      "sub_goals": [],
+      "last_updated": null
+    },
+    "g2": {
+      "id": "g2",
+      "text": "Write a guarantee that makes the offer easy to accept",
+      "kind": "promise",
+      "status": "active",
+      "progress": 0.0,
+      "created_day": "2023-02-13",
+      "target_day": null,
+      "source": "persona seed",
+      "notes": [],
+      "sub_goals": [],
+      "last_updated": null
+    },
+    "g3": {
+      "id": "g3",
+      "text": "Mission: Turn market pain into specific service packages and guarantees.",
+      "kind": "goal",
+      "status": "active",
+      "progress": 0.0,
+      "created_day": "2023-02-13",
+      "target_day": null,
+      "source": "persona seed",
+      "notes": [],
+      "sub_goals": [],
+      "last_updated": null
+    }
+  }
+}

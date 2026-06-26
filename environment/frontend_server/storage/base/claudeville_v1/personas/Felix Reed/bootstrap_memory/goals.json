@@ -1,0 +1,44 @@
+{
+  "next_id": 4,
+  "goals": {
+    "g1": {
+      "id": "g1",
+      "text": "Submit well-justified requests for needed tools and approvals",
+      "kind": "goal",
+      "status": "active",
+      "progress": 0.0,
+      "created_day": "2023-02-13",
+      "target_day": null,
+      "source": "persona seed",
+      "notes": [],
+      "sub_goals": [],
+      "last_updated": null
+    },
+    "g2": {
+      "id": "g2",
+      "text": "Follow up on every pending approval until resolved",
+      "kind": "promise",
+      "status": "active",
+      "progress": 0.0,
+      "created_day": "2023-02-13",
+      "target_day": null,
+      "source": "persona seed",
+      "notes": [],
+      "sub_goals": [],
+      "last_updated": null
+    },
+    "g3": {
+      "id": "g3",
+      "text": "Mission: Submit town-center requests for tools, approvals, and resources.",
+      "kind": "goal",
+      "status": "active",
+      "progress": 0.0,
+      "created_day": "2023-02-13",
+      "target_day": null,
+      "source": "persona seed",
+      "notes": [],
+      "sub_goals": [],
+      "last_updated": null
+    }
+  }
+}

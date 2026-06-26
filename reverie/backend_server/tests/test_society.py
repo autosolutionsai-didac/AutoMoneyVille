@@ -258,7 +258,9 @@ class ArbiterOffByDefaultTests(unittest.TestCase):
             self.assertIsNone(store.adjudicate_request(req["id"]))
 
     def test_legacy_reward_path_unchanged_with_arbiter_off(self):
-        # The known-good reward sequence from test_town_center must be unchanged.
+        # With the arbiter OFF, transitions follow the normal reward path: +1
+        # approved, +3 completed (effort points). Revenue is NOT self-reported
+        # (Stage 1 de-fiction) — it stays 0 until human-confirmed delivery.
         with tempfile.TemporaryDirectory() as tmp:
             store = TownCenterStore(Path(tmp), scenario_id="startup_team_v1")
             req = store.submit_request(
@@ -276,7 +278,7 @@ class ArbiterOffByDefaultTests(unittest.TestCase):
             )
             score = store.snapshot()["team_score"]
             self.assertEqual(score["points"], 4)
-            self.assertEqual(score["revenue_cents"], 5000)
+            self.assertEqual(score["revenue_cents"], 0)
 
     def test_explicit_arbiter_adjudicates_and_adjusts_reward(self):
         # When a caller explicitly opts in, adjudicate_request applies a reward.

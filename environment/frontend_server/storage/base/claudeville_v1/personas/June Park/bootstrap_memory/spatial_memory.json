@@ -1,66 +1,187 @@
 {
-  "the Ville": {
-    "Ryan Park's apartment": {
-      "bathroom": [
-        "shower",
-        "bathroom sink",
-        "toilet"
+  "Claudeville": {
+    "Banco": {
+      "main": [
+        "counter"
       ],
-      "main room": [
+      "room": [
+        "table"
+      ]
+    },
+    "Residencia 1": {
+      "bedroom": [
         "bed",
-        "computer desk",
-        "cooking area",
-        "kitchen sink",
-        "closet",
-        "refrigerator"
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ],
+      "living room": [
+        "sofa"
       ]
     },
-    "The Rose and Crown Pub": {
-      "pub": [
-        "shelf",
-        "refrigerator",
-        "bar customer seating",
-        "behind the bar counter",
-        "kitchen sink",
-        "cooking area",
-        "microphone"
+    "Universidad": {
+      "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ],
+      "room 2": [
+        "table"
       ]
     },
-    "Hobbs Cafe": {
-      "cafe": [
-        "refrigerator",
-        "cafe customer seating",
-        "cooking area",
-        "kitchen sink",
-        "behind the cafe counter",
-        "piano"
+    "Academia de Agentes": {
+      "classroom": [
+        "blackboard",
+        "classroom student seating",
+        "desk"
+      ],
+      "office": [
+        "desk"
+      ],
+      "office 2": [
+        "desk"
       ]
     },
-    "Dorm for Oak Hill College": {
-      "garden": [
-        "dorm garden"
+    "Oficina de Correos": {
+      "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ],
+      "room 2": [
+        "table"
       ]
     },
-    "The Willows Market and Pharmacy": {
-      "store": [
-        "grocery store shelf",
-        "behind the grocery counter",
-        "grocery store counter",
-        "behind the pharmacy counter",
-        "pharmacy store shelf",
-        "pharmacy store counter"
+    "Mercado": {
+      "main": [
+        "counter"
       ]
     },
-    "Harvey Oak Supply Store": {
-      "supply store": [
-        "supply store product shelf",
-        "behind the supply store counter",
-        "supply store counter"
+    "Taller de Trabajo": {
+      "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ],
+      "room 2": [
+        "table"
       ]
     },
-    "Johnson Park": {
-      "park": [
-        "park garden"
+    "Sala de Acuerdos": {
+      "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ]
+    },
+    "Biblioteca": {
+      "reading room": [
+        "bookshelf",
+        "library table"
+      ],
+      "study": [
+        "desk"
+      ],
+      "study 2": [
+        "desk"
+      ]
+    },
+    "Residencia 2": {
+      "bedroom": [
+        "bed",
+        "desk",
+        "toilet",
+        "shower"
+      ]
+    },
+    "Residencia 3": {
+      "bedroom": [
+        "bed",
+        "desk",
+        "toilet",
+        "shower"
+      ]
+    },
+    "Residencia 4": {
+      "bedroom": [
+        "bed",
+        "desk",
+        "toilet",
+        "shower"
+      ]
+    },
+    "Residencia 5": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ],
+      "living room": [
+        "sofa"
+      ]
+    },
+    "Residencia 6": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ],
+      "living room": [
+        "sofa"
+      ]
+    },
+    "Oficina de Gobierno": {
+      "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ]
+    },
+    "Residencia 7": {
+      "bedroom": [
+        "bed",
+        "desk",
+        "toilet",
+        "shower"
+      ]
+    },
+    "Residencia 8": {
+      "bedroom": [
+        "bed",
+        "desk",
+        "toilet",
+        "shower"
+      ]
+    },
+    "Residencia 9": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ]
+    },
+    "Residencia 10": {
+      "bedroom": [
+        "bed",
+        "desk",
+        "toilet",
+        "shower"
       ]
     }
   }

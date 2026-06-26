@@ -36,13 +36,15 @@ from utils import (
     fs_temp_storage,
 )
 
-# Per-step budget for the parallel persona-move batch. 15s was too tight: three
-# concurrent LLM decisions on a grown context (esp. when a compaction call piggybacks)
-# routinely exceeded it, so steps timed out into no-op "continue current action"
-# fallbacks — visible as playback stutter. 45s lets normal active steps finish.
-# (Proper fix is per-persona timeouts that exclude compaction — ARCH-2 / LLM-5, Phase B.)
+# Per-persona budget for a single move() (each persona is timed independently —
+# ARCH-2 mitigated). On a grown context a heavy step (day-planning or a piggybacked
+# compaction) can be slow, and with the FULL 10-persona roster ~10 concurrent LLM
+# calls contend, so the cold standup/day-planning window tripped a 45s cap into
+# benign "continue current action" fallbacks. 90s gives the heavy warmup steps room;
+# the fallback is harmless (full state rollback) so a higher cap just avoids wasted
+# empty steps. Override with CLAUDEVILLE_PERSONA_MOVE_TIMEOUT.
 PERSONA_MOVE_TIMEOUT_SECONDS = float(
-    os.environ.get("CLAUDEVILLE_PERSONA_MOVE_TIMEOUT", "45")
+    os.environ.get("CLAUDEVILLE_PERSONA_MOVE_TIMEOUT", "90")
 )
 
 
@@ -349,6 +351,17 @@ class ReverieServer:
         # evicted before a slow/refreshed client reads them
         self._movement_history_limit = max(500, self._buffer_ahead * 6)
 
+        # Periodic auto-save: persona memory (associative/relationships/goals) only
+        # hits disk on save(), so a long/unattended run that is never manually saved
+        # loses everything (and the eval harness then reads empty memory/social
+        # metrics). Auto-save every N steps closes that gap. 0 disables.
+        self._autosave_every_steps = int(
+            os.environ.get("CLAUDEVILLE_AUTOSAVE_EVERY_STEPS", "250")
+        )
+        # Seed from the loaded step so a freshly-resumed run waits a full interval
+        # before its first auto-save rather than saving immediately.
+        self._last_autosave_step = self.step
+
         # Active conversation groups for multi-party conversations
         # Maps group_id -> ConversationGroup
         self.active_conversations: dict[str, ConversationGroup] = {}
@@ -550,6 +563,14 @@ class ReverieServer:
                 )
             except ValueError:
                 return jsonify({"error": "invalid request state"}), 400
+            # Stage 1: feed a human-approved tool's executed result into the
+            # requesting persona's memory too (same grounding as the auto path).
+            if isinstance(entry, dict) and entry.get("tool_result"):
+                actor = entry.get("actor")
+                self._feed_tool_result_to_persona(
+                    self.personas.get(actor) if actor else None,
+                    entry.get("tool_result"),
+                )
             return jsonify(entry)
 
         @self.flask_app.route("/town-center/rewards", methods=["POST"])
@@ -1130,6 +1151,52 @@ class ReverieServer:
                 else ""
             )
 
+            # Coordination: surface what TEAMMATES recently produced so work can
+            # pipeline (research -> offer -> outreach) instead of each agent acting
+            # in isolation. Titles are agent-authored, so render sanitized.
+            try:
+                team = self.town_center.recent_team_deliverables(persona.name, limit=4)
+            except Exception:
+                team = []
+            tlines = []
+            for r in team:
+                st = str(r.get("current_state", "proposed")).upper()
+                actor = str(r.get("actor", "?"))
+                title = str(r.get("title", "work"))
+                tlines.append(f'- {actor}: "{title}" [{st}]')
+            persona.scratch.team_activity = "\n".join(tlines)
+
+    def _feed_tool_result_to_persona(self, persona, result: dict | None) -> None:
+        """Store an executed tool's result as an observation in the persona's
+        associative memory (Stage 1), so real outcomes ground future decisions.
+
+        `result` is the sanitized ToolResult dict; best-effort and never fatal.
+        """
+        if not persona or not isinstance(result, dict):
+            return
+        summary = str(result.get("summary") or "").strip()
+        if not summary:
+            return
+        try:
+            created = self.curr_time
+            expiration = created + datetime.timedelta(days=30)
+            tool = str(result.get("tool") or "tool")
+            desc = summary if summary.lower().startswith(tool.lower()) else f"{tool}: {summary}"
+            persona.a_mem.add_event(
+                created,
+                expiration,
+                persona.name,
+                "received result of",
+                tool,
+                desc,
+                {"tool", "result", tool.lower().replace(" ", "_")},
+                5,
+                desc,
+                [],
+            )
+        except Exception as e:
+            self._log_safe(f"  tool-result memory feed failed: {e}", error=True)
+
     def _submit_latest_town_request(
         self, persona_name: str, submitted_town_requests: list[dict]
     ) -> dict | None:
@@ -1148,6 +1215,10 @@ class ReverieServer:
         )
         if not request_entry:
             return None
+
+        # Stage 1: ground the persona in the real outcome of an executed (safe)
+        # tool, so the result feeds future retrieval/decisions instead of vanishing.
+        self._feed_tool_result_to_persona(persona, request_entry.get("tool_result"))
 
         summary = {
             "id": request_entry["id"],
@@ -1800,6 +1871,9 @@ class ReverieServer:
                 environment[persona_name] = {"x": tile[0], "y": tile[1]}
             try:
                 self._process_step({"environment": environment})
+                # Periodic auto-save so unattended autosim runs persist memory
+                # (the lock is free here — _process_step has released it).
+                self._maybe_autosave()
             except Exception as e:
                 cli.print_error(f"autosim step failed: {e}")
                 time.sleep(0.5)
@@ -1851,6 +1925,52 @@ class ReverieServer:
         self.flask_thread = threading.Thread(target=run_flask, daemon=True)
         self.flask_thread.start()
         cli.print_info(f"HTTP server started on http://127.0.0.1:{BACKEND_PORT}")
+
+    @staticmethod
+    def _log_safe(message: str, error: bool = False) -> None:
+        """Print via cli but never raise — guards against non-UTF-8 stdout
+        (cp1252) choking on the banner glyphs, so logging can't break a run."""
+        try:
+            (cli.print_error if error else cli.print_info)(message)
+        except Exception:
+            pass
+
+    def _should_autosave(self, step: int) -> bool:
+        """True when a periodic auto-save is due (pure; unit-testable).
+
+        Fires once at least ``_autosave_every_steps`` steps have elapsed since the
+        last auto-save; ``0`` disables. Uses an elapsed-since comparison (not an
+        exact modulo) so it is robust to any step that isn't a clean multiple.
+        """
+        every = getattr(self, "_autosave_every_steps", 0)
+        if every <= 0:
+            return False
+        return (step - getattr(self, "_last_autosave_step", 0)) >= every
+
+    def _maybe_autosave(self, force: bool = False) -> None:
+        """Best-effort periodic save so long/unattended runs persist memory.
+
+        A save failure must NEVER kill a run, so the whole thing is guarded. The
+        save is serialized against stepping via ``_step_lock`` (mirroring the
+        /save route, ARCH-4); callers must invoke this only when they do NOT
+        already hold the lock (between steps), which both call sites satisfy.
+        """
+        if not force and not self._should_autosave(self.step):
+            return
+        lock = getattr(self, "_step_lock", None)
+        try:
+            if lock is not None:
+                lock.acquire()
+            try:
+                self.save()
+                self._last_autosave_step = self.step
+            finally:
+                if lock is not None:
+                    lock.release()
+        except Exception as e:
+            self._log_safe(f"auto-save failed at step {self.step}: {e}", error=True)
+            return
+        self._log_safe(f"  auto-saved at step {self.step}")
 
     def save(self):
         """
@@ -2010,6 +2130,12 @@ class ReverieServer:
 
             # Run one step - movements are queued for frontend
             self._process_step({"environment": environment})
+
+            # Periodic auto-save between steps (lock is free here; best-effort).
+            self._maybe_autosave()
+
+        # Persist final state at the end of a CLI run so memory is never lost.
+        self._maybe_autosave(force=True)
 
     def open_server(self):
         """

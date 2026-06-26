@@ -8,7 +8,9 @@ Source-of-truth documentation for the Claudeville improvement pass (SPARC: Speci
 | [PRD.md](PRD.md) | Product requirements — problem, ranked goals (G1–G9), non-goals, measurable success metrics, 3-phase delivery plan. |
 | [TECH-SPEC.md](TECH-SPEC.md) | As-is & to-be architecture (Mermaid), migration path, breaking-changes inventory, risk register, verification strategy. |
 | [DECISIONS.md](DECISIONS.md) | ADR log — open decisions (D-001…D-006) that must be resolved before dependent work begins. |
-| [IMPROVEMENT-LOG.md](IMPROVEMENT-LOG.md) | Execution tracking — change log + findings burndown (0 / 63 closed). |
+| [IMPROVEMENT-LOG.md](IMPROVEMENT-LOG.md) | Execution tracking — terse, per-merge change log + findings burndown. |
+| [DEVLOG.md](DEVLOG.md) | **Living diary** — the human narrative of changes, discoveries, and dead ends (newest first); companion to the IMPROVEMENT-LOG. |
+| [PAPER.md](PAPER.md) | **Living academic paper** — publication-grade write-up of the system: architecture, methodology, verification, honest evaluation (incl. null results), related work, references. Evolves until the app is live. |
 | [money_agent_foundation.md](money_agent_foundation.md) | Pre-existing design note for the town-center / economy layer (predates this pass). |
 
 ## How these connect
