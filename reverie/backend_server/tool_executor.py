@@ -122,8 +122,46 @@ def _exa_search(query: str, api_key: str) -> list[dict[str, str]]:
     return out
 
 
+FIRECRAWL_ENDPOINT = "https://api.firecrawl.dev/v1/search"
+
+
+def _firecrawl_search(query: str, api_key: str) -> list[dict[str, str]]:
+    """Live Firecrawl search -> [{title,url,snippet}]. Same never-raise contract as
+    the Exa adapter (failures propagate to _run_search -> honest stub)."""
+    import requests
+
+    resp = requests.post(
+        FIRECRAWL_ENDPOINT,
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        json={"query": query, "limit": 5},
+        timeout=_SEARCH_TIMEOUT,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    # Firecrawl v1 returns {"success": true, "data": [{title,url,description,...}]};
+    # tolerate a few shapes defensively.
+    results = data.get("data") or data.get("results") or []
+    if isinstance(results, dict):  # e.g. {"web": [...]}
+        results = results.get("web") or results.get("results") or []
+    out: list[dict[str, str]] = []
+    for hit in results[:5]:
+        if not isinstance(hit, dict):
+            continue
+        snippet = str(
+            hit.get("description") or hit.get("snippet") or hit.get("markdown") or ""
+        )
+        out.append(
+            {
+                "title": str(hit.get("title") or "").strip(),
+                "url": str(hit.get("url") or "").strip(),
+                "snippet": snippet.strip()[:_SNIPPET_MAX],
+            }
+        )
+    return out
+
+
 # provider name -> adapter(query, api_key) -> list[{title,url,snippet}]
-_SEARCH_PROVIDERS = {"exa": _exa_search}
+_SEARCH_PROVIDERS = {"firecrawl": _firecrawl_search, "exa": _exa_search}
 
 
 def _run_search(query: str) -> list[dict[str, str]]:
@@ -139,7 +177,7 @@ def _run_search(query: str) -> list[dict[str, str]]:
     api_key = os.environ.get("CLAUDEVILLE_SEARCH_API_KEY", "").strip()
     backend = os.environ.get("CLAUDEVILLE_SEARCH_BACKEND", "").strip().lower()
     if not backend and api_key:
-        backend = "exa"  # sensible default when only a key is provided
+        backend = "firecrawl"  # sensible default when only a key is provided
     provider = _SEARCH_PROVIDERS.get(backend)
     if provider is None or not api_key:
         return []

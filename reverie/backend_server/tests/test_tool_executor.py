@@ -139,42 +139,69 @@ class _FakeResp:
         return self._payload
 
 
-_EXA_PAYLOAD = {
-    "results": [
+_FIRECRAWL_PAYLOAD = {
+    "success": True,
+    "data": [
         {
             "title": "Agency client onboarding pain",
             "url": "https://example.com/a",
-            "text": "Small agencies struggle with manual client onboarding workflows...",
+            "description": "Small agencies struggle with manual client onboarding workflows...",
         },
         {
             "title": "Done-for-you onboarding builds",
             "url": "https://example.com/b",
-            "highlights": ["fast setup", "retainer upsell path"],
+            "description": "Fast setup with a retainer upsell path.",
         },
+    ],
+}
+
+_EXA_PAYLOAD = {
+    "results": [
+        {"title": "Exa hit", "url": "https://example.com/e", "highlights": ["niche signal"]},
     ]
 }
 
 
-class ExaSearchTests(unittest.TestCase):
-    """web_research executes REAL Exa search when configured, else an honest stub.
-    Mocked HTTP — no live key required."""
+class SearchProviderTests(unittest.TestCase):
+    """web_research executes REAL search via the configured provider (Firecrawl is
+    the default), else an honest stub. Mocked HTTP — no live key required."""
 
-    def test_live_results_mapped_and_tagged(self):
+    def test_firecrawl_live_results_mapped_and_tagged(self):
         with mock.patch.dict(
             os.environ,
-            {"CLAUDEVILLE_SEARCH_BACKEND": "exa", "CLAUDEVILLE_SEARCH_API_KEY": "k"},
+            {"CLAUDEVILLE_SEARCH_BACKEND": "firecrawl", "CLAUDEVILLE_SEARCH_API_KEY": "fc-x"},
             clear=False,
-        ), mock.patch("requests.post", return_value=_FakeResp(_EXA_PAYLOAD)):
+        ), mock.patch("requests.post", return_value=_FakeResp(_FIRECRAWL_PAYLOAD)):
             r = execute("web_research", {"query": "agency onboarding"})
         self.assertTrue(r.ok)
         self.assertTrue(r.evidence.get("live"))
         self.assertEqual(len(r.evidence.get("sources", [])), 2)
         self.assertIn("onboarding", r.detail.lower())
 
-    def test_http_error_falls_back_to_honest_stub(self):
+    def test_firecrawl_is_default_when_only_key_set(self):
+        # No backend named -> defaults to firecrawl when a key is present.
+        with mock.patch.dict(
+            os.environ,
+            {"CLAUDEVILLE_SEARCH_BACKEND": "", "CLAUDEVILLE_SEARCH_API_KEY": "fc-x"},
+            clear=False,
+        ), mock.patch("requests.post", return_value=_FakeResp(_FIRECRAWL_PAYLOAD)):
+            r = execute("web_research", {"query": "agency onboarding"})
+        self.assertTrue(r.evidence.get("live"))
+
+    def test_exa_still_selectable_via_env(self):
         with mock.patch.dict(
             os.environ,
             {"CLAUDEVILLE_SEARCH_BACKEND": "exa", "CLAUDEVILLE_SEARCH_API_KEY": "k"},
+            clear=False,
+        ), mock.patch("requests.post", return_value=_FakeResp(_EXA_PAYLOAD)):
+            r = execute("web_research", {"query": "x"})
+        self.assertTrue(r.evidence.get("live"))
+        self.assertEqual(len(r.evidence.get("sources", [])), 1)
+
+    def test_http_error_falls_back_to_honest_stub(self):
+        with mock.patch.dict(
+            os.environ,
+            {"CLAUDEVILLE_SEARCH_BACKEND": "firecrawl", "CLAUDEVILLE_SEARCH_API_KEY": "fc-x"},
             clear=False,
         ), mock.patch("requests.post", side_effect=RuntimeError("network down")):
             r = execute("web_research", {"query": "x"})
@@ -185,7 +212,7 @@ class ExaSearchTests(unittest.TestCase):
     def test_missing_key_is_stub(self):
         with mock.patch.dict(
             os.environ,
-            {"CLAUDEVILLE_SEARCH_BACKEND": "exa", "CLAUDEVILLE_SEARCH_API_KEY": ""},
+            {"CLAUDEVILLE_SEARCH_BACKEND": "firecrawl", "CLAUDEVILLE_SEARCH_API_KEY": ""},
             clear=False,
         ):
             r = execute("web_research", {"query": "x"})

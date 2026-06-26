@@ -12,7 +12,21 @@
 **Status at last update:** research prototype, not yet live. Direction: **building toward real-world money**
 (staged, safety-first). Stage 0/1 + 10-person society + coordination + real-search wiring pushed to
 `origin/main` (commit `235cbc40` + the Exa commit).
-**Test baseline:** 192 backend + 13 eval + 9 emergence + 34 Django, all green; `ruff` clean.
+**Test baseline:** 194 backend + 13 eval + 9 emergence + 34 Django, all green; `ruff` clean.
+**Live search:** Firecrawl is the default provider and is **verified working** (real results into agent memory).
+
+---
+
+## 2026-06-26 — Swapped live search to Firecrawl (verified working)
+
+Exa was out of credits (402), so swapped the default provider to **Firecrawl** (`fc-` key). Added a
+`_firecrawl_search` adapter (`POST https://api.firecrawl.dev/v1/search`, `Authorization: Bearer`, maps
+`data[] -> {title,url,snippet=description}`); same never-raise contract; default provider is now `firecrawl`
+(exa retained in the map, selectable via `CLAUDEVILLE_SEARCH_BACKEND`). **Live-verified**: a real query
+returned HTTP 200 with 5 real sources flowing through `execute("web_research")` into a `ToolResult`
+(`evidence.live=True`) — e.g. real agency-onboarding articles. So agents can now ground research in real web
+data. Tests updated to Firecrawl payloads (+ kept an exa-dispatch test); `.env.example` defaults to firecrawl.
+194 backend green. Key lives in `.env` only (gitignored) — rotate it (shared in chat).
 
 ---
 
