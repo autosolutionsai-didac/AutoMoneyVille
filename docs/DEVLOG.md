@@ -430,8 +430,8 @@ SDK**. The defining re-architecture decisions, made before this diary begins:
 
 ## Standing follow-ups (live list)
 
-- [ ] **`git push` blocked (403).** 16 commits are local-only; credentials lack write to the remote. Needs
-      user-side auth, then `git push origin main`.
+- [x] **`git push` — RESOLVED (2026-07-11).** Auth works now; `main` is pushed to
+      `origin/main` at `1f74efcd` (Phase 1 + console/economy milestone). Remote = AutoMoneyVille.
 - [ ] **Base not regenerated with Phase-6 grounding.** Running `tools/mapgen/make_claudeville_base.py`
       materializes grounded personas but also pulls a stale→current `town_spec` map change — do it as a
       deliberate, reviewed step.

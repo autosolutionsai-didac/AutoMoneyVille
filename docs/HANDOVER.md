@@ -142,14 +142,16 @@ Current green baseline: **208 backend + 28 eval + 34 Django** tests; ruff clean.
 
 ---
 
-## 5. CURRENT STATE (the committed HEAD is behind the working tree)
+## 5. CURRENT STATE (clean, committed, pushed — start from HEAD)
 
-Git HEAD is `9e673ab4` (June: "swap live web search to Firecrawl"). The working tree contains a LARGE
-amount of tested-but-**uncommitted** work: an earlier "transaction console + economy analyzer" milestone
-AND all of Phase 1 below. This is intentional — the user reviews before committing. First job: run the
-suites to confirm green, then (on user approval) commit the working tree as the Phase-1 milestone (no
-secrets, no `Co-Authored-By`). Full narrative history is in `docs/DEVLOG.md` (reverse-chronological —
-read the top few entries first).
+Git HEAD = **`1f74efcd`** on `main`, and it is **pushed to `origin/main`**. The working tree is clean of
+source changes (the only untracked items are intentionally-excluded noise: `.claude-flow/` assets,
+`.playwright-cli/`, generated `tools/eval/out/*`). You start from a clean, committed, remote-synced
+baseline — no uncommitted delta to reconcile. Full narrative history is in `docs/DEVLOG.md`
+(reverse-chronological — read the top few entries first).
+
+`1f74efcd` consolidated two tested milestones that had accumulated uncommitted across sessions: the
+"transaction console + economy analyzer" and all of Phase 1 below.
 
 **PHASE 1 "Make it watchable" — COMPLETE & green:**
 
@@ -248,12 +250,15 @@ per-action human confirm. This is "Stage 2" of the money path — **do not enabl
 
 ## 7. IMMEDIATE NEXT STEPS (in order)
 
-1. Run all three test suites + ruff; confirm 208/28/34 green. Read `docs/DEVLOG.md` top 3 entries.
-2. Launch the stack, Play, eyeball P1: shadows/bubbles, follow-cam, inspector on a persona, the event feed
-   populating, file→approve a request WITH a note and confirm the artifact + note reach the agent (visible
-   in inspector/feed), a browser notification fires.
-3. On the user's go, commit the working tree as the Phase-1 milestone (no secrets, no `Co-Authored-By`).
-4. Start P2. Recommended first slice: **INTELLIGENCE A1 (feed research detail into agents)** — small,
+1. Sanity: `git log --oneline -1` should show `1f74efcd`. Run all three test suites + ruff; confirm
+   **208 backend + 28 eval + 34 Django** green, ruff clean. Read `docs/DEVLOG.md` top 3 entries.
+2. Launch the stack (`scripts\run_claudeville.ps1`), Play, and eyeball P1 end-to-end (this **interactive
+   live smoke is the one check that needs a persistent backend** — automated tests + template-render
+   probes already pass; the live backend tends to die at tool/session boundaries, so run it yourself in a
+   real terminal): shadows/bubbles, follow-cam, inspector on a persona, the event feed populating,
+   file→approve a request WITH a note and confirm the artifact + note reach the agent (visible in
+   inspector/feed), a browser notification fires.
+3. Start **P2**. Recommended first slice: **INTELLIGENCE A1 (feed research detail into agents)** — small,
    high-leverage, well-contained, immediately visible in the inspector's memory stream. Then A2 (model
    tiering) + A3 (caching/locations-delta). Retile (B) can proceed in parallel.
 
