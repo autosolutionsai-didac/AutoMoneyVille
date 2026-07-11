@@ -199,6 +199,36 @@ class RequestLedger(JsonlLedger):
         )
 
 
+class ArtifactLedger(JsonlLedger):
+    """Append-only record of executed ToolResults (incl. dry-run drafts).
+
+    Stage 1.5: before this ledger the full ToolResult existed only in the
+    one-shot HTTP transition response, so a human could never audit what an
+    approved request WOULD have sent. Every completed-request execution now
+    leaves a durable, reviewable artifact row.
+    """
+
+    def record(
+        self,
+        *,
+        request_id: str,
+        actor: str,
+        title: str,
+        tool_result: dict[str, Any],
+    ) -> dict[str, Any]:
+        return self._append(
+            {
+                "request_id": request_id,
+                "actor": actor,
+                "title": title,
+                "tool": tool_result.get("tool"),
+                "dry_run": bool(tool_result.get("dry_run")),
+                "tool_result": tool_result,
+                "created_at": _now(),
+            }
+        )
+
+
 class RewardLedger(JsonlLedger):
     """Append-only mixed point and revenue reward ledger."""
 

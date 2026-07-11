@@ -174,6 +174,14 @@ _persona_usage: dict[str, dict[str, Any]] = {}
 _persona_initialized: dict[str, bool] = {}
 _persona_colors: dict[str, str] = {}  # Assigned colors per persona
 
+# Global cap on concurrent LLM work (session connects + in-flight prompts).
+# Everything runs on the single background loop, so one module-level semaphore
+# (lazily bound to that loop on first acquire) is safe. Without it, a 25+
+# persona roster produces connect storms at startup and unbounded provider
+# fan-out per step.
+LLM_CONCURRENCY = int(os.environ.get("CLAUDEVILLE_LLM_CONCURRENCY", "10"))
+_llm_semaphore = asyncio.Semaphore(max(1, LLM_CONCURRENCY))
+
 
 # Available colors for personas (assigned in order of registration)
 PERSONA_COLORS = [
@@ -1751,7 +1759,9 @@ class UnifiedPersonaClient:
                 )
                 client = ClaudeSDKClient(options)
                 try:
-                    await asyncio.wait_for(client.connect(), timeout=30.0)
+                    # Semaphore prevents an all-personas connect storm at boot.
+                    async with _llm_semaphore:
+                        await asyncio.wait_for(client.connect(), timeout=30.0)
                 except asyncio.TimeoutError:
                     cli.print_error(f"  ⚠ {self.persona_name} connection timed out")
                     raise
@@ -1807,9 +1817,14 @@ class UnifiedPersonaClient:
             return result_text, usage
 
         try:
-            result_text, usage = await asyncio.wait_for(
-                do_query_and_receive(), timeout=timeout
-            )
+            # Bounded provider fan-out: at the default (10) this is a no-op for
+            # today's roster; at 25+ personas it queues excess calls instead of
+            # blasting the API. Queue wait counts against the caller's timeout,
+            # which matches the move-budget semantics upstream.
+            async with _llm_semaphore:
+                result_text, usage = await asyncio.wait_for(
+                    do_query_and_receive(), timeout=timeout
+                )
         except asyncio.TimeoutError:
             cli.print_error(f"  ⚠ {self.persona_name} timed out after {timeout}s")
             return "", None

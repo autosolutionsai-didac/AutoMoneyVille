@@ -113,6 +113,52 @@ class TownCenterStoreTests(unittest.TestCase):
             t = store.transition_request(req["id"], RequestState.COMPLETED, reviewer="human", note="sent")
             self.assertTrue(t["tool_result"]["dry_run"])
 
+    def test_completed_request_persists_artifact_to_disk(self):
+        # Stage 1.5: the executed ToolResult (incl. a dry-run draft) must survive
+        # the HTTP response — it is appended to town_center/artifacts.jsonl and
+        # surfaced in snapshot() so a human can audit what WOULD have been sent.
+        with tempfile.TemporaryDirectory() as tmp:
+            store = TownCenterStore(Path(tmp), scenario_id="startup_team_v1")
+            req = store.submit_request(
+                actor="Theo Grant",
+                request_type="external_action",
+                title="email a lead",
+                rationale="follow up",
+                payload={"tool": "send_email", "recipient": "lead@acme.com",
+                         "preview": "Hi — quick question about onboarding."},
+            )
+            store.transition_request(
+                req["id"], RequestState.COMPLETED, reviewer="human", note="ok"
+            )
+
+            artifacts_path = Path(tmp) / "town_center" / "artifacts.jsonl"
+            self.assertTrue(artifacts_path.exists())
+            rows = store.artifacts.read_all()
+            self.assertEqual(len(rows), 1)
+            row = rows[0]
+            self.assertEqual(row["request_id"], req["id"])
+            self.assertEqual(row["actor"], "Theo Grant")
+            self.assertEqual(row["tool"], "send_email")
+            self.assertTrue(row["dry_run"])
+            self.assertEqual(
+                row["tool_result"]["evidence"]["target"], "lead@acme.com"
+            )
+            # Snapshot exposes the persisted artifact for the console.
+            snap = store.snapshot()
+            self.assertEqual(snap["artifacts"][-1]["request_id"], req["id"])
+
+    def test_find_request_public_lookup(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = TownCenterStore(Path(tmp), scenario_id="startup_team_v1")
+            req = store.submit_request(
+                actor="Milo Chen", request_type="research", title="scan",
+                rationale="x", payload={"tool": "web_research"},
+            )
+            found = store.find_request(req["id"])
+            self.assertIsNotNone(found)
+            self.assertEqual(found["title"], "scan")
+            self.assertIsNone(store.find_request("req_does_not_exist"))
+
     def test_recent_team_deliverables_excludes_self(self):
         # Coordination: a persona sees teammates' deliverables, not its own, so
         # work can pipeline (research -> offer -> outreach).

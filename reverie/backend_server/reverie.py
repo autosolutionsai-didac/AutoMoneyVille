@@ -7,6 +7,7 @@ Description: Main program for running generative agent simulations.
 """
 
 import asyncio
+import collections
 import datetime
 import json
 import math
@@ -330,6 +331,14 @@ class ReverieServer:
         self._movement_history = []
         self._movements_lock = threading.Lock()
 
+        # Live event feed (P1.C2): a small ring buffer of viewer-relevant
+        # moments (conversations, requests, day rolls, saves) served over
+        # GET /events. The durable audit trail stays in events.jsonl — this is
+        # the cheap in-memory view that lets the UI tell the story.
+        self._feed_events = collections.deque(maxlen=500)
+        self._feed_next_id = 1
+        self._feed_lock = threading.Lock()
+
         # --- Smooth playback: a background producer simulates steps AHEAD of what
         # the frontend has displayed, so the frontend replays a deep buffer at a
         # steady cadence (decouples animation from per-step LLM latency). The
@@ -473,6 +482,158 @@ class ReverieServer:
             "producer_stalled": producer_stalled,
         }
 
+    def _persona_state_snapshot(self, persona) -> dict:
+        """Build the live-inspector view of one persona.
+
+        Everything is read defensively (getattr + try) from in-memory state:
+        a mid-step read must degrade to partial data, never to a 500.
+        """
+        scratch = getattr(persona, "scratch", None)
+
+        def _s(attr, default=""):
+            value = getattr(scratch, attr, default) if scratch else default
+            return default if value is None else value
+
+        # Schedule: f_daily_schedule rows are [task, duration_minutes]; the
+        # current row is where cumulative minutes pass minutes-since-midnight.
+        schedule = []
+        current_index = -1
+        try:
+            raw = list(_s("f_daily_schedule", []) or [])
+            curr_time = _s("curr_time", None)
+            minutes_now = (
+                curr_time.hour * 60 + curr_time.minute if curr_time else -1
+            )
+            elapsed = 0
+            for i, row in enumerate(raw):
+                task = str(row[0]) if row else ""
+                minutes = int(row[1]) if row and len(row) > 1 else 0
+                if current_index < 0 and minutes_now >= 0 and (
+                    elapsed <= minutes_now < elapsed + max(minutes, 1)
+                ):
+                    current_index = i
+                schedule.append({"task": task, "minutes": minutes})
+                elapsed += minutes
+        except Exception:
+            schedule = []
+            current_index = -1
+
+        # Recent memories: seq_* lists are newest-first ConceptNodes.
+        memories = []
+        try:
+            a_mem = getattr(persona, "a_mem", None)
+            buckets = [
+                ("event", list(getattr(a_mem, "seq_event", []) or [])[:10]),
+                ("thought", list(getattr(a_mem, "seq_thought", []) or [])[:10]),
+                ("chat", list(getattr(a_mem, "seq_chat", []) or [])[:10]),
+            ]
+            for kind, nodes in buckets:
+                for node in nodes:
+                    created = getattr(node, "created", None)
+                    memories.append(
+                        {
+                            "kind": kind,
+                            "description": str(getattr(node, "description", "")),
+                            "created": str(created) if created else "",
+                            "poignancy": getattr(node, "poignancy", None),
+                        }
+                    )
+            memories.sort(key=lambda m: m["created"], reverse=True)
+            memories = memories[:20]
+        except Exception:
+            memories = []
+
+        # Relationships: name -> record with familiarity/affinity/sentiment.
+        relationships = []
+        try:
+            records = dict(
+                getattr(getattr(persona, "r_mem", None), "relationships", {}) or {}
+            )
+            for other, rec in records.items():
+                relationships.append(
+                    {
+                        "name": str(rec.get("name", other)),
+                        "familiarity": rec.get("familiarity", 0),
+                        "affinity": rec.get("affinity", 0.0),
+                        "sentiment": rec.get("sentiment", ""),
+                        "last_topics": list(rec.get("last_topics", []) or [])[:4],
+                    }
+                )
+            relationships.sort(key=lambda r: -r["familiarity"])
+        except Exception:
+            relationships = []
+
+        # Goals: keep it to plain strings per record.
+        goals = []
+        try:
+            for rec in (getattr(getattr(persona, "g_mem", None), "goals", {}) or {}).values():
+                if isinstance(rec, dict):
+                    goals.append(
+                        {
+                            "title": str(
+                                rec.get("title")
+                                or rec.get("description")
+                                or rec.get("goal")
+                                or ""
+                            )[:160],
+                            "status": str(rec.get("status", "")),
+                        }
+                    )
+        except Exception:
+            goals = []
+
+        name = getattr(persona, "name", "")
+        return {
+            "name": name,
+            "currently": str(_s("currently", "")),
+            "action": str(_s("act_description", "")),
+            "address": str(_s("act_address", "")),
+            "chatting_with": _s("chatting_with", None) or None,
+            "tile": list(self.personas_tile.get(name, []) or []),
+            "schedule": schedule,
+            "schedule_current_index": current_index,
+            "memories": memories,
+            "relationships": relationships,
+            "goals": goals,
+        }
+
+    def feed_event(
+        self,
+        event_type: str,
+        text: str,
+        *,
+        personas: list[str] | None = None,
+        tile=None,
+    ) -> None:
+        """Append a viewer-relevant moment to the live feed ring buffer.
+
+        Never raises: the feed is presentation-layer telemetry and must not be
+        able to break a step. `category` is derived for the UI's filter chips.
+        """
+        try:
+            category = "sim"
+            if event_type.startswith("conversation"):
+                category = "chat"
+            elif event_type.startswith(("request", "delivery")):
+                category = "economy"
+            curr_time = getattr(self, "curr_time", None)
+            with self._feed_lock:
+                self._feed_events.append(
+                    {
+                        "id": self._feed_next_id,
+                        "step": getattr(self, "step", 0),
+                        "sim_time": curr_time.strftime("%H:%M") if curr_time else "",
+                        "type": event_type,
+                        "category": category,
+                        "text": str(text)[:300],
+                        "personas": list(personas or []),
+                        "tile": list(tile) if tile else None,
+                    }
+                )
+                self._feed_next_id += 1
+        except Exception:
+            pass
+
     def _setup_flask_routes(self):
         """Set up Flask HTTP endpoints for frontend communication."""
 
@@ -552,15 +713,31 @@ class ReverieServer:
             "/town-center/requests/<request_id>/transition", methods=["POST"]
         )
         def handle_town_center_request_transition(request_id):
-            """Move a request through the approval lifecycle."""
+            """Move a request through the approval lifecycle.
+
+            With `execute: true` in the body (the console's default for its
+            Approve button), an `approved` transition immediately chains to
+            `completed` so ONE human click = approve + run tool + persist
+            artifact + feed the agent's memory. Previously Approve parked the
+            request in an unreachable limbo (only `completed` executes, and the
+            UI could never reach an approved request again).
+            """
             data = request.get_json() or {}
             try:
+                target_state = RequestState(data.get("state", ""))
                 entry = self.town_center.transition_request(
                     request_id,
-                    RequestState(data.get("state", "")),
+                    target_state,
                     reviewer=data.get("reviewer", "human"),
                     note=data.get("note", ""),
                 )
+                if target_state == RequestState.APPROVED and data.get("execute"):
+                    entry = self.town_center.transition_request(
+                        request_id,
+                        RequestState.COMPLETED,
+                        reviewer=data.get("reviewer", "human"),
+                        note=data.get("note", "") or "approved and executed",
+                    )
             except ValueError:
                 return jsonify({"error": "invalid request state"}), 400
             # Stage 1: feed a human-approved tool's executed result into the
@@ -570,6 +747,14 @@ class ReverieServer:
                 self._feed_tool_result_to_persona(
                     self.personas.get(actor) if actor else None,
                     entry.get("tool_result"),
+                )
+            if isinstance(entry, dict):
+                req = self.town_center.find_request(request_id) or {}
+                self.feed_event(
+                    "request_transition",
+                    f"You marked \"{req.get('title', request_id)}\" "
+                    f"{entry.get('state', '?')}",
+                    personas=[str(req.get("actor") or "")],
                 )
             return jsonify(entry)
 
@@ -587,6 +772,72 @@ class ReverieServer:
                 revenue_cents=int(data.get("revenue_cents", 0)),
             )
             return jsonify(entry)
+
+        @self.flask_app.route(
+            "/town-center/requests/<request_id>/record-delivery", methods=["POST"]
+        )
+        def handle_town_center_record_delivery(request_id):
+            """Credit HUMAN-CONFIRMED revenue for a delivered request.
+
+            The only path to real revenue_cents (Stage 1.4): requires typed
+            evidence from the human reviewer; idempotent per request.
+            """
+            data = request.get_json() or {}
+            if self.town_center.find_request(request_id) is None:
+                return jsonify({"error": "unknown request id"}), 404
+            evidence = str(data.get("evidence", "")).strip()
+            if not evidence:
+                return jsonify({"error": "evidence is required"}), 400
+            try:
+                revenue_cents = int(data.get("revenue_cents", 0))
+            except (TypeError, ValueError):
+                return jsonify({"error": "revenue_cents must be an integer"}), 400
+            entry = self.town_center.record_delivery(
+                request_id,
+                revenue_cents=revenue_cents,
+                evidence=evidence,
+                reviewer=str(data.get("reviewer", "human")),
+            )
+            if entry is None:
+                return jsonify(
+                    {"already_recorded": True, "request_id": request_id}
+                )
+            self.feed_event(
+                "delivery_recorded",
+                f"REAL REVENUE: {entry.get('revenue_cents', 0) / 100:.2f} USD "
+                f"credited to {entry.get('actor', '?')}",
+                personas=[str(entry.get("actor") or "")],
+            )
+            return jsonify(entry)
+
+        @self.flask_app.route("/events", methods=["GET"])
+        def handle_events():
+            """Live event feed since `after_id` (viewer-relevant moments)."""
+            try:
+                after_id = int(request.args.get("after_id", 0))
+            except (TypeError, ValueError):
+                after_id = 0
+            with self._feed_lock:
+                events = [e for e in self._feed_events if e["id"] > after_id]
+                latest = self._feed_next_id - 1
+            return jsonify({"events": events, "latest_id": latest})
+
+        @self.flask_app.route("/persona/<persona_name>/state", methods=["GET"])
+        def handle_persona_state(persona_name):
+            """Live inspector snapshot for one persona (read-only, lock-free —
+            same best-effort semantics as /health). The sim's whole point is
+            agent cognition; this is the endpoint that finally exposes it."""
+            persona = self.personas.get(persona_name)
+            if persona is None:
+                # Tolerate URL-encoded / underscore variants of display names.
+                wanted = persona_name.replace("_", " ").strip().lower()
+                for name, candidate in self.personas.items():
+                    if name.lower() == wanted:
+                        persona = candidate
+                        break
+            if persona is None:
+                return jsonify({"error": "unknown persona"}), 404
+            return jsonify(self._persona_state_snapshot(persona))
 
         @self.flask_app.route("/save", methods=["POST"])
         def handle_save():
@@ -955,7 +1206,13 @@ class ReverieServer:
 
         # Advance simulation state
         self.step += 1
+        previous_date = self.curr_time.date()
         self.curr_time += datetime.timedelta(seconds=self.sec_per_step)
+        if self.curr_time.date() != previous_date:
+            self.feed_event(
+                "new_day",
+                f"A new day begins: {self.curr_time.strftime('%A, %B %d')}",
+            )
 
         self.run_storage.write_current_run_pointer(self.sim_code, self.step)
 
@@ -1092,6 +1349,15 @@ class ReverieServer:
         """Record a movement packet for live clients and refresh recovery."""
         with self._movements_lock:
             self._pending_movements.append(movements)
+            # Cap the pending queue too: with no browser attached (headless/CLI
+            # runs) nothing ever drains it, and an unbounded list of full packets
+            # slowly eats RAM. History (below) remains the catch-up source, so a
+            # late-joining client loses nothing within the history window.
+            if len(self._pending_movements) > self._movement_history_limit:
+                overflow = (
+                    len(self._pending_movements) - self._movement_history_limit
+                )
+                del self._pending_movements[:overflow]
             self._movement_history.append(movements)
             if len(self._movement_history) > self._movement_history_limit:
                 overflow = len(self._movement_history) - self._movement_history_limit
@@ -1231,6 +1497,15 @@ class ReverieServer:
         cli.print_info(
             f"  Town Center request: {persona_name} -> {request_entry['title']}"
         )
+        state = str(request_entry.get("current_state") or request_entry.get("state") or "proposed")
+        needs_approval = request_entry.get("approval_required", True) and state == "proposed"
+        self.feed_event(
+            "request_submitted",
+            f"{persona_name} filed: {request_entry['title']}"
+            + (" — NEEDS YOUR APPROVAL" if needs_approval else f" [{state}]"),
+            personas=[persona_name],
+            tile=self.personas_tile.get(persona_name),
+        )
         return request_entry
 
     def _detect_new_encounters(self) -> list[tuple[str, str]]:
@@ -1306,121 +1581,156 @@ class ReverieServer:
 
         return new_encounters
 
-    async def _run_sequential_encounters(
-        self, encounter_pairs: list[tuple[str, str]]
-    ) -> list:
-        """
-        Run new encounters sequentially with initiative system.
+    @staticmethod
+    def _disjoint_encounter_pairs(
+        encounter_pairs: list[tuple[str, str]],
+    ) -> list[tuple[str, str]]:
+        """Keep at most ONE pair per persona (first wins, input order).
 
-        For each pair:
+        Three personas meeting at once yields (A,B), (A,C), (B,C); running all
+        of them would move A and B twice in one step (double LLM call, second
+        result silently overwriting the first). The dropped pair members still
+        acknowledge each other through normal perception on the next step.
+        """
+        claimed: set[str] = set()
+        disjoint: list[tuple[str, str]] = []
+        for pair in encounter_pairs:
+            if pair[0] in claimed or pair[1] in claimed:
+                cli.print_info(
+                    f"  Encounter {pair} deferred (member already in an encounter)"
+                )
+                continue
+            claimed.update(pair)
+            disjoint.append(pair)
+        return disjoint
+
+    async def _run_encounter_pair(self, pair: tuple[str, str]) -> list:
+        """
+        Run ONE new-encounter pair with the initiative system.
+
         1. Determine who has initiative (alphabetical, flipped on odd steps)
         2. Run initiative holder's move first
         3. If they didn't initiate conversation, run the other with context
         4. If they did initiate, the other will respond naturally next step
 
-        Returns:
-            List of move results for all personas in encounter pairs.
+        Returns a list of move-result tuples (1-2 entries), or [exception].
         """
         results = []
+        name_a, name_b = pair  # Already sorted alphabetically
 
-        for pair in encounter_pairs:
-            name_a, name_b = pair  # Already sorted alphabetically
+        # Flip initiative on odd steps so it's not always the same person
+        if self.step % 2 == 0:
+            first, second = name_a, name_b
+        else:
+            first, second = name_b, name_a
 
-            # Flip initiative on odd steps so it's not always the same person
-            if self.step % 2 == 0:
-                first, second = name_a, name_b
-            else:
-                first, second = name_b, name_a
+        cli.print_info(f"  New encounter: {first} has initiative over {second}")
 
-            cli.print_info(f"  New encounter: {first} has initiative over {second}")
-
-            # Run first persona's move
-            persona_first = self.personas[first]
-            try:
+        # Run first persona's move
+        persona_first = self.personas[first]
+        try:
+            (
+                next_tile,
+                pronunciatio,
+                description,
+                had_llm_call,
+            ) = await self._move_persona_with_timeout(first, persona_first)
+            results.append(
                 (
+                    first,
                     next_tile,
                     pronunciatio,
                     description,
+                    persona_first.scratch.chat,
                     had_llm_call,
-                ) = await self._move_persona_with_timeout(first, persona_first)
+                )
+            )
+
+            # Check if first persona initiated conversation with second
+            first_initiated = (
+                persona_first.scratch.chatting_with == second
+                and persona_first.scratch.chat
+            )
+
+            if first_initiated:
+                # First initiated - DON'T run second's move this step
+                # Second will respond naturally on the NEXT step when they
+                # detect the unheard dialogue via _has_unheard_dialogue
+                cli.print_info(
+                    f"    {first} initiated → {second} will respond next step"
+                )
+                # Keep second in place this step (no LLM call) so they don't
+                # also run in the parallel batch.
+                persona_second = self.personas[second]
                 results.append(
                     (
-                        first,
-                        next_tile,
-                        pronunciatio,
-                        description,
-                        persona_first.scratch.chat,
-                        had_llm_call,
+                        second,
+                        self.personas_tile[second],  # Stay in place
+                        persona_second.scratch.act_pronunciatio or "💭",
+                        persona_second.scratch.act_description
+                        or f"{second} is idle",
+                        persona_second.scratch.chat,
+                        False,  # No LLM call
                     )
                 )
-
-                # Check if first persona initiated conversation with second
-                first_initiated = (
-                    persona_first.scratch.chatting_with == second
-                    and persona_first.scratch.chat
+            else:
+                # First declined - give second the knowledge and let them decide
+                # Add context that first saw them but didn't initiate
+                persona_second = self.personas[second]
+                persona_second._encounter_context = (
+                    f"{first} noticed you but didn't start a conversation"
                 )
 
-                if first_initiated:
-                    # First initiated - DON'T run second's move this step
-                    # Second will respond naturally on the NEXT step when they
-                    # detect the unheard dialogue via _has_unheard_dialogue
-                    cli.print_info(
-                        f"    {first} initiated → {second} will respond next step"
-                    )
-                    # Mark second as handled so they don't run in parallel execution
-                    # But don't add a result - they'll run normally next step
-                    # We need to add them to handled_personas via a different mechanism
-                    # For now, add a placeholder result that keeps them in place
-                    persona_second = self.personas[second]
-                    results.append(
-                        (
-                            second,
-                            self.personas_tile[second],  # Stay in place
-                            persona_second.scratch.act_pronunciatio or "💭",
-                            persona_second.scratch.act_description
-                            or f"{second} is idle",
-                            persona_second.scratch.chat,
-                            False,  # No LLM call
-                        )
-                    )
-                else:
-                    # First declined - give second the knowledge and let them decide
-                    # Add context that first saw them but didn't initiate
-                    persona_second = self.personas[second]
-                    persona_second._encounter_context = (
-                        f"{first} noticed you but didn't start a conversation"
-                    )
-
-                    # Run second persona's move
+                # Run second persona's move
+                (
+                    next_tile_2,
+                    pronunciatio_2,
+                    description_2,
+                    had_llm_call_2,
+                ) = await self._move_persona_with_timeout(second, persona_second)
+                results.append(
                     (
+                        second,
                         next_tile_2,
                         pronunciatio_2,
                         description_2,
+                        persona_second.scratch.chat,
                         had_llm_call_2,
-                    ) = await self._move_persona_with_timeout(second, persona_second)
-                    results.append(
-                        (
-                            second,
-                            next_tile_2,
-                            pronunciatio_2,
-                            description_2,
-                            persona_second.scratch.chat,
-                            had_llm_call_2,
-                        )
                     )
+                )
 
-                    # Clear the encounter context
-                    if hasattr(persona_second, "_encounter_context"):
-                        delattr(persona_second, "_encounter_context")
+                # Clear the encounter context
+                if hasattr(persona_second, "_encounter_context"):
+                    delattr(persona_second, "_encounter_context")
 
-            except Exception as e:
-                cli.print_error(f"Error in sequential encounter {pair}: {e}")
-                import traceback
+        except Exception as e:
+            cli.print_error(f"Error in sequential encounter {pair}: {e}")
+            import traceback
 
-                traceback.print_exc()
-                results.append(e)
+            traceback.print_exc()
+            results.append(e)
 
         return results
+
+    async def _run_sequential_encounters(
+        self, encounter_pairs: list[tuple[str, str]]
+    ) -> list:
+        """
+        Run new-encounter pairs CONCURRENTLY across pairs (pairs are made
+        persona-disjoint first), while keeping the within-pair initiative
+        sequence. Previously pairs ran one-after-another, so step latency grew
+        linearly with the number of simultaneous encounters (~2 LLM calls each).
+
+        Returns:
+            Flat list of move results for all personas in encounter pairs.
+        """
+        disjoint = self._disjoint_encounter_pairs(encounter_pairs)
+        if not disjoint:
+            return []
+        per_pair = await asyncio.gather(
+            *(self._run_encounter_pair(pair) for pair in disjoint)
+        )
+        return [item for pair_results in per_pair for item in pair_results]
 
     def _synchronize_conversations(self):
         """
@@ -1566,6 +1876,12 @@ class ReverieServer:
                 group_id = group.id
                 # Update persona's group reference
                 self.personas[name].scratch.conversation_group_id = group_id
+                self.feed_event(
+                    "conversation_started",
+                    f"{name} started talking with {partner}",
+                    personas=[name, partner],
+                    tile=my_tile,
+                )
 
             # Add all conversation targets to group (supports multi-target/broadcast)
             # chatting_with_buffer contains all targets from persona's social decision
@@ -1761,7 +2077,15 @@ class ReverieServer:
 
         # Clean up ended conversation groups
         for group_id in ended_groups:
-            if group_id in self.active_conversations:
+            group = self.active_conversations.get(group_id)
+            if group is not None:
+                participants = sorted(group.participants)
+                self.feed_event(
+                    "conversation_ended",
+                    f"Conversation ended: {', '.join(participants)}",
+                    personas=participants,
+                    tile=getattr(group, "location_tile", None),
+                )
                 del self.active_conversations[group_id]
 
     def _end_and_store_conversation(self, persona):
@@ -1894,7 +2218,6 @@ class ReverieServer:
     def start_http_server(self):
         """Start the Flask HTTP server in a background thread."""
         import logging
-        import os
         import sys
 
         # Suppress Flask/Werkzeug output completely
@@ -1908,19 +2231,23 @@ class ReverieServer:
             cli_module.show_server_banner = lambda *args, **kwargs: None
 
         def run_flask():
-            # Suppress startup messages
-            with open(os.devnull, "w") as devnull:
-                old_stderr = sys.stderr
-                sys.stderr = devnull
-                try:
-                    self.flask_app.run(
-                        host="127.0.0.1",
-                        port=BACKEND_PORT,
-                        threaded=True,
-                        use_reloader=False,
-                    )
-                finally:
-                    sys.stderr = old_stderr
+            # Werkzeug logging + the flask.cli banner are silenced above; do NOT
+            # redirect sys.stderr here — it is process-global, so doing so used to
+            # swallow every traceback from every thread for the life of the run
+            # (including a port-bind failure, leaving a silently dead HTTP server).
+            try:
+                self.flask_app.run(
+                    host="127.0.0.1",
+                    port=BACKEND_PORT,
+                    threaded=True,
+                    use_reloader=False,
+                )
+            except OSError as exc:
+                self._log_safe(
+                    f"HTTP server failed to start on :{BACKEND_PORT} ({exc}) — "
+                    "is another instance running?",
+                    error=True,
+                )
 
         self.flask_thread = threading.Thread(target=run_flask, daemon=True)
         self.flask_thread.start()
@@ -1971,6 +2298,7 @@ class ReverieServer:
             self._log_safe(f"auto-save failed at step {self.step}: {e}", error=True)
             return
         self._log_safe(f"  auto-saved at step {self.step}")
+        self.feed_event("autosave", f"Progress auto-saved at step {self.step}")
 
     def save(self):
         """
@@ -1999,9 +2327,10 @@ class ReverieServer:
         reverie_meta["persona_tiles"] = {
             name: list(tile) for name, tile in self.personas_tile.items()
         }
+        # Atomic write: meta.json is the one file the loader hard-requires — a
+        # crash mid-save must never leave it torn (same writer as movement/env).
         reverie_meta_f = f"{sim_folder}/reverie/meta.json"
-        with open(reverie_meta_f, "w") as outfile:
-            outfile.write(json.dumps(reverie_meta, indent=2))
+        _atomic_write_json(reverie_meta_f, reverie_meta)
 
         # Save the personas.
         for persona_name, persona in self.personas.items():

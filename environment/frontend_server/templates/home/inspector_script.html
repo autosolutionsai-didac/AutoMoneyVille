@@ -1,0 +1,137 @@
+{% load static %}
+<script>
+// Agent Inspector (P1.C1): click a persona -> live drawer with plan, schedule,
+// goals, relationships, and memory stream. Data comes from the live backend
+// via api_persona_state; everything renders via textContent (LLM-1: agent-
+// authored text must never become markup).
+(function () {
+	const PROFILE_BASE = "{% static 'assets/characters/profile/' %}";
+	const STATE_URL_TEMPLATE = "{% url 'api_persona_state' 'PERSONA_NAME' %}";
+	const POLL_MS = 5000;
+
+	let openPersona = null;
+	let pollTimer = null;
+
+	const el = (id) => document.getElementById(id);
+
+	function stateUrl(name) {
+		return STATE_URL_TEMPLATE.replace('PERSONA_NAME', encodeURIComponent(name));
+	}
+
+	function rowDiv(className, text, title) {
+		const div = document.createElement('div');
+		div.className = className;
+		div.textContent = text;
+		if (title) div.title = title;
+		return div;
+	}
+
+	function renderState(state) {
+		el('inspector-name').textContent = state.name || openPersona || '--';
+		el('inspector-currently').textContent = state.currently || '';
+		el('inspector-action').textContent = state.action || '--';
+		el('inspector-address').textContent = (state.address || '')
+			.split(':').slice(1).join(' › ') || state.address || '';
+
+		const schedule = el('inspector-schedule');
+		schedule.textContent = '';
+		(state.schedule || []).forEach((item, i) => {
+			const row = rowDiv(
+				'inspector-row' + (i === state.schedule_current_index ? ' current' : ''),
+				`${item.task} (${item.minutes}m)`
+			);
+			schedule.appendChild(row);
+		});
+		if (!schedule.childNodes.length) {
+			schedule.appendChild(rowDiv('inspector-row muted', 'No schedule yet today'));
+		}
+
+		const goals = el('inspector-goals');
+		goals.textContent = '';
+		(state.goals || []).forEach(goal => {
+			const label = goal.status ? `${goal.title} — ${goal.status}` : goal.title;
+			goals.appendChild(rowDiv('inspector-row', label));
+		});
+		if (!goals.childNodes.length) {
+			goals.appendChild(rowDiv('inspector-row muted', 'No active goals'));
+		}
+
+		const rels = el('inspector-relationships');
+		rels.textContent = '';
+		(state.relationships || []).slice(0, 8).forEach(rel => {
+			const topics = rel.last_topics && rel.last_topics.length
+				? ` · ${rel.last_topics.join(', ')}` : '';
+			rels.appendChild(rowDiv(
+				'inspector-row',
+				`${rel.name} — ${rel.sentiment || 'neutral'} (familiarity ${rel.familiarity})${topics}`
+			));
+		});
+		if (!rels.childNodes.length) {
+			rels.appendChild(rowDiv('inspector-row muted', 'No one met yet'));
+		}
+
+		const memories = el('inspector-memories');
+		memories.textContent = '';
+		(state.memories || []).forEach(memory => {
+			const time = (memory.created || '').split(' ').pop() || '';
+			memories.appendChild(rowDiv(
+				`inspector-row memory-${memory.kind}`,
+				`[${memory.kind}] ${memory.description}`,
+				time
+			));
+		});
+		if (!memories.childNodes.length) {
+			memories.appendChild(rowDiv('inspector-row muted', 'No memories yet'));
+		}
+	}
+
+	async function refreshInspector() {
+		if (!openPersona) return;
+		try {
+			const response = await fetch(stateUrl(openPersona));
+			const state = await response.json();
+			if (!response.ok || state.error) {
+				el('inspector-currently').textContent =
+					state.error || 'Inspector unavailable (backend offline?)';
+				return;
+			}
+			renderState(state);
+		} catch (error) {
+			el('inspector-currently').textContent = 'Inspector unavailable';
+		}
+	}
+
+	function openInspector(name) {
+		openPersona = name;
+		el('inspector-drawer').classList.remove('hidden');
+		el('inspector-name').textContent = name;
+		el('inspector-portrait').src =
+			PROFILE_BASE + name.replace(/ /g, '_') + '.png';
+		refreshInspector();
+		if (pollTimer) clearInterval(pollTimer);
+		pollTimer = setInterval(refreshInspector, POLL_MS);
+	}
+
+	function closeInspector() {
+		openPersona = null;
+		el('inspector-drawer').classList.add('hidden');
+		if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+	}
+
+	document.querySelectorAll('.persona-card').forEach(card => {
+		card.addEventListener('click', () => {
+			const name = card.getAttribute('data-persona-name');
+			if (name) openInspector(name);
+		});
+	});
+	el('inspector-close').addEventListener('click', closeInspector);
+	el('inspector-follow').addEventListener('click', () => {
+		if (openPersona && typeof window.setCameraFollowTarget === 'function') {
+			window.setCameraFollowTarget(openPersona);
+		}
+	});
+
+	// Sprites open the inspector too, when the game layer offers clicks.
+	window.openPersonaInspector = openInspector;
+})();
+</script>

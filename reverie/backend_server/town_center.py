@@ -8,14 +8,29 @@ from typing import Any
 
 try:
     from . import tool_executor
-    from .economy import RequestLedger, RequestState, RewardLedger, ToolRegistry
+    from .economy import (
+        ArtifactLedger,
+        RequestLedger,
+        RequestState,
+        RewardLedger,
+        ToolRegistry,
+    )
     from .scenario_config import load_scenario
     from .world_arbiter import WorldArbiter, build_arbiter
 except ImportError:
     import tool_executor
-    from economy import RequestLedger, RequestState, RewardLedger, ToolRegistry
+    from economy import (
+        ArtifactLedger,
+        RequestLedger,
+        RequestState,
+        RewardLedger,
+        ToolRegistry,
+    )
     from scenario_config import load_scenario
     from world_arbiter import WorldArbiter, build_arbiter
+
+# Most-recent executed-tool artifacts surfaced in snapshot() for the console.
+_SNAPSHOT_ARTIFACTS = 20
 
 
 class TownCenterStore:
@@ -34,6 +49,7 @@ class TownCenterStore:
         self.tool_registry = ToolRegistry.default()
         self.requests = RequestLedger(self.root / "requests.jsonl")
         self.rewards = RewardLedger(self.root / "rewards.jsonl")
+        self.artifacts = ArtifactLedger(self.root / "artifacts.jsonl")
         # Phase 6c: optional Game-Master arbiter. Constructed ONLY when explicitly
         # passed or enabled via CLAUDEVILLE_WORLD_ARBITER. None (the default) keeps
         # the legacy approval/reward path byte-for-byte unchanged.
@@ -72,7 +88,11 @@ class TownCenterStore:
         note: str,
     ) -> dict[str, Any]:
         if not isinstance(state, RequestState):
-            state = RequestState(str(state))
+            # getattr(.value) also normalizes a RequestState from the OTHER
+            # import path (bare `economy` vs package `reverie.backend_server.
+            # economy` are distinct classes; str() on a foreign member would
+            # yield "RequestState.COMPLETED" and fail the value lookup).
+            state = RequestState(getattr(state, "value", None) or str(state))
         current_request = self._find_current_request(request_id)
         transition = self.requests.transition(
             request_id,
@@ -87,6 +107,7 @@ class TownCenterStore:
         if current_request and state == RequestState.COMPLETED:
             transition["tool_result"] = self._execute_request_tool(current_request)
             transition["actor"] = current_request.get("actor")
+            self._persist_artifact(current_request, transition["tool_result"])
         if current_request:
             self._award_transition_reward(current_request, state, note)
         return transition
@@ -102,6 +123,18 @@ class TownCenterStore:
             tool, exec_payload, persona_name=str(request.get("actor") or "")
         )
         return result.to_dict()
+
+    def _persist_artifact(
+        self, request: dict[str, Any], tool_result: dict[str, Any]
+    ) -> None:
+        """Append the executed ToolResult to artifacts.jsonl so dry-run drafts
+        and research evidence survive the HTTP response and stay auditable."""
+        self.artifacts.record(
+            request_id=str(request.get("id") or ""),
+            actor=str(request.get("actor") or ""),
+            title=str(request.get("title") or ""),
+            tool_result=tool_result,
+        )
 
     def adjudicate_request(
         self, request_id: str, *, use_llm: bool = False
@@ -196,6 +229,7 @@ class TownCenterStore:
             "approval_queue": approval_queue,
             "request_events": request_events,
             "rewards": reward_events,
+            "artifacts": self.artifacts.read_all()[-_SNAPSHOT_ARTIFACTS:],
             "team_score": self.rewards.team_score(),
             "pending_approval_count": len(approval_queue),
         }
@@ -226,6 +260,11 @@ class TownCenterStore:
             if request.get("id") == request_id:
                 return request
         return None
+
+    def find_request(self, request_id: str) -> dict[str, Any] | None:
+        """Public lookup of a request's current view (None if unknown) — lets
+        API callers validate an id before acting on it (e.g. record-delivery)."""
+        return self._find_current_request(request_id)
 
     def _award_transition_reward(
         self, request: dict[str, Any], state: RequestState, note: str

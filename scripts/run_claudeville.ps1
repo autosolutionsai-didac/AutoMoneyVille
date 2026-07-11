@@ -43,12 +43,32 @@ function Wait-Url($url, $label, $timeoutSec) {
     Write-Host "  $label did not respond within $timeoutSec s (check the window)"
 }
 
+# Load .env (KEY=VALUE lines) so secrets like CLAUDEVILLE_SEARCH_API_KEY reach
+# the backend - without it, live web search silently degrades to the honest stub.
+# (ASCII only in this file: Windows PowerShell 5.1 reads no-BOM UTF-8 as ANSI,
+# and a mangled em-dash becomes a curly quote that terminates strings early.)
+$DotEnv = @{}
+$EnvFile = Join-Path $Root ".env"
+if (Test-Path $EnvFile) {
+    foreach ($line in Get-Content $EnvFile) {
+        $trimmed = $line.Trim()
+        if ($trimmed -and -not $trimmed.StartsWith("#") -and $trimmed.Contains("=")) {
+            $k, $v = $trimmed.Split("=", 2)
+            $DotEnv[$k.Trim()] = $v.Trim().Trim('"')
+        }
+    }
+    Write-Host "Loaded $($DotEnv.Count) settings from .env"
+} else {
+    Write-Host "No .env found - live web search will use the honest stub."
+}
+
 Write-Host "Stopping any servers on :5000 / :8000 ..."
 Stop-Port 5000; Stop-Port 8000; Start-Sleep -Milliseconds 800
 
 Write-Host "Starting backend (Flask + autosim) ..."
-$be = Start-Server $Py "-u reverie.py" (Join-Path $Root "reverie\backend_server") `
-    @{ PYTHONUTF8 = "1"; PYTHONIOENCODING = "utf-8"; CLAUDEVILLE_PERSONA_MOVE_TIMEOUT = "120" }
+$BackendEnv = @{ PYTHONUTF8 = "1"; PYTHONIOENCODING = "utf-8"; CLAUDEVILLE_PERSONA_MOVE_TIMEOUT = "120" }
+foreach ($k in $DotEnv.Keys) { if (-not $BackendEnv.ContainsKey($k)) { $BackendEnv[$k] = $DotEnv[$k] } }
+$be = Start-Server $Py "-u reverie.py" (Join-Path $Root "reverie\backend_server") $BackendEnv
 Start-Sleep -Seconds 2
 $be.StandardInput.WriteLine("")   # choose "start new simulation" at the prompt
 

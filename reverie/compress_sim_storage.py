@@ -48,6 +48,11 @@ def compress(sim_code):
         with open(f"{move_folder}/{str(i)}.json") as json_file:
             i_move_dict = json.load(json_file)["persona"]
             for p in persona_names:
+                # A step's packet may omit a persona (e.g. a move timeout or the
+                # sequential-encounter path). Skip it this step — the delta format
+                # carries its last-known position forward in replay.
+                if p not in i_move_dict:
+                    continue
                 move = False
                 if i == 0 or (
                     i_move_dict[p]["movement"] != persona_last_move[p]["movement"]

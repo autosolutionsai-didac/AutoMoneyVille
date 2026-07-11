@@ -9,11 +9,99 @@
 > Entries are **reverse-chronological** (newest first). Keep prose; record the reasoning and the dead ends,
 > not just the diff. A reusable entry template lives at the [bottom](#how-to-add-an-entry).
 
-**Status at last update:** research prototype, not yet live. Direction: **building toward real-world money**
-(staged, safety-first). Stage 0/1 + 10-person society + coordination + real-search wiring pushed to
-`origin/main` (commit `235cbc40` + the Exa commit).
-**Test baseline:** 194 backend + 13 eval + 9 emergence + 34 Django, all green; `ruff` clean.
+**Status at last update:** research prototype. Direction: **building toward real-world money**
+(staged, safety-first). The economy has been **measured** (17/17 requests died at the absent approval gate)
+and its missing organ built: a human **transaction console** (draft review → approve → persisted artifact →
+`record_delivery` with typed evidence).
+**Test baseline:** backend + eval + emergence + economy + HTTP-route + Django suites all green; `ruff` clean.
 **Live search:** Firecrawl is the default provider and is **verified working** (real results into agent memory).
+
+---
+
+## 2026-07-11 — Phase 1 "Make it watchable": the sim becomes legible, honest, and operable
+
+**What & why.** First phase of the next-level roadmap (built from an 8-report review: 5 code reviews +
+3 SOTA research sweeps). The story was invisible (chat wiped itself after 5s; an agent was one emoji),
+the console's primary action was a trap, the operator was never summoned, and real errors were being
+swallowed. Phase 1 fixes the *experience* of the existing sim without touching art or cognition (Phase 2).
+
+- **Engine honesty (E1)**: stopped redirecting process-wide `sys.stderr` to devnull in `run_flask`
+  (every traceback from every thread was being discarded — incl. port-bind failures); `meta.json` saves
+  are atomic now; `_pending_movements` capped (headless runs no longer grow RAM unboundedly); encounter
+  pairs run **concurrently across pairs** and are **deduped per persona** (fixed a latent double-move:
+  three personas meeting at once used to move A and B twice in one step); the promised-but-missing LLM
+  semaphore exists (`CLAUDEVILLE_LLM_CONCURRENCY`, default 10) around connects + prompts; ~160 junk
+  empty dirs (an exploded heredoc) purged from the app root.
+- **Console fixed (D1)**: **Approve now executes** (`execute: true` chains approved→completed server-side:
+  one click = approve + run tool + artifact + agent memory feed — previously Approve parked requests in
+  unreachable limbo); full **approval-queue browser** (risk-sorted, sticky selection) instead of queue[0];
+  **reviewer-note textarea** (agents read `last_note` back in their prompts — the operator's one steering
+  channel finally has an input); **artifact browser** with full DRY-RUN draft bodies; panel collision fixed.
+- **Operator summons (D2)**: browser Notification (permission asked on Play) + title-bar `(N)` badge +
+  chime + toast when a new approval-required request lands — directly re-attacking the measured 17/17
+  failure mode. Telegram tier stays P3.
+- **Agent inspector (C1)**: click a persona → live drawer (currently, schedule w/ current block, goals,
+  relationships, last-20 memory stream) via new `GET /persona/<name>/state` + Django proxy. The sim's
+  whole point — agent cognition — is finally visible while it runs.
+- **Event feed (C2)**: 500-event ring buffer + `GET /events?after_id=` + left panel with All/Chats/
+  Economy/Sim filters; conversation start/end, requests (with NEEDS-YOUR-APPROVAL), transitions, real
+  revenue, day rolls, autosaves; chat lines mirror into the feed permanently (the popup's 5s amnesia is
+  no longer the only record); rows jump the camera or open the inspector.
+- **Juice pass (A1+A2)**: contact shadows under sprites; the shipped-but-unused speech-bubble art now
+  backs every emoji with a Back.easeOut pop on change (and sits ABOVE the night overlay — thoughts were
+  being dimmed after dark); lerped **follow-cam** with a 🎥 toggle (auto-follow used to be hardcoded and
+  fought manual panning); pointer-centered wheel zoom; day/night is now an hour-keyed **MULTIPLY color
+  ramp** (dawn amber → clear → dusk orange → deep-blue night) instead of a flat black fade.
+- **UX honesty (C6/C7)**: busy states show a live elapsed counter; first Play says "First step calls
+  Claude for N personas (~60-120s)"; `/replay/` pages stop polling the live backend (they used to
+  poll-and-reload against whatever sim was running — effectively broken) and wear a REPLAY badge;
+  duplicate hidden-data DOM ids removed; **Space = play/pause** (Shift+Space = skip); first-run hint
+  overlay; the saves-list `alert()` replaced with a disabled state.
+
+**Verification.** 208 backend + 28 eval + 34 Django tests green (5 new route tests: approve-executes
+chaining + idempotent rewards, persona-state snapshot incl. schedule-index, events cursor); `ruff` clean;
+replay page renders every new surface with zero duplicate ids; live launcher smoke.
+**Discoveries / surprises.** (1) Windows PowerShell 5.1 reads no-BOM UTF-8 scripts as ANSI — an em-dash
+in a launcher string became a curly quote that *terminated the string*, killing the script with a parse
+error pwsh 7 never sees. The launcher is ASCII-only now. (2) The overlapping-encounter double-move had
+been silently costing an extra LLM call and overwriting movements whenever 3+ personas met.
+
+**What & why.** First **measurement** of the request economy, then the fix it demanded. The new
+`tools/eval/economy.py` (mirrors the emergence-report pattern; `python -m tools.eval.economy <sim_code>`)
+mined the recorded runs and produced the headline: in the 1578-step 10-person run, agents filed **17
+requests and every one died at `proposed`** — 0 transitions, 0 tool executions, 0 revenue. The economy's
+binding constraint isn't agent capability; it's that **no human-approval surface existed**. Striking detail
+from the pending queue: Felix Reed sourced *named real prospects* (a Reddit content strategist; "Kate R."
+on LinkedIn) and designed per-message human-approval gates into his own proposals; Sofia Lane (risk officer)
+autonomously **HELD** the email channel pending a risk checklist. Emergent governance, starved by an absent
+reviewer. So we built the reviewer's organ:
+- **Artifacts persist** (`economy.ArtifactLedger` → `town_center/artifacts.jsonl`): executed ToolResults
+  (incl. dry-run drafts) previously vanished after the one-shot HTTP response — `transition_request`
+  appended the transition row *before* attaching `tool_result`, so nothing auditable ever reached disk.
+  Now every execution leaves a durable row, surfaced in `snapshot()["artifacts"]`.
+- **`record_delivery` finally reachable**: `POST /town-center/requests/<id>/record-delivery` (Flask) +
+  `api/town-center/requests/<id>/record-delivery/` (Django proxy that forwards 4xx bodies verbatim so form
+  errors reach the human). Validates id (404) + typed evidence (400); idempotent replay.
+- **Transaction console** in the Town Center overlay (`home.html` + `main_script.html`): pending-approval
+  card now shows the full draft *before* you approve (tool, agent-labeled risk, claimed payoff marked
+  "agent claim, unverified", preview text); latest executed artifact display; **Record real delivery** form
+  (completed-request picker, USD amount, required evidence) — the human money-gate. All agent text rendered
+  via `textContent` (no HTML injection path).
+- **Launcher loads `.env`** (`scripts/run_claudeville.ps1`): without it, the backend silently degraded live
+  search to the stub because the key never reached the process.
+
+**Verification.** New suites green: 6 economy-eval + 2 town-center (artifact persistence, `find_request`)
++ 5 HTTP-route tests (404/400/idempotency/artifact exposure via real Flask test client); full backend +
+eval suites green; `ruff` clean; Django `manage.py check` clean and the replay page renders the new console
+elements (Django test client, HTTP 200). Economy reports written to `tools/eval/out/*.economy.{json,md}`.
+**Discoveries / surprises.** (1) A latent **dual-import bug**: `RequestState` exists as two distinct classes
+(bare `economy` vs `reverie.backend_server.economy` import paths); `transition_request`'s
+`RequestState(str(state))` fallback exploded on foreign-path members because `str(EnumMember)` is
+`"RequestState.COMPLETED"`. Fixed with a `.value`-first normalization. (2) The compress script crashed on
+any live run (`KeyError` when a step's packet omits a persona — timeout/encounter paths do this); fixed
+with carry-forward, which is what made the 1578-step replay watchable at all. (3) Agents *filed bug reports
+about the sim itself* (Milo: "Hobbs Cafe missing from accessible locations", "conversation lock blocking
+noon deadline") — the request channel doubles as emergent QA.
 
 ---
 

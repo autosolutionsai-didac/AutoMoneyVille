@@ -1,21 +1,17 @@
 {% load static %}
 
-<div id="step" style="display:none">{{step}}</div>
-<div id="sim_code" style="display:none">{{sim_code}}</div>
-<div id="persona_name_list" style="display:none">{{persona_name_str}}</div>
-<div id="persona_init_pos" style="display:none">
-	{% for i in persona_init_pos %}
-		<span>{{i.0}},{{i.1}},{{i.2}}</span>
-	{% endfor %}
-</div>
-
 <script type="text/javascript">
 	// ###########################################################################
 	// PREAMBLE
 	// ###########################################################################
+	// Hidden data divs are rendered ONCE by home.html (they used to be
+	// duplicated here too — invalid HTML that worked by getElementById accident).
 
 	let step = parseInt(document.getElementById('step').innerHTML);
 	let sim_code = document.getElementById('sim_code').innerHTML;
+	// 'simulate' (live backend) or 'replay' (recorded run, no live polling).
+	const SIM_MODE = (document.getElementById('sim_mode')?.textContent || 'simulate').trim();
+	const IS_REPLAY = SIM_MODE === 'replay';
 
 	let spans = document.getElementById('persona_init_pos').getElementsByTagName('span');
 	let persona_names = {};
@@ -85,37 +81,60 @@
 		return { hour, minute };
 	}
 
-	function calculateNightOpacity(hour, minute = 0) {
-		// Returns opacity 0-0.6 based on time of day with smooth 1-hour transitions
-		// Full day (no overlay): 7am - 6pm
-		// Transition (dawn): 6am - 7am (smooth fade)
-		// Transition (dusk): 6pm - 7pm (smooth fade)
-		// Full night: 7pm - 6am
-
-		const maxNight = 0.6;  // Maximum darkness at night
-		const hourFloat = hour + minute / 60;  // Include minutes for smooth transitions
-
-		if (hourFloat >= 7 && hourFloat < 18) {
-			// Daytime: no overlay
-			return 0;
-		} else if (hourFloat >= 6 && hourFloat < 7) {
-			// Dawn: fade from maxNight to 0 over 1 hour
-			return maxNight * (1 - (hourFloat - 6));
-		} else if (hourFloat >= 18 && hourFloat < 19) {
-			// Dusk: fade from 0 to maxNight over 1 hour
-			return maxNight * (hourFloat - 18);
-		} else {
-			// Night: full darkness
-			return maxNight;
+	function calculateDayNightTint(hour, minute = 0) {
+		// Hour-keyed ambient color ramp (MULTIPLY blend: the color tints the
+		// whole world; alpha is the strength). Replaces the old flat black fade.
+		//   night (20-05): deep blue   | dawn (05-08): warm amber ramp-out
+		//   day   (08-17): untinted    | dusk (17-20): orange -> deep blue
+		const t = hour + minute / 60;
+		const NIGHT = { color: 0x2a3560, alpha: 0.5 };
+		const DAWN = { color: 0xffd9a0, alpha: 0.18 };
+		const DUSK = { color: 0xff9a5c, alpha: 0.22 };
+		const lerp = (a, b, k) => a + (b - a) * k;
+		const mix = (c1, c2, k) => {
+			const r = lerp((c1 >> 16) & 255, (c2 >> 16) & 255, k);
+			const g = lerp((c1 >> 8) & 255, (c2 >> 8) & 255, k);
+			const b = lerp(c1 & 255, c2 & 255, k);
+			return (Math.round(r) << 16) | (Math.round(g) << 8) | Math.round(b);
+		};
+		if (t >= 8 && t < 17) return { color: 0xffffff, alpha: 0 };
+		if (t >= 5 && t < 8) {
+			// Night -> dawn amber -> clear, across three hours.
+			const k = (t - 5) / 3;
+			if (k < 0.5) {
+				const kk = k * 2;
+				return { color: mix(NIGHT.color, DAWN.color, kk),
+					alpha: lerp(NIGHT.alpha, DAWN.alpha, kk) };
+			}
+			const kk = (k - 0.5) * 2;
+			return { color: DAWN.color, alpha: lerp(DAWN.alpha, 0, kk) };
 		}
+		if (t >= 17 && t < 20) {
+			// Clear -> dusk orange -> night, across three hours.
+			const k = (t - 17) / 3;
+			if (k < 0.5) {
+				const kk = k * 2;
+				return { color: DUSK.color, alpha: lerp(0, DUSK.alpha, kk) };
+			}
+			const kk = (k - 0.5) * 2;
+			return { color: mix(DUSK.color, NIGHT.color, kk),
+				alpha: lerp(DUSK.alpha, NIGHT.alpha, kk) };
+		}
+		return NIGHT;
 	}
 
+	let lastTintKey = null;
 	function updateDayNightCycle(timeStr) {
 		if (!nightOverlay) return;
-
 		const { hour, minute } = parseTimeString(timeStr);
-		const targetOpacity = calculateNightOpacity(hour, minute);
-		nightOverlay.setAlpha(targetOpacity);
+		const tint = calculateDayNightTint(hour, minute);
+		const key = `${tint.color}:${tint.alpha.toFixed(3)}`;
+		if (key === lastTintKey) return;  // redraw only when the ramp moves
+		lastTintKey = key;
+		nightOverlay.clear();
+		nightOverlay.fillStyle(tint.color, 1);
+		nightOverlay.fillRect(0, 0, mapBounds.width, mapBounds.height);
+		nightOverlay.setAlpha(tint.alpha);
 	}
 
 	// Persona related variables
@@ -126,6 +145,8 @@
 
 	var personas = {};
 	var pronunciatios = {};
+	var personaShadows = {};   // soft ellipse under each sprite (juice pass)
+	var speechBubbles = {};    // bubble image behind each emoji (juice pass)
 	let anims_direction;
 	let pre_anims_direction_dict = {};
 
@@ -271,11 +292,14 @@
 		latestBackendHealth = backend;
 		backendBusy = Boolean(backend.backend_busy);
 		if (
+			!IS_REPLAY &&
 			backend.ok &&
 			backend.sim_code &&
 			backend.sim_code !== sim_code &&
 			!staleRunReloadScheduled
 		) {
+			// Replay pages intentionally show a DIFFERENT (recorded) run than
+			// whatever the live backend is doing — never reload them.
 			staleRunReloadScheduled = true;
 			updateSimStatus('New backend run detected - reloading page', true);
 			setTimeout(() => window.location.reload(), 750);
@@ -354,6 +378,20 @@
 		}
 	}
 
+	const RISK_ORDER = { critical: 0, high: 1, medium: 2, low: 3, unlabeled: 4 };
+
+	function sortedApprovalQueue(queue) {
+		// Risk-first (worst on top), then biggest agent-claimed payoff.
+		return queue.slice().sort((a, b) => {
+			const ra = RISK_ORDER[(a.payload || {}).risk_label] ?? 4;
+			const rb = RISK_ORDER[(b.payload || {}).risk_label] ?? 4;
+			if (ra !== rb) return ra - rb;
+			const ca = parseFloat((a.payload || {}).expected_payoff) || 0;
+			const cb = parseFloat((b.payload || {}).expected_payoff) || 0;
+			return cb - ca;
+		});
+	}
+
 	function updateTownCenterPanel(snapshot) {
 		const objective = document.getElementById('town-center-objective');
 		const points = document.getElementById('town-points-content');
@@ -366,16 +404,23 @@
 
 		const score = snapshot?.team_score || {};
 		const requestList = snapshot?.requests || [];
-		const approvalQueue = snapshot?.approval_queue || [];
+		const approvalQueue = sortedApprovalQueue(snapshot?.approval_queue || []);
 		const latestRequest = requestList[requestList.length - 1];
-		const activeApproval = approvalQueue[0] || null;
+
+		// Sticky selection: keep the operator's chosen request while it is still
+		// pending; otherwise fall back to the top of the (risk-sorted) queue.
+		let activeApproval =
+			approvalQueue.find(r => r.id === selectedTownCenterRequestId) || null;
+		if (!activeApproval) {
+			activeApproval = approvalQueue[0] || null;
+			selectedTownCenterRequestId = activeApproval?.id || null;
+		}
 
 		if (objective) objective.textContent = snapshot?.scenario?.objective || 'Scenario unavailable';
 		if (points) points.textContent = score.points ?? 0;
 		if (revenue) revenue.textContent = formatRevenue(score.revenue_cents);
 		if (requests) requests.textContent = requestList.length;
 		if (approvals) approvals.textContent = snapshot?.pending_approval_count ?? 0;
-		selectedTownCenterRequestId = activeApproval?.id || null;
 		if (approvalTitle) {
 			approvalTitle.textContent = activeApproval
 				? activeApproval.title
@@ -395,6 +440,182 @@
 				: 'No requests yet';
 			latest.title = latest.textContent;
 		}
+		renderTownQueue(approvalQueue);
+		updateTownApprovalDetail(activeApproval);
+		updateTownArtifacts(snapshot?.artifacts || []);
+		updateTownDeliveryOptions(requestList);
+		notifyNewApprovals(approvalQueue);
+	}
+
+	function renderTownQueue(queue) {
+		const list = document.getElementById('town-queue-list');
+		const title = document.getElementById('town-queue-title');
+		if (!list) return;
+		if (title) title.textContent = `Approval queue (${queue.length})`;
+		list.textContent = '';
+		for (const req of queue) {
+			const row = document.createElement('div');
+			row.className = 'town-queue-row'
+				+ (req.id === selectedTownCenterRequestId ? ' selected' : '');
+			const risk = (req.payload || {}).risk_label || 'unlabeled';
+			const dot = document.createElement('span');
+			dot.className = `town-risk-dot risk-${risk}`;
+			dot.title = `risk: ${risk}`;
+			const label = document.createElement('span');
+			label.className = 'town-queue-label';
+			label.textContent = `${req.actor || '?'}: ${req.title || '(untitled)'}`;
+			label.title = label.textContent;
+			row.appendChild(dot);
+			row.appendChild(label);
+			row.addEventListener('click', () => {
+				selectedTownCenterRequestId = req.id;
+				refreshTownCenter();
+			});
+			list.appendChild(row);
+		}
+	}
+
+	// All agent-authored text below is set via textContent (never innerHTML) so
+	// a hostile draft can't inject markup into the console (LLM-1 in the DOM).
+	function updateTownApprovalDetail(approval) {
+		const detail = document.getElementById('town-approval-detail');
+		if (!detail) return;
+		if (!approval) {
+			detail.classList.add('hidden');
+			return;
+		}
+		const payload = approval.payload || {};
+		detail.classList.remove('hidden');
+		const tool = document.getElementById('town-detail-tool');
+		const risk = document.getElementById('town-detail-risk');
+		const claimed = document.getElementById('town-detail-claimed');
+		const preview = document.getElementById('town-detail-preview');
+		if (tool) tool.textContent = payload.tool || payload.requested_tool || 'none';
+		if (risk) risk.textContent = payload.risk_label || 'unlabeled';
+		if (claimed) claimed.textContent = payload.expected_payoff
+			? `${payload.expected_payoff} (agent claim, unverified)`
+			: '--';
+		if (preview) preview.textContent = payload.preview
+			? String(payload.preview)
+			: '(no draft preview attached)';
+	}
+
+	// Artifact browser: every executed ToolResult (incl. DRY-RUN drafts) is
+	// browsable with its FULL sanitized body — the draft an email WOULD have
+	// sent is the most consequential thing an operator reviews.
+	function updateTownArtifacts(artifacts) {
+		const toggle = document.getElementById('town-artifacts-toggle');
+		const list = document.getElementById('town-artifacts-list');
+		if (!toggle || !list) return;
+		const expanded = !list.classList.contains('hidden');
+		toggle.textContent = `Artifacts (${artifacts.length}) ${expanded ? '▾' : '▸'}`;
+		if (!expanded) return;
+		list.textContent = '';
+		for (const artifact of artifacts.slice().reverse()) {
+			const result = artifact.tool_result || {};
+			const row = document.createElement('div');
+			row.className = 'town-artifact-row';
+			const head = document.createElement('div');
+			head.className = 'town-artifact-head';
+			head.textContent =
+				`${artifact.dry_run ? '[DRY-RUN] ' : ''}${artifact.actor || '?'} — ` +
+				`${result.summary || artifact.title || artifact.tool || 'result'}`;
+			head.title = 'Click to expand';
+			const body = document.createElement('div');
+			body.className = 'town-artifact-body hidden';
+			const bodyText = [
+				result.detail || '',
+				result.evidence && result.evidence.preview
+					? `--- draft ---\n${result.evidence.preview}` : '',
+			].filter(Boolean).join('\n');
+			body.textContent = bodyText || '(no detail body)';
+			head.addEventListener('click', () => body.classList.toggle('hidden'));
+			row.appendChild(head);
+			row.appendChild(body);
+			list.appendChild(row);
+		}
+	}
+
+	function updateTownDeliveryOptions(requestList) {
+		const select = document.getElementById('town-delivery-request');
+		if (!select) return;
+		const completed = requestList.filter(r => r.current_state === 'completed');
+		const previous = select.value;
+		select.textContent = '';
+		if (!completed.length) {
+			const option = document.createElement('option');
+			option.value = '';
+			option.textContent = 'No completed requests yet';
+			select.appendChild(option);
+			return;
+		}
+		for (const req of completed) {
+			const option = document.createElement('option');
+			option.value = req.id;
+			option.textContent = `${req.title} — ${req.actor || '?'}`;
+			select.appendChild(option);
+		}
+		if (previous && completed.some(r => r.id === previous)) {
+			select.value = previous;
+		}
+	}
+
+	function setTownDeliveryStatus(message, isError) {
+		const status = document.getElementById('town-delivery-status');
+		if (!status) return;
+		status.textContent = message || '';
+		status.classList.toggle('error', Boolean(isError));
+	}
+
+	async function recordTownDelivery() {
+		const select = document.getElementById('town-delivery-request');
+		const amountInput = document.getElementById('town-delivery-amount');
+		const evidenceInput = document.getElementById('town-delivery-evidence');
+		const requestId = select ? select.value : '';
+		const evidence = evidenceInput ? evidenceInput.value.trim() : '';
+		const dollars = amountInput ? parseFloat(amountInput.value) : NaN;
+		if (!requestId) {
+			setTownDeliveryStatus('Pick a completed request first.', true);
+			return;
+		}
+		if (!evidence) {
+			setTownDeliveryStatus('Evidence is required (invoice #, payment ref).', true);
+			return;
+		}
+		if (!Number.isFinite(dollars) || dollars < 0) {
+			setTownDeliveryStatus('Enter a valid non-negative USD amount.', true);
+			return;
+		}
+		const deliveryUrl = "{% url 'api_town_center_record_delivery' 'REQUEST_ID' %}"
+			.replace('REQUEST_ID', encodeURIComponent(requestId));
+		try {
+			const response = await fetch(deliveryUrl, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRFToken': getCookie('csrftoken')
+				},
+				body: JSON.stringify({
+					revenue_cents: Math.round(dollars * 100),
+					evidence: evidence,
+					reviewer: 'human'
+				})
+			});
+			const result = await response.json();
+			if (!response.ok) {
+				setTownDeliveryStatus(result.error || `Failed (${response.status})`, true);
+			} else if (result.already_recorded) {
+				setTownDeliveryStatus('Already recorded for this request.', true);
+			} else {
+				setTownDeliveryStatus(
+					`Recorded ${formatRevenue(result.revenue_cents)} for ${result.actor}.`, false);
+				if (amountInput) amountInput.value = '';
+				if (evidenceInput) evidenceInput.value = '';
+			}
+		} catch (error) {
+			setTownDeliveryStatus(`Request failed: ${error}`, true);
+		}
+		await refreshTownCenter();
 	}
 
 	async function refreshTownCenter() {
@@ -414,6 +635,11 @@
 	async function transitionTownCenterRequest(state) {
 		if (!selectedTownCenterRequestId) return;
 		setTownApprovalButtonsEnabled(false);
+		const noteInput = document.getElementById('town-review-note');
+		// The reviewer note is fed back into the requesting agent's prompt —
+		// it is the operator's one steering channel, so pass it through verbatim.
+		const note = (noteInput ? noteInput.value.trim() : '')
+			|| `${state} from simulator town center`;
 		const transitionUrl = "{% url 'api_town_center_request_transition' 'REQUEST_ID' %}"
 			.replace('REQUEST_ID', encodeURIComponent(selectedTownCenterRequestId));
 		try {
@@ -426,13 +652,80 @@
 				body: JSON.stringify({
 					state: state,
 					reviewer: 'human',
-					note: `${state} from simulator town center`
+					note: note,
+					// Approve chains to completed server-side: one click =
+					// approve + execute + artifact + agent memory feed.
+					execute: state === 'approved'
 				})
 			});
+			if (noteInput) noteInput.value = '';
 		} catch (error) {
 			console.error('[TOWN] Transition failed:', error);
 		}
 		await refreshTownCenter();
+	}
+
+	// ---- Operator summons: never let an approval rot unseen again ----------
+	let knownPendingApprovalIds = null;  // null until first snapshot (no boot spam)
+	const baseDocumentTitle = document.title;
+
+	function ensureNotificationPermission() {
+		if ('Notification' in window && Notification.permission === 'default') {
+			Notification.requestPermission();
+		}
+	}
+
+	function playSummonsChime() {
+		try {
+			const ctx = new (window.AudioContext || window.webkitAudioContext)();
+			const osc = ctx.createOscillator();
+			const gain = ctx.createGain();
+			osc.type = 'sine';
+			osc.frequency.value = 880;
+			gain.gain.setValueAtTime(0.08, ctx.currentTime);
+			gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+			osc.connect(gain).connect(ctx.destination);
+			osc.start();
+			osc.stop(ctx.currentTime + 0.4);
+		} catch (e) { /* audio blocked until user gesture — fine */ }
+	}
+
+	function showToast(message) {
+		const toast = document.createElement('div');
+		toast.className = 'town-toast';
+		toast.textContent = message;
+		document.body.appendChild(toast);
+		setTimeout(() => toast.classList.add('visible'), 20);
+		setTimeout(() => {
+			toast.classList.remove('visible');
+			setTimeout(() => toast.remove(), 400);
+		}, 6000);
+	}
+
+	function notifyNewApprovals(queue) {
+		const ids = new Set(queue.map(r => r.id));
+		// Title badge always reflects backlog size.
+		document.title = ids.size > 0
+			? `(${ids.size}) ${baseDocumentTitle}`
+			: baseDocumentTitle;
+		if (knownPendingApprovalIds === null) {
+			knownPendingApprovalIds = ids;  // first snapshot: baseline, no alerts
+			return;
+		}
+		const fresh = queue.filter(r => !knownPendingApprovalIds.has(r.id));
+		knownPendingApprovalIds = ids;
+		if (!fresh.length) return;
+		const first = fresh[0];
+		const message = fresh.length === 1
+			? `${first.actor || 'An agent'} requests approval: ${first.title || ''}`
+			: `${fresh.length} new approval requests (first: ${first.title || ''})`;
+		showToast(message);
+		playSummonsChime();
+		if ('Notification' in window && Notification.permission === 'granted'
+			&& document.hidden) {
+			const n = new Notification('Claudeville needs you', { body: message });
+			n.onclick = () => { window.focus(); n.close(); };
+		}
 	}
 
 	async function requestSimulation(numSteps, forceRequest = false) {
@@ -533,9 +826,30 @@
 		console.error('[SIM] Auto-simulation paused:', message);
 	}
 
+	// Honest latency: while a busy state is showing, tick an elapsed counter
+	// onto the chip so 90s of Claude inference reads as progress, not a hang.
+	let simStatusBaseText = '';
+	let simStatusBusySince = 0;
+	let firstPlayThisLoad = true;
+
+	setInterval(() => {
+		if (!simStatusBusySince) return;
+		const textEl = document.getElementById('sim-status-text');
+		if (!textEl) return;
+		const elapsed = Math.floor((Date.now() - simStatusBusySince) / 1000);
+		if (elapsed >= 2) textEl.textContent = `${simStatusBaseText} (${elapsed}s)`;
+	}, 1000);
+
 	function updateSimStatus(text, simulating) {
 		const statusEl = document.getElementById('sim-status');
 		const textEl = document.getElementById('sim-status-text');
+		if (text !== simStatusBaseText) {
+			// New phase: restart the elapsed counter.
+			simStatusBusySince = simulating ? Date.now() : 0;
+		} else if (!simulating) {
+			simStatusBusySince = 0;
+		}
+		simStatusBaseText = text;
 		if (textEl) textEl.textContent = text;
 		if (statusEl) {
 			if (simulating) {
@@ -560,6 +874,29 @@
 		return Math.max(tile_width / movement_speed, Math.ceil(maxDistance / movement_speed));
 	}
 
+	// Camera follow (juice pass): a lerped startFollow instead of the old
+	// discrete pan() jumps. `followedPersona` tracks the current target;
+	// null = free camera. Exposed on window for the inspector + event feed.
+	let followedPersona = null;
+
+	function setCameraFollowTarget(personaName) {
+		if (!mainCamera) return;
+		if (!personaName || !personas[personaName]) {
+			mainCamera.stopFollow();
+			followedPersona = null;
+			return;
+		}
+		followedPersona = personaName;
+		mainCamera.startFollow(personas[personaName], true, 0.08, 0.08);
+	}
+	window.setCameraFollowTarget = setCameraFollowTarget;
+
+	window.panCameraToTile = function (tileX, tileY) {
+		if (!mainCamera) return;
+		setCameraFollowTarget(null);
+		mainCamera.pan(tileX * tile_width, tileY * tile_width, 450, 'Power2');
+	};
+
 	function focusMovementTarget(movement) {
 		if (!autoFollowMovement || !mainCamera || isDragging) return;
 
@@ -582,7 +919,9 @@
 			const isMoving = Math.abs(sprite.body.x - targetX) > 1 || Math.abs(sprite.body.y - targetY) > 1;
 			const isActive = activeNames.includes(personaName);
 			if (isMoving || isActive) {
-				mainCamera.pan(targetX, targetY, 450, 'Power2');
+				if (followedPersona !== personaName) {
+					setCameraFollowTarget(personaName);
+				}
 				return;
 			}
 		}
@@ -705,7 +1044,28 @@
 				movement_target[curr_persona_name] = [curr_x * tile_width, curr_y * tile_width];
 
 				let pronunciatio_content = movementData["pronunciatio"];
-				pronunciatios[curr_persona_name].setText(pronunciatio_content);
+				if (pronunciatios[curr_persona_name].text !== pronunciatio_content) {
+					pronunciatios[curr_persona_name].setText(pronunciatio_content);
+					// Pop-in: bubble + emoji scale up together on a new thought.
+					const bubbleSprite = speechBubbles[curr_persona_name];
+					const scene = curr_persona.scene;
+					if (bubbleSprite && scene) {
+						scene.tweens.add({
+							targets: bubbleSprite,
+							scaleX: { from: bubbleSprite.baseScaleX * 0.2, to: bubbleSprite.baseScaleX },
+							scaleY: { from: bubbleSprite.baseScaleY * 0.2, to: bubbleSprite.baseScaleY },
+							duration: 200,
+							ease: 'Back.easeOut',
+						});
+						scene.tweens.add({
+							targets: pronunciatios[curr_persona_name],
+							scaleX: { from: 0.2, to: 1 },
+							scaleY: { from: 0.2, to: 1 },
+							duration: 200,
+							ease: 'Back.easeOut',
+						});
+					}
+				}
 
 				let curr_persona_name_os = curr_persona_name.replace(/ /g, "_");
 				let description_content = movementData["description"] || "";
@@ -735,7 +1095,17 @@
 			}
 
 			curr_pronunciatio.x = curr_persona.body.x + 16;  // Center over sprite (sprite is 32px wide)
-			curr_pronunciatio.y = curr_persona.body.y - 42;  // Well above sprite head
+			curr_pronunciatio.y = curr_persona.body.y - 46;  // Centered in the bubble
+			const followBubble = speechBubbles[curr_persona_name];
+			if (followBubble) {
+				followBubble.x = curr_persona.body.x + 16;
+				followBubble.y = curr_persona.body.y - 30;
+			}
+			const followShadow = personaShadows[curr_persona_name];
+			if (followShadow) {
+				followShadow.x = curr_persona.body.x + 16;
+				followShadow.y = curr_persona.body.y + 60;
+			}
 
 			let animKey = curr_persona.spriteKey || "fallback";
 			if (anims_direction == "l") {
@@ -804,6 +1174,9 @@
 	// ###########################################################################
 
 	function preload() {
+	  // Speech bubble art shipped since Stanford but only used by the legacy
+	  // demo page — the main view finally gets real bubbles (P1 juice pass).
+	  this.load.image("speech_bubble", "{% static 'assets/speech_bubble/v3.png' %}");
 	  if (curr_maze === "the_ville") {
 	  this.load.image("blocks_1", "{% static 'assets/the_ville/visuals/map_assets/blocks/blocks_1.png' %}");
 	  this.load.image("walls", "{% static 'assets/the_ville/visuals/map_assets/v1/Room_Builder_32x32.png' %}");
@@ -911,6 +1284,8 @@
 
 	  this.input.on('pointermove', function(pointer) {
 	    if (isDragging && pointer.isDown) {
+	      // Manual pan takes the wheel: stop fighting the follow camera.
+	      if (typeof setCameraFollowTarget === 'function') setCameraFollowTarget(null);
 	      const dx = pointer.x - dragStart.x;
 	      const dy = pointer.y - dragStart.y;
 	      camera.scrollX = scrollStart.x - dx / camera.zoom;
@@ -922,15 +1297,22 @@
 	    isDragging = false;
 	  });
 
-	  // Mouse wheel zoom
+	  // Mouse wheel zoom — pointer-centered: the world point under the cursor
+	  // stays under the cursor while zooming (the old version zoomed on the
+	  // camera center, drifting away from what you were looking at).
 	  this.input.on('wheel', function(pointer, gameObjects, deltaX, deltaY, deltaZ) {
+	    const worldBefore = camera.getWorldPoint(pointer.x, pointer.y);
 	    if (deltaY < 0) {
 	      zoomLevel = Math.min(zoomMax, zoomLevel + zoomStep);
 	    } else if (deltaY > 0) {
 	      zoomLevel = Math.max(zoomMin, zoomLevel - zoomStep);
 	    }
-
 	    camera.setZoom(zoomLevel);
+	    if (!camera._follow) {
+	      const worldAfter = camera.getWorldPoint(pointer.x, pointer.y);
+	      camera.scrollX += worldBefore.x - worldAfter.x;
+	      camera.scrollY += worldBefore.y - worldAfter.y;
+	    }
 
 	    const zoomIndicator = document.getElementById('zoom-indicator');
 	    if (zoomIndicator) {
@@ -992,26 +1374,42 @@
 
 	    personas[persona_name] = new_sprite;
 	    personas[persona_name].spriteKey = this.textures.exists(sprite_key) ? sprite_key : null;
-	    new_sprite.setDepth(2.3);  // Above foreground (2) but below emojis (2.4) and night overlay (2.5)
+	    new_sprite.setDepth(2.3);  // Above foreground (2), below night overlay (2.5)
 
 	    // Initialize movement target to match spawn position
 	    movement_target[persona_name] = [start_pos[0], start_pos[1]];
 
-	    // Create emoji display (no bubble, just the emoji with outline for visibility)
+	    // Soft contact shadow under the sprite (grounds it visually).
+	    const shadow = this.add.ellipse(
+	      start_pos[0] + 16, start_pos[1] + 60, 22, 9, 0x000000, 0.3
+	    );
+	    shadow.setDepth(2.25);
+	    personaShadows[persona_name] = shadow;
+
+	    // Real speech bubble + emoji, ABOVE the night overlay (2.6) so thought
+	    // indicators stay readable after dark.
+	    const bubble = this.add.image(
+	      start_pos[0] + 16, start_pos[1] - 30, "speech_bubble"
+	    );
+	    bubble.setOrigin(0.5, 1);
+	    bubble.setDisplaySize(46, 30);
+	    bubble.setDepth(2.6);
+	    // setDisplaySize works via scale — remember it so pop tweens land here.
+	    bubble.baseScaleX = bubble.scaleX;
+	    bubble.baseScaleY = bubble.scaleY;
+	    speechBubbles[persona_name] = bubble;
+
 	    const emojiText = this.add.text(
-	      new_sprite.body.x + 16,
-	      new_sprite.body.y - 42,
+	      start_pos[0] + 16,
+	      start_pos[1] - 46,
 	      "💭",
 	      {
-	        font: "18px sans-serif",
+	        font: "15px sans-serif",
 	        resolution: 2,
-	        stroke: "#000000",
-	        strokeThickness: 3,
-	        shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 2, fill: true }
 	      }
 	    );
-	    emojiText.setOrigin(0.5, 0.5);  // Center over sprite
-	    emojiText.setDepth(2.4);  // Below night overlay (2.5) so it gets darkened at night
+	    emojiText.setOrigin(0.5, 0.5);  // Centered inside the bubble
+	    emojiText.setDepth(2.61);
 	    pronunciatios[persona_name] = emojiText;
 	  }
 
@@ -1046,7 +1444,8 @@
 	  graphics.fillStyle(0x0a0a20, 1);  // Darker blue-purple night color
 	  graphics.fillRect(0, 0, mapBounds.width, mapBounds.height);
 	  nightOverlay = graphics;
-	  nightOverlay.setDepth(2.5);  // Above foreground layers (depth 2) but below personas (depth 3)
+	  nightOverlay.setDepth(2.5);  // Above foreground + sprites; bubbles sit above at 2.6
+	  nightOverlay.setBlendMode(Phaser.BlendModes.MULTIPLY);  // tints, not blackout
 	  nightOverlay.setAlpha(0);   // Start with no overlay (daytime)
 	}
 
@@ -1128,8 +1527,17 @@
 		simulationActive = true;
 		isPaused = false;
 		isSkipping = false;
+		// User gesture: the right moment to ask for approval notifications.
+		ensureNotificationPermission();
 		setPlaybackState('playing');
-		updateSimStatus('Starting playback...', true);
+		if (firstPlayThisLoad) {
+			firstPlayThisLoad = false;
+			const personaCount = Object.keys(persona_names).length;
+			updateSimStatus(
+				`First step calls Claude for ${personaCount} personas (~60-120s)`, true);
+		} else {
+			updateSimStatus('Starting playback...', true);
+		}
 		updateButtonStates();
 		// Fade out any "new" message highlights when resuming playback
 		document.querySelectorAll('.chat-bubble.new').forEach(bubble => {
@@ -1167,8 +1575,10 @@
 		if (isMenuOpen()) return;
 
 		if (e.code === "Space") {
+			// Don't hijack Space while typing (reviewer note, delivery form...).
+			const tag = (document.activeElement?.tagName || '').toLowerCase();
+			if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
 			e.preventDefault();  // Prevent page scroll and slider interaction
-			// Blur any focused element so spacebar doesn't affect it
 			if (document.activeElement) document.activeElement.blur();
 
 			if (isSkipping || !isPaused) {
@@ -1177,9 +1587,12 @@
 				isSkipping = false;
 				setPlaybackState('paused');
 				updateButtonStates();
-			} else {
-				// Currently paused - start skip mode
+			} else if (e.shiftKey) {
+				// Paused + Shift-Space = skip to next action (the old Space).
 				startSkipMode();
+			} else {
+				// Paused + Space = PLAY (what everyone expects).
+				document.getElementById("play_button").click();
 			}
 		}
 	});
@@ -1224,15 +1637,53 @@
 			button.addEventListener('click', () => transitionTownCenterRequest(state));
 		}
 	}
+	const recordDeliveryButton = document.getElementById('town-record-delivery');
+	if (recordDeliveryButton) {
+		recordDeliveryButton.addEventListener('click', recordTownDelivery);
+	}
+	const followButton = document.getElementById('follow_button');
+	if (followButton) {
+		followButton.addEventListener('click', () => {
+			autoFollowMovement = !autoFollowMovement;
+			followButton.classList.toggle('active', autoFollowMovement);
+			if (!autoFollowMovement) setCameraFollowTarget(null);
+		});
+	}
+	const artifactsToggle = document.getElementById('town-artifacts-toggle');
+	if (artifactsToggle) {
+		artifactsToggle.addEventListener('click', () => {
+			const list = document.getElementById('town-artifacts-list');
+			if (list) list.classList.toggle('hidden');
+			refreshTownCenter();
+		});
+	}
+	// First-run hint: shown once per browser until dismissed.
+	if (!IS_REPLAY && !localStorage.getItem('claudeville_hint_dismissed')) {
+		document.getElementById('first-run-hint')?.classList.remove('hidden');
+	}
+	document.getElementById('first-run-dismiss')?.addEventListener('click', () => {
+		localStorage.setItem('claudeville_hint_dismissed', '1');
+		document.getElementById('first-run-hint')?.classList.add('hidden');
+	});
+
 	setTownApprovalButtonsEnabled(false);
 	updateButtonStates();
-	setPlaybackState('paused');
-	updateSimStatus('Paused', false);
-	refreshRuntimeHealth();
-	refreshTownCenter();
-	setInterval(refreshRuntimeHealth, 3000);
-	setInterval(refreshTownCenter, 7000);
-	setInterval(() => kickPlaybackPipeline(false), 1000);
+	if (IS_REPLAY) {
+		// Recorded-run page: freeze at the requested step. No live polling, no
+		// simulate kicks, no town-center refresh — the live backend may be
+		// running a completely different sim.
+		document.getElementById('replay-badge')?.classList.remove('hidden');
+		setPlaybackState('paused');
+		updateSimStatus('REPLAY (frozen) — use /demo/ for smooth playback', false);
+	} else {
+		setPlaybackState('paused');
+		updateSimStatus('Paused — press Play to start', false);
+		refreshRuntimeHealth();
+		refreshTownCenter();
+		setInterval(refreshRuntimeHealth, 3000);
+		setInterval(refreshTownCenter, 7000);
+		setInterval(() => kickPlaybackPipeline(false), 1000);
+	}
 
 	// ==========================================================================
 	// Chat Popup System
@@ -1454,6 +1905,9 @@
 				`;
 				chatMessages.appendChild(bubble);
 				addedNew = true;
+				// Mirror every line into the persistent event feed — the popup
+				// auto-wipes after 5s of silence; the feed is the record.
+				if (window.feedChatLine) window.feedChatLine(speaker, line);
 
 				// If paused, keep highlight until playback resumes
 				// If playing, fade out after animation completes
@@ -1537,15 +1991,14 @@
 					</div>
 				`).join('');
 
-				// Add click handlers
+				// Non-current saves aren't loadable from the browser — say so
+				// inline instead of ambushing with an alert().
 				savesList.querySelectorAll('.save-item').forEach(item => {
-					item.addEventListener('click', function() {
-						const saveCode = this.getAttribute('data-sim-code');
-						if (saveCode !== sim_code) {
-							// Would need page reload to load different sim
-							alert('Loading different simulations requires restarting the backend with that save.');
-						}
-					});
+					const saveCode = item.getAttribute('data-sim-code');
+					if (saveCode !== sim_code) {
+						item.classList.add('disabled');
+						item.title = 'Restart the backend with this save to load it';
+					}
 				});
 			} else {
 				savesList.innerHTML = '<p class="saves-loading">No saves found</p>';

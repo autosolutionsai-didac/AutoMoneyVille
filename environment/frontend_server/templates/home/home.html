@@ -5,14 +5,29 @@
 <!-- Game fills entire screen -->
 <div id="game-container"></div>
 
-<!-- Hidden data elements for JavaScript -->
+<!-- Hidden data elements for JavaScript (single source — main_script reads these) -->
 <div id="step" class="hidden-data">{{step}}</div>
 <div id="sim_code" class="hidden-data">{{sim_code}}</div>
+<div id="sim_mode" class="hidden-data">{{ mode|default:"simulate" }}</div>
 <div id="persona_name_list" class="hidden-data">{{persona_name_str}}</div>
 <div id="persona_init_pos" class="hidden-data">
   {% for i in persona_init_pos %}
     <span>{{i.0}},{{i.1}},{{i.2}}</span>
   {% endfor %}
+</div>
+
+<!-- Replay badge (shown by main_script when mode=replay) -->
+<div id="replay-badge" class="ui-overlay replay-badge hidden">REPLAY — recorded run (frozen; use /demo/ for smooth playback)</div>
+
+<!-- First-run hint (dismissed once, remembered in localStorage) -->
+<div id="first-run-hint" class="ui-overlay first-run-hint hidden">
+  <div class="hint-title">Welcome to Claudeville</div>
+  <div class="hint-body">
+    Press <strong>▶ Play</strong> to wake the town — the first step calls Claude for every persona (~1-2 min).<br>
+    Drag to pan · wheel to zoom · click a persona for their mind · <strong>Space</strong> play/pause · <strong>ESC</strong> menu.<br>
+    When an agent needs your approval, the Town Center panel (bottom-left) will summon you.
+  </div>
+  <button id="first-run-dismiss" class="town-action approve">Got it</button>
 </div>
 
 <!-- Top Bar - Time and Controls -->
@@ -29,6 +44,9 @@
     </button>
     <button id="skip_button" class="control-btn" title="Skip to next action">
       <span class="icon">⏭</span>
+    </button>
+    <button id="follow_button" class="control-btn active" title="Auto-follow the active persona">
+      <span class="icon">🎥</span>
     </button>
   </div>
   <div class="speed-control">
@@ -68,6 +86,57 @@
       </div>
     </div>
     {% endfor %}
+  </div>
+</div>
+
+<!-- Event Feed (filled by feed_script.html) -->
+<div id="event-feed" class="ui-overlay event-feed">
+  <div class="feed-header">
+    <span>Events</span>
+    <div class="feed-filters">
+      <button class="feed-filter active" data-filter="all">All</button>
+      <button class="feed-filter" data-filter="chat">Chats</button>
+      <button class="feed-filter" data-filter="economy">Economy</button>
+      <button class="feed-filter" data-filter="sim">Sim</button>
+    </div>
+    <button id="feed-collapse" class="toggle-btn" title="Collapse">◀</button>
+  </div>
+  <div id="feed-list" class="feed-list"></div>
+</div>
+
+<!-- Agent Inspector Drawer (filled by inspector_script.html) -->
+<div id="inspector-drawer" class="ui-overlay inspector-drawer hidden">
+  <div class="inspector-header">
+    <img id="inspector-portrait" class="inspector-portrait" src="" alt="">
+    <div class="inspector-title">
+      <div id="inspector-name" class="inspector-name">--</div>
+      <div id="inspector-currently" class="inspector-currently">--</div>
+    </div>
+    <button id="inspector-follow" class="town-action approve inspector-follow" title="Camera follows this persona">Follow</button>
+    <button id="inspector-close" class="toggle-btn" title="Close">✕</button>
+  </div>
+  <div class="inspector-body">
+    <div class="inspector-section">
+      <div class="inspector-section-title">Now</div>
+      <div id="inspector-action" class="inspector-text">--</div>
+      <div id="inspector-address" class="inspector-subtext">--</div>
+    </div>
+    <div class="inspector-section">
+      <div class="inspector-section-title">Today's schedule</div>
+      <div id="inspector-schedule" class="inspector-list"></div>
+    </div>
+    <div class="inspector-section">
+      <div class="inspector-section-title">Goals</div>
+      <div id="inspector-goals" class="inspector-list"></div>
+    </div>
+    <div class="inspector-section">
+      <div class="inspector-section-title">Relationships</div>
+      <div id="inspector-relationships" class="inspector-list"></div>
+    </div>
+    <div class="inspector-section">
+      <div class="inspector-section-title">Memory stream</div>
+      <div id="inspector-memories" class="inspector-list inspector-memories"></div>
+    </div>
   </div>
 </div>
 
@@ -126,17 +195,43 @@
     <span>Approvals</span>
     <strong id="town-approvals-content">--</strong>
   </div>
+  <div class="town-queue" id="town-queue">
+    <div class="town-queue-title" id="town-queue-title">Approval queue</div>
+    <div class="town-queue-list" id="town-queue-list"></div>
+  </div>
   <div class="town-approval-card" id="town-approval-card">
     <div class="town-approval-title" id="town-approval-title">No pending approvals</div>
     <div class="town-approval-meta" id="town-approval-meta">--</div>
+    <div class="town-approval-detail hidden" id="town-approval-detail">
+      <div class="town-detail-row"><span>Tool</span><strong id="town-detail-tool">--</strong></div>
+      <div class="town-detail-row"><span>Risk (agent-labeled)</span><strong id="town-detail-risk">--</strong></div>
+      <div class="town-detail-row"><span>Claimed payoff</span><strong id="town-detail-claimed">--</strong></div>
+      <div class="town-detail-preview" id="town-detail-preview"></div>
+    </div>
+    <textarea id="town-review-note" class="town-delivery-input town-review-note"
+      placeholder="Reviewer note (agents read this — say WHY)" rows="2"></textarea>
     <div class="town-approval-actions">
-      <button id="town-approve-request" class="town-action approve" title="Approve request">Approve</button>
+      <button id="town-approve-request" class="town-action approve" title="Approve and execute">Approve ▶</button>
       <button id="town-reject-request" class="town-action reject" title="Reject request">Reject</button>
       <button id="town-complete-request" class="town-action complete" title="Mark completed">Done</button>
       <button id="town-fail-request" class="town-action fail" title="Mark failed">Fail</button>
     </div>
   </div>
   <div class="town-center-latest" id="town-latest-request">No requests yet</div>
+  <div class="town-artifacts" id="town-artifacts">
+    <button class="town-artifacts-toggle" id="town-artifacts-toggle">Artifacts (0) ▸</button>
+    <div class="town-artifacts-list hidden" id="town-artifacts-list"></div>
+  </div>
+  <div class="town-delivery" id="town-delivery-form">
+    <div class="town-delivery-title">Record real delivery (human-confirmed)</div>
+    <select id="town-delivery-request" class="town-delivery-input">
+      <option value="">No completed requests yet</option>
+    </select>
+    <input id="town-delivery-amount" class="town-delivery-input" type="number" min="0" step="0.01" placeholder="Revenue (USD, e.g. 42.00)">
+    <input id="town-delivery-evidence" class="town-delivery-input" type="text" placeholder="Evidence (invoice #, payment ref)">
+    <button id="town-record-delivery" class="town-action approve" title="Credit confirmed revenue">Record delivery</button>
+    <div class="town-delivery-status" id="town-delivery-status"></div>
+  </div>
 </div>
 
 <!-- Chat Popup - Bottom Center Conversation Display -->
@@ -176,4 +271,6 @@
 
 <script src='https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js'></script>
 {% include 'home/main_script.html' %}
+{% include 'home/inspector_script.html' %}
+{% include 'home/feed_script.html' %}
 {% endblock content %}

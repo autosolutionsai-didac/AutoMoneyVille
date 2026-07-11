@@ -260,6 +260,52 @@ def api_town_center_reward(request):
         return JsonResponse({"error": str(e)}, status=502)
 
 
+def api_events(request):
+    """Live event feed (viewer-relevant moments) proxied to the backend."""
+    after_id = request.GET.get("after_id", "0")
+    try:
+        response = requests.get(
+            f"{BACKEND_URL}/events", params={"after_id": after_id}, timeout=5
+        )
+        return JsonResponse(response.json(), status=response.status_code)
+    except (requests.RequestException, ValueError) as e:
+        return JsonResponse({"error": str(e)}, status=502)
+
+
+def api_persona_state(request, persona_name):
+    """Live agent-inspector state for one persona (proxied to the backend)."""
+    try:
+        response = requests.get(
+            f"{BACKEND_URL}/persona/{persona_name}/state", timeout=5
+        )
+        return JsonResponse(response.json(), status=response.status_code)
+    except (requests.RequestException, ValueError) as e:
+        return JsonResponse({"error": str(e)}, status=502)
+
+
+def api_town_center_record_delivery(request, request_id):
+    """Record HUMAN-CONFIRMED revenue for a delivered request.
+
+    Unlike the other proxies this forwards backend 4xx bodies verbatim: the
+    console user typed the form, so "evidence is required" / "unknown request
+    id" must reach them instead of collapsing into a generic 502.
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=405)
+    try:
+        data = json.loads(request.body) if request.body else {}
+        response = requests.post(
+            f"{BACKEND_URL}/town-center/requests/{request_id}/record-delivery",
+            json=data,
+            timeout=10,
+        )
+        return JsonResponse(response.json(), status=response.status_code)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    except (requests.RequestException, ValueError) as e:
+        return JsonResponse({"error": str(e)}, status=502)
+
+
 # =============================================================================
 # Page Views
 # =============================================================================

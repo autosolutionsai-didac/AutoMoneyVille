@@ -42,6 +42,17 @@ urlpatterns = [
         translator_views.api_town_center_reward,
         name="api_town_center_reward",
     ),
+    path(
+        "api/town-center/requests/<str:request_id>/record-delivery/",
+        translator_views.api_town_center_record_delivery,
+        name="api_town_center_record_delivery",
+    ),
+    path(
+        "api/persona/<str:persona_name>/state/",
+        translator_views.api_persona_state,
+        name="api_persona_state",
+    ),
+    path("api/events/", translator_views.api_events, name="api_events"),
     # Page views
     re_path(r"^$", translator_views.landing, name="landing"),
     re_path(r"^simulator_home$", translator_views.home, name="home"),

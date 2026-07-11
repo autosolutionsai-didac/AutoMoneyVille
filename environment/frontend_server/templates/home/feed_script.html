@@ -1,0 +1,98 @@
+<script>
+// Event Feed (P1.C2): the persistent story of the town. Sim/economy events are
+// polled from the backend ring buffer; chat lines are mirrored in live via
+// window.feedChatLine (the popup wipes itself; this doesn't). All content
+// renders via textContent (LLM-1).
+(function () {
+	const POLL_MS = 5000;
+	const MAX_ROWS = 300;
+	const ICONS = {
+		conversation_started: '💬', conversation_ended: '🔚', chat_line: '💬',
+		request_submitted: '📥', request_transition: '⚖️',
+		delivery_recorded: '💰', new_day: '🌅', autosave: '💾',
+	};
+
+	let afterId = 0;
+	let activeFilter = 'all';
+	let collapsed = false;
+
+	const list = document.getElementById('feed-list');
+	const feedPanel = document.getElementById('event-feed');
+
+	function addRow(category, type, simTime, text, tile, personas) {
+		const row = document.createElement('div');
+		row.className = `feed-row feed-${category}`;
+		row.dataset.category = category;
+		const time = document.createElement('span');
+		time.className = 'feed-time';
+		time.textContent = simTime || '';
+		const body = document.createElement('span');
+		body.className = 'feed-text';
+		body.textContent = `${ICONS[type] || '•'} ${text}`;
+		row.appendChild(time);
+		row.appendChild(body);
+		if (tile && tile.length === 2 && typeof window.panCameraToTile === 'function') {
+			row.classList.add('jumpable');
+			row.title = 'Click to jump the camera there';
+			row.addEventListener('click', () => window.panCameraToTile(tile[0], tile[1]));
+		} else if (personas && personas.length && typeof window.openPersonaInspector === 'function') {
+			row.classList.add('jumpable');
+			row.title = `Open ${personas[0]}`;
+			row.addEventListener('click', () => window.openPersonaInspector(personas[0]));
+		}
+		row.style.display =
+			(activeFilter === 'all' || activeFilter === category) ? '' : 'none';
+		const stickToBottom =
+			list.scrollTop + list.clientHeight >= list.scrollHeight - 30;
+		list.appendChild(row);
+		while (list.childNodes.length > MAX_ROWS) list.removeChild(list.firstChild);
+		if (stickToBottom) list.scrollTop = list.scrollHeight;
+	}
+
+	async function pollFeed() {
+		try {
+			const response = await fetch(`{% url 'api_events' %}?after_id=${afterId}`);
+			if (!response.ok) return;
+			const data = await response.json();
+			if (data.error) return;
+			for (const event of data.events || []) {
+				addRow(event.category, event.type, event.sim_time, event.text,
+					event.tile, event.personas);
+			}
+			if (typeof data.latest_id === 'number') afterId = data.latest_id;
+		} catch (error) { /* backend offline — feed just pauses */ }
+	}
+
+	// Live chat mirror from the popup pipeline (main_script calls this).
+	const seenChatKeys = new Set();
+	window.feedChatLine = function (speaker, line) {
+		const key = `${speaker}:${line}`;
+		if (seenChatKeys.has(key)) return;
+		seenChatKeys.add(key);
+		if (seenChatKeys.size > 2000) seenChatKeys.clear();
+		addRow('chat', 'chat_line', '', `${speaker}: ${line}`, null, [speaker]);
+	};
+
+	document.querySelectorAll('.feed-filter').forEach(button => {
+		button.addEventListener('click', () => {
+			document.querySelectorAll('.feed-filter')
+				.forEach(b => b.classList.toggle('active', b === button));
+			activeFilter = button.dataset.filter;
+			list.querySelectorAll('.feed-row').forEach(row => {
+				row.style.display =
+					(activeFilter === 'all' || row.dataset.category === activeFilter)
+						? '' : 'none';
+			});
+		});
+	});
+
+	document.getElementById('feed-collapse').addEventListener('click', function () {
+		collapsed = !collapsed;
+		feedPanel.classList.toggle('collapsed', collapsed);
+		this.textContent = collapsed ? '▶' : '◀';
+	});
+
+	pollFeed();
+	setInterval(pollFeed, POLL_MS);
+})();
+</script>

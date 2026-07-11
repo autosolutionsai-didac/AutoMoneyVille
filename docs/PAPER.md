@@ -1,8 +1,8 @@
 # Claudeville: Reactivating Generative-Agent Cognition on a Frontier Agentic SDK for a Human-Governed Economic Society
 
 **A living research paper.**
-Version 0.1 · Last updated 2026-06-23 · Status: **research prototype (not yet live)** ·
-Covers commits `f6650752`…`844c72ae` (six-phase roadmap) on `main`.
+Version 0.4 · Last updated 2026-07-02 · Status: **research prototype (not yet live)** ·
+Covers commits `f6650752`…`9e673ab4` + the transaction-console working set on `main`.
 
 > This document evolves with the system. Substantive changes are recorded in the
 > [Version history](#version-history) at the end and narrated in [`DEVLOG.md`](DEVLOG.md). Every
@@ -395,6 +395,28 @@ Neither window alone characterizes the economy; **\$0 revenue remains the honest
 deliberate human-approval gate plus a short horizon (revenue needs an approved outbound action *and* a real
 reply). A longer, saved run is required to measure economic throughput and forward handoffs properly (§9).
 
+**Update (v0.4, 2026-07-02) — the request-rich window arrived, and it isolates the bottleneck.** A dedicated
+economy analyzer (`tools/eval/economy.py`; outputs under `tools/eval/out/*.economy.{json,md}`) was run
+against the 10-persona, 1,578-step run `…003901`. The measured funnel: **17 requests submitted, 0
+transitions, 0 tools executed, 0 revenue — every request terminated in `proposed`**, and all 17 were queued
+at the human-approval gate (`approval_required = true` or unregistered tools). This cleanly separates two
+hypotheses the earlier windows could not: the economy's constraint in this regime is **not** agent
+request-productivity (17 requests in one simulated morning across 3 active requesters) but the **absence of
+a reviewing human in the loop** — no approval surface existed in the operator UI. Two qualitative findings
+from the pending queue deserve emphasis. First, proposal quality was higher than the \$33.00 of (unverified,
+agent-claimed) payoff suggests: agents sourced *named real-world prospects* from live web research and
+embedded per-message human-approval conditions in their own outreach proposals. Second, **governance emerged
+without being scripted**: the team's risk officer filed a formal HOLD (`risk_flag`) against a teammate's
+outreach-channel request pending a risk checklist, and the requester answered with a structured checklist
+response — an approval dialogue conducted entirely between agents, waiting on a human who had no console.
+In response, v0.4 ships that console (§3.5): dry-run artifacts now persist to an append-only
+`artifacts.jsonl` ledger (previously the executed `ToolResult` was discarded after a single HTTP response),
+`record_delivery` is reachable over HTTP behind evidence validation and idempotency, and the operator
+overlay shows the full draft (tool, agent-labeled risk, claimed payoff explicitly marked unverified, and
+preview text) *before* approval, plus a record-delivery form gating any `revenue_cents` on typed human
+evidence. Whether a reviewed queue converts proposals into approved actions — and eventually confirmed
+revenue — is the next measurement (§9).
+
 ### 6.4 Emergence (partially observed on the real run)
 
 Run against the fresh run, the emergence analyzer reports genuine — if early — signal, not just a synthetic
@@ -581,3 +603,4 @@ Key tunables (env): `CLAUDEVILLE_CLAUDE_MODEL`, `CLAUDEVILLE_PERSONA_MOVE_TIMEOU
 | 0.1 | 2026-06-23 | Initial draft: architecture, six-phase methodology, verification, baseline (run `…094847`) and null results, related work, references. Covers commits `f6650752`…`844c72ae`. |
 | 0.2 | 2026-06-24 | **Corrected §6 + abstract**: the v0.1 "dead society" nulls were a stale/unsaved-run artifact. Added periodic auto-save; ran a fresh saved baseline (`…213240`, 800 steps) showing a complete conversation network (density 1.0), 362 persisted memory nodes, and emergent conventions. Economic throughput (revenue/handoffs) remains latent in a short window — flagged for a longer run. |
 | 0.3 | 2026-06-25 | **Toward real money (Stage 0+1).** Closed the prompt-injection vector (LLM-1: untrusted-text sanitization). Added a tool **execution layer** (`tool_executor.py`): completed requests now actually run — read-only research executes (real if a search backend is configured, else an honest stub) and feeds results back into persona memory; outbound/spend tools are dry-run only. **De-fictionalized revenue**: it is no longer the agent's self-reported `expected_payoff` on approval; credited only via human-confirmed `record_delivery` evidence. Pushed the 6-phase roadmap to origin/main. Real outbound execution + revenue validation + an operator transaction-console UI remain future stages (§9). |
+| 0.4 | 2026-07-02 | **Measured the economy; shipped the transaction console.** New economy analyzer (`tools/eval/economy.py`) on the 10-persona, 1,578-step run `…003901`: 17 requests, **all terminated at the human-approval gate** (0 transitions, 0 executions, \$0) — isolating the absent reviewer, not agent productivity, as the binding constraint; documented emergent agent-to-agent governance (risk-officer HOLD + checklist response). Shipped the operator console: persistent `artifacts.jsonl` for executed ToolResults, an HTTP `record-delivery` endpoint (evidence-validated, idempotent), and a review UI showing full drafts pre-approval with claimed payoffs marked unverified (§6.3 update). |
