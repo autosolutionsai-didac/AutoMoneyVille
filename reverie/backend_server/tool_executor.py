@@ -50,6 +50,16 @@ RESEARCH_TOOLS = ("web_research", "market_analysis")
 _SUMMARY_MAX = 240
 
 
+def _compact_detail(text: str, max_chars: int = 160) -> str:
+    """Collapse whitespace and take a bounded excerpt for memory/prompt use.
+    Keeps the actual research content (or draft preview) from bloating context
+    while giving agents something more than a source count. (P2 A1)"""
+    if not text:
+        return ""
+    collapsed = " ".join(str(text).split())
+    return collapsed[:max_chars].strip()
+
+
 @dataclass
 class ToolResult:
     """Outcome of executing a tool for an approved/auto-completed request."""
@@ -74,8 +84,18 @@ class ToolResult:
         }
 
     def memory_line(self) -> str:
-        """Persona-facing observation text to store in associative memory."""
-        return self.summary
+        """Persona-facing observation text to store in associative memory.
+
+        For research tools (web_research, market_analysis) we now embed a
+        compact excerpt of the real content (titles + snippets) so the agent
+        receives knowledge, not just a count. Outbound drafts stay summarized.
+        """
+        base = self.summary or ""
+        if self.detail and self.tool in RESEARCH_TOOLS:
+            excerpt = _compact_detail(self.detail, 160)
+            if excerpt:
+                base = f"{base} | {excerpt}"
+        return base
 
 
 # --- search backend (pluggable; real only when a provider + key are configured) ---

@@ -18,6 +18,68 @@ and its missing organ built: a human **transaction console** (draft review → a
 
 ---
 
+## 2026-07-11 — P2 intelligence A1: research content reaches memory and prompts (first slice)
+
+**What & why.** The single highest-leverage coupling fix identified in the roadmap. A completed `web_research` (or market_analysis) produced a short summary line ("5 sources on X") that went into memory + the step prompt; the real `ToolResult.detail` (formatted titles/URLs/snippets) was persisted only to `artifacts.jsonl` and the console. Agents received a count, not knowledge. Teammates could not build on findings. This was the main reason live search felt inert.
+
+- `tool_executor.ToolResult.memory_line()` now appends a compact excerpt of `detail` (for RESEARCH_TOOLS only). Outbound tools keep their short summary (drafts stay out of memory bloat).
+- `_feed_tool_result_to_persona` (reverie) enriches the description passed to `add_event` with the same excerpt → the ConceptNode now carries searchable real content.
+- `town_center._current_requests` now carries `tool_result` from the COMPLETED transition into the current view (previously only state/note were overlaid).
+- `_refresh_town_center_feedback`: both the actor's "Outcomes of your recent Town Center requests" and the cross-team "TEAMMATES' RECENT WORK" blocks (which become scratch fields and enter the unified step prompt) now append a short excerpt for completed research items.
+- Added two targeted tests (memory event now contains excerpt; ToolResult.memory_line does for research objects). All sanitization (LLM-1) paths were already in place.
+
+**Verification (before/after discipline).** 
+- `PYTHONUTF8=1 env\Scripts\python.exe -m unittest discover -s reverie/backend_server/tests -t .` → 210 (was 208) OK.
+- Eval 28 + Django 34 green.
+- `ruff check reverie/ tools/ tests/` clean.
+- New tests specifically assert excerpt text (titles, URLs, snippets) appears in stored description and in memory_line.
+- Launcher + replay smoke confirmed baseline P1 surfaces still work (replay page 200, no new breakage).
+
+**Discoveries / gotchas.**
+- The old `add_event` description cleanup (`if "(" in description: ... split('(')[-1]`) was written for legacy "(foo)" parentheticals and completely mangled excerpts containing "(https://...): ". Fixed by stripping parens from research excerpts before they reach memory or the prompt lines.
+- Because recent_* views previously never carried tool_result, the "teammates see it" part would have been invisible without the carry change.
+- This change is entirely inside existing structures (no new prompt sections, still keyword retrieval per D-002).
+
+**Files touched (small, focused):** tool_executor.py (helper + memory_line), reverie.py (feed + two prompt blocks), town_center.py (carry), test_tool_executor.py (coverage). All < the spirit of the size guidance.
+
+**Next immediate (per handover):** A2 tiered model routing + A3 (cache alignment + locations delta). The retile track (LimeZu in Tiled) can proceed in parallel.
+
+---
+
+## 2026-07-11 — P2 intelligence A2+A3: tiered routing + prompt efficiency (delta + cache)
+
+**What & why.** After A1 made research *content* visible to agents, the next highest-leverage wins are cost/latency (tiered models) and prompt bloat (full location tree + suboptimal ordering every step). The skip logic already gave us many free ticks; tiering + deltas target the remaining expensive calls and repeated tokens.
+
+- **A2 Tiered routing**
+  - New envs: `CLAUDEVILLE_MODEL_FAST`, `MAIN`, `REFLECT` (graceful fallback to the single `CLAUDEVILLE_CLAUDE_MODEL`).
+  - `UnifiedPersonaClient` now maintains **model-keyed persistent SDK sessions** per persona (name → {model: client}). This keeps the long-lived connection benefit (~3x) while allowing different models.
+  - `get_model_for_tier()` resolver.
+  - Routing wired in `Persona.move()` (normal step decisions use MAIN) and special paths (`reflect` uses REFLECT tier).
+  - `had_llm_call` semantics unchanged.
+
+- **A3 Prompt efficiency**
+  - Location delta support in `build_step_prompt`: when nothing changed, emit "(locations unchanged since last step)" instead of the full tree. Changes still send the current map (with note). Previous state kept on the client; full render on first step / after compaction.
+  - Quick cache-alignment reorder: long stable REALITY CONSTRAINTS section moved earlier in the per-step prompt.
+  - Compaction envs and machinery left in place (already tunable); no behavior change.
+
+**Verification (strict).**
+- Pre/post: full ruff clean.
+- Backend 215 green (added tier/delta/A1 regression tests), Eval 28, Django 34.
+- No breakage to A1 research detail paths, skip logic, conversations, town requests, or reflection.
+- All changes additive / backward-compatible when tier envs are unset.
+- Full matrix re-run: ruff + all three test suites green after every logical increment.
+
+**Discoveries / gotchas.**
+- Test fakes (e.g. `_FakeClient.reflect`) had to be extended to accept the new optional `model=` kwarg (common pattern when adding optional routing params).
+- The legacy description mangler in associative_memory was already tamed in A1; deltas avoided introducing new `(` problems.
+- Storing `_last_locations` on the client instance (rather than scratch) keeps transient state out of persisted memory.
+
+**Files changed (focused):** claude_structure.py (config, client pooling by model, prompt delta + reorder + logging, call signatures including update_identity), persona.py (imports + tier selection heuristic + other callsites), test_prompt_scenario_context.py (new tier, delta, A1 regression tests), .env.example (new vars documented).
+
+**Status:** A2+A3 slice complete per the approved plan. Ready for user review / next slice (A4 structured outputs or visuals B).
+
+---
+
 ## 2026-07-11 — Phase 1 "Make it watchable": the sim becomes legible, honest, and operable
 
 **What & why.** First phase of the next-level roadmap (built from an 8-report review: 5 code reviews +

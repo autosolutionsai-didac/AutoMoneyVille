@@ -248,6 +248,10 @@ class TownCenterStore:
                 by_id[request_id]["last_reviewer"] = event.get("reviewer")
                 by_id[request_id]["last_note"] = event.get("note")
                 by_id[request_id]["updated_at"] = event.get("created_at")
+                # Carry forward the executed tool_result (incl. research detail)
+                # so prompt sections and memory can surface actual content. (P2 A1)
+                if "tool_result" in event:
+                    by_id[request_id]["tool_result"] = event["tool_result"]
         return list(by_id.values())
 
     def _payload_requires_approval(self, event: dict[str, Any]) -> bool:

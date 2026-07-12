@@ -1397,7 +1397,12 @@ class ReverieServer:
 
     def _refresh_town_center_feedback(self) -> None:
         """Write each persona's recent Town Center request outcomes onto its scratch so
-        the step prompt can surface them and the agent learns from approvals/rejections."""
+        the step prompt can surface them and the agent learns from approvals/rejections.
+
+        P2-A1: for completed research, we now append a short excerpt of the
+        actual ToolResult detail (findings) so both the actor and teammates see
+        *content* (not just "5 sources") in the prompt.
+        """
         for persona in self.personas.values():
             try:
                 recent = self.town_center.recent_requests_for(persona.name, limit=3)
@@ -1410,6 +1415,13 @@ class ReverieServer:
                 note = r.get("last_note")
                 if note:
                     line += f" (reviewer note: {note})"
+                # P2-A1: surface research content to the requesting persona.
+                tr = r.get("tool_result") or {}
+                if tr.get("detail") and tr.get("tool") in ("web_research", "market_analysis"):
+                    excerpt = " ".join(str(tr["detail"]).split())[:120].strip()
+                    excerpt = excerpt.replace("(", " ").replace(")", " ")
+                    if excerpt:
+                        line += f" — {excerpt}"
                 lines.append(line)
             persona.scratch.town_center_feedback = (
                 "Outcomes of your recent Town Center requests:\n" + "\n".join(lines)
@@ -1429,7 +1441,15 @@ class ReverieServer:
                 st = str(r.get("current_state", "proposed")).upper()
                 actor = str(r.get("actor", "?"))
                 title = str(r.get("title", "work"))
-                tlines.append(f'- {actor}: "{title}" [{st}]')
+                tline = f'- {actor}: "{title}" [{st}]'
+                # P2-A1: teammates now see a one-line excerpt of research findings.
+                tr = r.get("tool_result") or {}
+                if tr.get("detail") and tr.get("tool") in ("web_research", "market_analysis"):
+                    excerpt = " ".join(str(tr["detail"]).split())[:100].strip()
+                    excerpt = excerpt.replace("(", " ").replace(")", " ")
+                    if excerpt:
+                        tline += f" — {excerpt}"
+                tlines.append(tline)
             persona.scratch.team_activity = "\n".join(tlines)
 
     def _feed_tool_result_to_persona(self, persona, result: dict | None) -> None:
@@ -1437,6 +1457,10 @@ class ReverieServer:
         associative memory (Stage 1), so real outcomes ground future decisions.
 
         `result` is the sanitized ToolResult dict; best-effort and never fatal.
+
+        P2-A1: when a research tool ran with live (or stub) detail, we now embed
+        a compact excerpt of the actual content so the agent learns real findings
+        (titles, URLs, snippets) instead of only "N sources on X".
         """
         if not persona or not isinstance(result, dict):
             return
@@ -1448,6 +1472,15 @@ class ReverieServer:
             expiration = created + datetime.timedelta(days=30)
             tool = str(result.get("tool") or "tool")
             desc = summary if summary.lower().startswith(tool.lower()) else f"{tool}: {summary}"
+            # Enrich with research content if present (sanitized upstream).
+            detail = str(result.get("detail") or "").strip()
+            if detail and tool in ("web_research", "market_analysis"):
+                excerpt = " ".join(detail.split())[:160].strip()
+                # Avoid the legacy "(" mangling in add_event that would destroy
+                # parenthesized URLs in research excerpts.
+                excerpt = excerpt.replace("(", " ").replace(")", " ")
+                if excerpt:
+                    desc = f"{desc} | {excerpt}"
             persona.a_mem.add_event(
                 created,
                 expiration,

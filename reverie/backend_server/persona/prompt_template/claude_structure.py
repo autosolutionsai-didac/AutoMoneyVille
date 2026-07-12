@@ -12,6 +12,8 @@ Key features:
 - Automatic context monitoring with configurable threshold compaction
 - Model-agnostic agency - the configured Claude model decides actions naturally
   (default claude-sonnet-4-6; override via CLAUDEVILLE_CLAUDE_MODEL)
+- P2 A2: tiered routing supported via CLAUDEVILLE_MODEL_FAST / MAIN / REFLECT
+  (routine ticks can use cheaper models; skip logic provides the signal)
 
 Author: Claudeville Project
 """
@@ -61,6 +63,15 @@ def _env_float(name: str, default: float) -> float:
 # Model selection (env-overridable; see docs/DECISIONS.md D-003).
 DEFAULT_CLAUDE_MODEL = os.environ.get("CLAUDEVILLE_CLAUDE_MODEL", "claude-sonnet-4-6")
 
+# P2 A2: Tiered model routing.
+# - FAST: cheap / low-latency for routine/continuing ticks (skip-logic "no new decision" paths)
+# - MAIN: default decision/dialogue tier (Sonnet-class)
+# - REFLECT: higher-agency for reflections (and future director). Falls back sensibly.
+# All default to the single-model behavior when the tier vars are not set.
+FAST_MODEL = os.environ.get("CLAUDEVILLE_MODEL_FAST") or DEFAULT_CLAUDE_MODEL
+MAIN_MODEL = os.environ.get("CLAUDEVILLE_MODEL_MAIN") or DEFAULT_CLAUDE_MODEL
+REFLECT_MODEL = os.environ.get("CLAUDEVILLE_MODEL_REFLECT") or DEFAULT_CLAUDE_MODEL
+
 # Per-model input-context windows (tokens): Opus 4.8 and Sonnet 4.6 are 1M;
 # Haiku 4.5 is 200K. The previous hardcoded 200000 ("Claude Opus context window")
 # was wrong for the configured Sonnet 4.6 model (LLM-9 / D-003).
@@ -85,6 +96,18 @@ SLEEP_COMPACTION_MIN_TOKENS = _env_int("CLAUDEVILLE_SLEEP_COMPACTION_MIN_TOKENS"
 
 # Debug verbosity (0=silent, 1=summary, 2=decisions, 3=full prompts)
 DEBUG_VERBOSITY = _env_int("CLAUDEVILLE_DEBUG_VERBOSITY", 1)
+
+# P2 A2 helper: resolve a tier name to concrete model id.
+# Tiers: "fast", "main", "reflect". Unknown falls back to MAIN.
+def get_model_for_tier(tier: str | None) -> str:
+    if not tier:
+        return MAIN_MODEL
+    t = str(tier).lower().strip()
+    if t in ("fast", "cheap", "haiku"):
+        return FAST_MODEL
+    if t in ("reflect", "high", "opus", "director"):
+        return REFLECT_MODEL
+    return MAIN_MODEL
 
 # Track last printed action per persona (to avoid duplicate output)
 # Format: {persona_name: action_description}
@@ -167,8 +190,10 @@ _loop: asyncio.AbstractEventLoop | None = None
 _loop_thread: threading.Thread | None = None
 _loop_lock = threading.Lock()
 
-# Per-persona client pool
-_persona_clients: dict[str, ClaudeSDKClient] = {}
+# Per-persona client pool (P2 A2: now model-keyed so we can have fast + main + reflect
+# persistent sessions per persona without losing the SDK connection speedup).
+# Structure: { persona_name: { model_id: ClaudeSDKClient, ... } }
+_persona_clients: dict[str, dict[str, ClaudeSDKClient]] = {}
 _persona_locks: dict[str, asyncio.Lock] = {}
 _persona_usage: dict[str, dict[str, Any]] = {}
 _persona_initialized: dict[str, bool] = {}
@@ -253,12 +278,13 @@ def _run_async(coro, timeout: float | None = None):
 
 
 async def _cleanup_all_clients():
-    """Cleanup all persona clients."""
-    for name, client in list(_persona_clients.items()):
-        try:
-            await client.disconnect()
-        except Exception:
-            pass
+    """Cleanup all persona clients (P2 A2: handles the model-keyed nested dict)."""
+    for name, model_map in list(_persona_clients.items()):
+        for client in model_map.values():
+            try:
+                await client.disconnect()
+            except Exception:
+                pass
     _persona_clients.clear()
     _persona_usage.clear()
     _persona_initialized.clear()
@@ -578,6 +604,7 @@ def build_step_prompt(
     relevant_memories: list[Any] | None = None,  # [ConceptNode, ...] from retrieve_focal
     relationship_block: str | None = None,  # PEOPLE YOU KNOW block (Phase 3a/3e)
     recall_snippets: list[str] | None = None,  # prior-chat recall gists (Phase 3b)
+    previous_locations: dict[str, Any] | None = None,  # P2 A3: for delta rendering
 ) -> str:
     """
     Build a step prompt with minimal world updates.
@@ -661,17 +688,50 @@ def build_step_prompt(
             for name, activity, distance in distant_personas
         )
 
-    # Format accessible locations
-    location_lines = []
-    for sector, arenas in accessible_locations.items():
-        arena_list = []
-        for arena, objects in arenas.items():
-            obj_str = ", ".join(objects) if objects else "no objects"
-            arena_list.append(f"{arena} ({obj_str})")
-        location_lines.append(f"  {sector}:")
-        for arena_line in arena_list:
-            location_lines.append(f"    - {arena_line}")
-    location_str = "\n".join(location_lines) if location_lines else "(none available)"
+    # P2 A3: Format accessible locations with delta when previous is available.
+    # This is the biggest repeated token cost. Send compact changes when possible.
+    def _format_locations(locs: dict[str, Any]) -> str:
+        lines = []
+        for sector, arenas in (locs or {}).items():
+            arena_list = []
+            for arena, objects in arenas.items():
+                obj_str = ", ".join(objects) if objects else "no objects"
+                arena_list.append(f"{arena} ({obj_str})")
+            lines.append(f"  {sector}:")
+            for a in arena_list:
+                lines.append(f"    - {a}")
+        return "\n".join(lines) if lines else "(none)"
+
+    if previous_locations is not None:
+        # P2 A3: compute a compact delta of location changes (added/removed objects)
+        delta_lines = []
+        curr = accessible_locations or {}
+        prev = previous_locations or {}
+
+        all_sectors = set(curr.keys()) | set(prev.keys())
+        for sector in sorted(all_sectors):
+            c_arenas = curr.get(sector, {})
+            p_arenas = prev.get(sector, {})
+            all_arenas = set(c_arenas.keys()) | set(p_arenas.keys())
+            for arena in sorted(all_arenas):
+                c_objs = set(c_arenas.get(arena, []))
+                p_objs = set(p_arenas.get(arena, []))
+                added = sorted(c_objs - p_objs)
+                removed = sorted(p_objs - c_objs)
+                if added or removed:
+                    parts = []
+                    if added:
+                        parts.append("+" + ", ".join(added))
+                    if removed:
+                        parts.append("-" + ", ".join(removed))
+                    delta_lines.append(f"  {sector} > {arena}: {'; '.join(parts)}")
+
+        if delta_lines:
+            location_str = "LOCATION DELTA (changes since last step):\n" + "\n".join(delta_lines)
+        else:
+            location_str = "(locations unchanged since last step)"
+    else:
+        location_str = _format_locations(accessible_locations)
 
     # Format schedule (remaining items for today)
     schedule_str = _format_remaining_schedule(scratch)
@@ -867,9 +927,23 @@ Only set "continuing": false with a new action if you have a compelling reason t
         if recall_body:
             recall_section = f"\n=== RECALL (prior conversations, quoted) ===\n{recall_body}\n"
 
+    # P2 A3 (cache alignment sketch): put the long stable REALITY CONSTRAINTS
+    # earlier so more of the prompt prefix is identical across steps.
+    reality_constraints = f"""=== REALITY CONSTRAINTS (stable rules) ===
+PHYSICAL:
+- You are physically at: {current_sector} > {current_arena}
+- You can ONLY interact with objects HERE, not elsewhere
+- To use something at another location, you must TRAVEL there first
+- ONE ACTION = ONE LOCATION.
+TEMPORAL: Actions take realistic time. Your schedule is a GUIDE.
+DURATION: Set realistic duration_minutes (short 1-5, medium 15-30, long 60+).
+"""
+
     return f"""TIME: {time_str}
 CURRENT LOCATION: {current_sector} > {current_arena}
 CURRENT ACTIVITY: {current_action}{action_context}
+
+{reality_constraints}
 
 === PERCEPTIONS ===
 {perception_str}
@@ -892,28 +966,6 @@ real-world action, include a Town Center request in `town_request`. External
 contact, posting, spending, account changes, and purchases require human approval;
 do not claim they are completed before approval.
 {town_center_feedback}
-
-=== REALITY CONSTRAINTS ===
-PHYSICAL:
-- You are physically at: {current_sector} > {current_arena}
-- You can ONLY interact with objects HERE, not elsewhere
-- To use something at another location, you must TRAVEL there first
-- Set your action's location to where you CURRENTLY ARE or where you're GOING
-- ONE ACTION = ONE LOCATION. Don't combine activities at different places into one action.
-  Bad: "waking up, showering, and getting dressed" (spans bedroom + bathroom + closet)
-  Good: "waking up and stretching in bed" (just bedroom, then next action is shower)
-
-TEMPORAL:
-- Current time: {time_str}
-- Actions take realistic time (breakfast: 15-20min, shower: 5-10min, commute: varies by distance)
-- Don't plan activities inappropriate for the time (e.g., lunch at 7am, sleeping at noon)
-- Your schedule is a GUIDE, not a script - adapt to circumstances
-
-DURATION:
-- Set realistic duration_minutes for your action
-- Short: greeting (1-2min), checking phone (2-3min)
-- Medium: meal (15-30min), shower (5-10min), getting dressed (5-10min)
-- Long: work session (60-180min), socializing (30-60min), sleeping (360-480min)
 
 Respond with JSON only."""
 
@@ -1738,13 +1790,26 @@ class UnifiedPersonaClient:
         # preserved commitments/goals back into goal/relationship memory.
         self.last_compaction: CompactionSummary | None = None
 
-    async def _get_or_create_client(self) -> ClaudeSDKClient:
-        """Get existing client or create new one for this persona."""
+    async def _get_or_create_client(self, model: str | None = None) -> ClaudeSDKClient:
+        """Get existing client or create new one for this persona + model.
+
+        P2 A2: supports tiered routing by maintaining separate persistent
+        ClaudeSDKClient sessions per (persona, model) pair. This preserves the
+        ~3x speedup of long-lived sessions while letting routine ticks use a
+        cheaper model.
+        """
         if self.persona_name not in _persona_locks:
             _persona_locks[self.persona_name] = asyncio.Lock()
 
+        target_model = model or MAIN_MODEL
+
         async with _persona_locks[self.persona_name]:
+            # Ensure we have a per-persona model map
             if self.persona_name not in _persona_clients:
+                _persona_clients[self.persona_name] = {}
+
+            model_map = _persona_clients[self.persona_name]
+            if target_model not in model_map:
                 # bypassPermissions is safe ONLY because no tools are enabled:
                 # personas issue no tool calls, so there is nothing to gate. If
                 # tools are ever added, switch to a gated permission mode (LLM-13).
@@ -1755,7 +1820,7 @@ class UnifiedPersonaClient:
                 options = ClaudeAgentOptions(
                     allowed_tools=allowed_tools,
                     permission_mode="bypassPermissions",
-                    model=DEFAULT_CLAUDE_MODEL,
+                    model=target_model,
                 )
                 client = ClaudeSDKClient(options)
                 try:
@@ -1763,21 +1828,31 @@ class UnifiedPersonaClient:
                     async with _llm_semaphore:
                         await asyncio.wait_for(client.connect(), timeout=30.0)
                 except asyncio.TimeoutError:
-                    cli.print_error(f"  ⚠ {self.persona_name} connection timed out")
+                    cli.print_error(f"  ⚠ {self.persona_name} connection timed out (model={target_model})")
                     raise
-                _persona_clients[self.persona_name] = client
-                _persona_usage[self.persona_name] = {"context_tokens": 0}
-                _persona_initialized[self.persona_name] = False
+                model_map[target_model] = client
 
-            return _persona_clients[self.persona_name]
+                # First time for this persona overall?
+                if self.persona_name not in _persona_usage:
+                    _persona_usage[self.persona_name] = {"context_tokens": 0}
+                if self.persona_name not in _persona_initialized:
+                    _persona_initialized[self.persona_name] = False
+
+            return model_map[target_model]
 
     async def _send_prompt(
-        self, prompt: str, timeout: float = 120.0
+        self, prompt: str, timeout: float = 120.0, model: str | None = None
     ) -> tuple[str, dict[str, Any] | None]:
-        """Send a prompt and return (response_text, usage_stats)."""
+        """Send a prompt and return (response_text, usage_stats).
+
+        P2 A2: `model` selects which persistent session (fast/main/reflect) to use.
+        """
+        effective_model = model or MAIN_MODEL
+        if DEBUG_VERBOSITY >= 1:
+            print(f"    {self.persona_name}: using model {effective_model}", flush=True)
         if DEBUG_VERBOSITY >= 2:
-            print(f"    {self.persona_name}: getting client...", flush=True)
-        client = await self._get_or_create_client()
+            print(f"    {self.persona_name}: getting client (model={effective_model})...", flush=True)
+        client = await self._get_or_create_client(model=effective_model)
         if DEBUG_VERBOSITY >= 2:
             print(f"    {self.persona_name}: sending query...", flush=True)
 
@@ -1970,15 +2045,18 @@ class UnifiedPersonaClient:
         relevant_memories: list[Any] | None = None,
         relationship_block: str | None = None,
         recall_snippets: list[str] | None = None,
+        model: str | None = None,  # P2 A2 tiered routing
     ) -> StepResponse:
         """
         Execute a single simulation step for this persona.
 
         Returns a StepResponse with all parsed decisions.
+        `model` selects tier (fast/main/reflect) when provided.
         """
         await self._ensure_initialized()
 
-        # Build step prompt
+        # Build step prompt (P2 A3: pass previous for delta)
+        prev_locs = getattr(self, "_last_locations", None)
         prompt = build_step_prompt(
             self.persona,
             perceptions,
@@ -1989,10 +2067,14 @@ class UnifiedPersonaClient:
             relevant_memories,
             relationship_block=relationship_block,
             recall_snippets=recall_snippets,
+            previous_locations=prev_locs,
         )
+        # Remember for next delta (store a shallow copy)
+        self._last_locations = {s: {a: list(o) for a, o in (arenas or {}).items()}
+                                for s, arenas in (accessible_locations or {}).items()}
 
-        # Send and parse
-        response_text, usage = await self._send_prompt(prompt)
+        # Send and parse (P2 A2: pass chosen model through)
+        response_text, usage = await self._send_prompt(prompt, model=model)
         result = parse_step_response(
             response_text,
             self.persona_name,
@@ -2004,7 +2086,7 @@ class UnifiedPersonaClient:
         # Retry once if parse errors
         if result.parse_errors:
             retry_prompt = build_retry_prompt(prompt, result.parse_errors)
-            response_text, usage = await self._send_prompt(retry_prompt)
+            response_text, usage = await self._send_prompt(retry_prompt, model=model)
             result = parse_step_response(
                 response_text,
                 self.persona_name,
@@ -2018,23 +2100,24 @@ class UnifiedPersonaClient:
 
         return result
 
-    async def plan_day(self, date_str: str) -> DayPlanResponse:
+    async def plan_day(self, date_str: str, model: str | None = None) -> DayPlanResponse:
         """
         Generate a personalized daily schedule for the persona.
 
         Called once per simulation day (on new_day trigger).
         Returns wake_up_hour, daily_goals, and schedule.
+        `model` selects tier (P2 A2).
         """
         await self._ensure_initialized()
 
         prompt = build_day_planning_prompt(self.persona, date_str)
-        response_text, usage = await self._send_prompt(prompt)
+        response_text, usage = await self._send_prompt(prompt, model=model)
         result = parse_day_planning_response(response_text)
 
         # Retry once if parse errors
         if result.parse_errors:
             retry_prompt = build_retry_prompt(prompt, result.parse_errors)
-            response_text, usage = await self._send_prompt(retry_prompt)
+            response_text, usage = await self._send_prompt(retry_prompt, model=model)
             result = parse_day_planning_response(response_text)
 
         # Debug output
@@ -2042,24 +2125,25 @@ class UnifiedPersonaClient:
 
         return result
 
-    async def reflect(self, source_nodes: list[Any]) -> ReflectionResponse:
+    async def reflect(self, source_nodes: list[Any], model: str | None = None) -> ReflectionResponse:
         """
         Run a reflection: synthesize higher-level insights from recent memories.
 
         This is the ONLY occasional extra LLM call beyond the unified step. It is
         invoked when the persona's importance_trigger_curr drops to <= 0.
         Returns a ReflectionResponse with 2-3 insight statements.
+        `model` selects tier (P2 A2; typically REFLECT_MODEL).
         """
         await self._ensure_initialized()
 
         prompt = build_reflection_prompt(self.persona, source_nodes)
-        response_text, usage = await self._send_prompt(prompt)
+        response_text, usage = await self._send_prompt(prompt, model=model)
         result = parse_reflection_response(response_text)
 
         # Retry once if parse errors
         if result.parse_errors:
             retry_prompt = build_retry_prompt(prompt, result.parse_errors)
-            response_text, usage = await self._send_prompt(retry_prompt)
+            response_text, usage = await self._send_prompt(retry_prompt, model=model)
             result = parse_reflection_response(response_text)
 
         if DEBUG_VERBOSITY >= 1 and result.insights:
@@ -2100,7 +2184,7 @@ class UnifiedPersonaClient:
             pass
 
     async def update_identity(
-        self, initial_innate: str, initial_learned: str
+        self, initial_innate: str, initial_learned: str, model: str | None = None
     ) -> IdentityUpdateResponse:
         """Day-boundary identity evolution + drift comparison (4d/4e).
 
@@ -2114,12 +2198,12 @@ class UnifiedPersonaClient:
         prompt = build_identity_update_prompt(
             self.persona, initial_innate, initial_learned
         )
-        response_text, _ = await self._send_prompt(prompt)
+        response_text, _ = await self._send_prompt(prompt, model=model or MAIN_MODEL)
         result = parse_identity_update_response(response_text)
 
         if result.parse_errors:
             retry_prompt = build_retry_prompt(prompt, result.parse_errors)
-            response_text, _ = await self._send_prompt(retry_prompt)
+            response_text, _ = await self._send_prompt(retry_prompt, model=model or MAIN_MODEL)
             result = parse_identity_update_response(response_text)
 
         if DEBUG_VERBOSITY >= 1 and not result.parse_errors:

@@ -66,7 +66,13 @@ from persona.memory_structures.goal_memory import GoalMemory
 from persona.memory_structures.relationship_memory import RelationshipMemory
 from persona.memory_structures.scratch import Scratch
 from persona.memory_structures.spatial_memory import MemoryTree
-from persona.prompt_template.claude_structure import StepResponse, UnifiedPersonaClient
+from persona.prompt_template.claude_structure import (
+    MAIN_MODEL,
+    REFLECT_MODEL,
+    StepResponse,
+    UnifiedPersonaClient,
+    get_model_for_tier,
+)
 
 
 class Persona:
@@ -291,6 +297,18 @@ class Persona:
             nearby_personas
         )
 
+        # P2 A2: choose model tier. Use fast for low-stakes solo routine actions
+        # (social or high-stakes decisions stay on MAIN/REFLECT).
+        # The skip logic already avoids LLM entirely for pure "continue".
+        curr_act = (self.scratch.act_description or "").lower()
+        if (not nearby_personas and
+                not conversation_context and
+                not nearby_conversations and
+                any(k in curr_act for k in ("sleep", "walk", "idle", "work", "review"))):
+            step_model = get_model_for_tier("fast")
+        else:
+            step_model = MAIN_MODEL
+
         step_response = await self.unified_client.step(
             perceptions=perceptions,
             nearby_personas=nearby_personas,
@@ -303,6 +321,7 @@ class Persona:
             relevant_memories=relevant_memories,
             relationship_block=relationship_block,
             recall_snippets=recall_snippets,
+            model=step_model,
         )
         self.last_step_response = step_response
 
@@ -796,7 +815,8 @@ class Persona:
 
         # Call LLM to generate personalized daily plan (occasional call — the new
         # day's goals will be folded into the multi-day backlog below).
-        day_plan = await self.unified_client.plan_day(date_str)
+        # P2 A2: day planning is a significant decision; use MAIN (or REFLECT if desired).
+        day_plan = await self.unified_client.plan_day(date_str, model=MAIN_MODEL)
 
         if day_plan.parse_errors:
             self._set_default_schedule()
@@ -907,7 +927,7 @@ class Persona:
         """
         try:
             update = await self.unified_client.update_identity(
-                self.initial_innate or "", self.initial_learned or ""
+                self.initial_innate or "", self.initial_learned or "", model=MAIN_MODEL
             )
         except Exception as exc:  # never let identity evolution break a day
             cli.print_error(f"  {self.name}: identity update failed: {exc}")
@@ -1514,7 +1534,9 @@ class Persona:
         source_nodes = gather_reflection_sources(self)
         created_thoughts = []
         if source_nodes:
-            reflection = await self.unified_client.reflect(source_nodes)
+            # P2 A2: reflections use the higher tier when configured.
+            reflect_model = get_model_for_tier("reflect") or REFLECT_MODEL
+            reflection = await self.unified_client.reflect(source_nodes, model=reflect_model)
             if reflection.insights:
                 created_thoughts = store_reflection_insights(
                     self, reflection.insights, source_nodes

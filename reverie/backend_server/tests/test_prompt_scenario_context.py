@@ -8,10 +8,13 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from reverie.backend_server.persona.prompt_template.claude_structure import (
     DEFAULT_CLAUDE_MODEL,
+    MAIN_MODEL,
     build_day_planning_prompt,
     build_initial_prompt,
     build_step_prompt,
+    get_model_for_tier,
 )
+from reverie.backend_server.tool_executor import ToolResult
 
 
 class PromptScenarioContextTests(unittest.TestCase):
@@ -75,6 +78,70 @@ class PromptScenarioContextTests(unittest.TestCase):
         self.assertIn("Walk to Hobbs Cafe", prompt)
         self.assertIn("Honor any explicit daily plan requirement", prompt)
 
+    def test_get_model_for_tier(self):
+        # Defaults and fallbacks
+        self.assertEqual(get_model_for_tier(None), MAIN_MODEL)
+        self.assertEqual(get_model_for_tier("main"), MAIN_MODEL)
+        self.assertEqual(get_model_for_tier("fast"), MAIN_MODEL)  # no FAST set, falls to MAIN
+        self.assertEqual(get_model_for_tier("reflect"), MAIN_MODEL)
+
+    def test_step_prompt_location_delta(self):
+        persona = self._persona()
+        prev = {"startup office": {"town center": ["desk", "chair"]}}
+        curr = {"startup office": {"town center": ["desk"]}}  # removed chair
+
+        prompt = build_step_prompt(
+            persona,
+            perceptions=[],
+            nearby_personas=[],
+            accessible_locations=curr,
+            previous_locations=prev,
+        )
+
+        self.assertIn("LOCATION DELTA", prompt)
+        self.assertIn("-chair", prompt)
+        # The delta should be compact and not repeat the full old list unnecessarily
+        self.assertNotIn("desk, chair", prompt)
+
+    def test_step_prompt_location_unchanged(self):
+        persona = self._persona()
+        locs = {"startup office": {"town center": ["desk"]}}
+
+        prompt = build_step_prompt(
+            persona,
+            perceptions=[],
+            nearby_personas=[],
+            accessible_locations=locs,
+            previous_locations=locs,
+        )
+
+        self.assertIn("(locations unchanged since last step)", prompt)
+
+    def test_a1_memory_line_unaffected(self):
+        # Verify A1 behavior is intact: research includes detail excerpt, outbound does not bloat
+        r_research = ToolResult(
+            ok=True,
+            tool="web_research",
+            summary="web_research: 2 sources on 'x'",
+            detail="Title A (u1): snippet. Title B (u2): more.",
+        )
+        self.assertIn("Title A", r_research.memory_line())
+        self.assertIn("snippet", r_research.memory_line())
+
+        r_outbound = ToolResult(
+            ok=True,
+            tool="send_email",
+            summary="draft email to foo",
+            detail="Full long draft body here that should not leak into memory",
+        )
+        self.assertEqual(r_outbound.memory_line(), "draft email to foo")
+        self.assertNotIn("Full long draft", r_outbound.memory_line())
+
+    def test_model_tier_fallbacks(self):
+        # When no specific tier env, fast/reflect fall back to main
+        self.assertEqual(get_model_for_tier("fast"), MAIN_MODEL)
+        self.assertEqual(get_model_for_tier("reflect"), MAIN_MODEL)
+        self.assertEqual(get_model_for_tier("unknown"), MAIN_MODEL)
 
 if __name__ == "__main__":
     unittest.main()

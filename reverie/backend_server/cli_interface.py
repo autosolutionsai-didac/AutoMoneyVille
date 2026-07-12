@@ -312,6 +312,9 @@ def get_prompt():
             c("claudeville", Colors.CYAN, Colors.BOLD) + c(" ▸ ", Colors.BRIGHT_BLACK)
         ).strip()
     except EOFError:
+        if os.environ.get("CLAUDEVILLE_HEADLESS"):
+            # headless: return empty so caller can treat as no-op / continue sleep
+            return ""
         return "quit"
     except KeyboardInterrupt:
         print()

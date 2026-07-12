@@ -94,6 +94,22 @@ class SafetyAndRobustnessTests(unittest.TestCase):
         self.assertEqual(d["tool"], "web_research")
         self.assertEqual(r.memory_line(), r.summary)
 
+    def test_memory_line_includes_detail_for_research(self):
+        """P2-A1: memory_line for research now carries compact content excerpt."""
+        from tool_executor import ToolResult
+        r = ToolResult(
+            ok=True,
+            tool="web_research",
+            summary="web_research: 2 sources on 'x'",
+            detail="Title A (u1): snippet one. Title B (u2): snippet two here.",
+        )
+        ml = r.memory_line()
+        self.assertIn("2 sources on 'x'", ml)
+        self.assertIn("Title A", ml)
+        self.assertIn("snippet one", ml)
+        # Still bounded
+        self.assertLess(len(ml), 300)
+
 
 class MemoryFeedbackTests(unittest.TestCase):
     """Stage 1: an executed tool's result is written into the requesting persona's
@@ -114,6 +130,28 @@ class MemoryFeedbackTests(unittest.TestCase):
             # The newest event records the tool outcome.
             newest = amem.seq_event[0]
             self.assertIn("web_research", newest.description)
+
+    def test_tool_result_memory_includes_research_detail(self):
+        """P2-A1: research detail (the actual content) is folded into the stored
+        memory description so keyword retrieval and prompts see real findings."""
+        rs = ReverieServer.__new__(ReverieServer)
+        rs.curr_time = datetime.datetime(2026, 1, 1, 9, 0, 0)
+        with tempfile.TemporaryDirectory() as tmp:
+            amem = _fresh_assoc_memory(tmp)
+            persona = SimpleNamespace(name="Felix Reed", a_mem=amem)
+            rs._feed_tool_result_to_persona(
+                persona,
+                {
+                    "tool": "web_research",
+                    "summary": "web_research: 2 sources on 'pricing'",
+                    "detail": "Acme Pricing Guide https://ex.com : foo bar. BetaCo https://b.com : baz.",
+                    "ok": True,
+                },
+            )
+            newest = amem.seq_event[0]
+            self.assertIn("pricing", newest.description)
+            self.assertIn("Acme Pricing", newest.description)  # excerpt of detail is present
+            self.assertIn("https://b.com", newest.description)
 
     def test_feed_is_noop_on_empty_result(self):
         rs = ReverieServer.__new__(ReverieServer)

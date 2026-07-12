@@ -299,7 +299,7 @@ class ReflectionTriggerTests(unittest.TestCase):
             self._insights = insights
             self.calls = 0
 
-        async def reflect(self, source_nodes):
+        async def reflect(self, source_nodes, model=None):  # P2 A2 compat
             self.calls += 1
             self._last_sources = source_nodes
             return ReflectionTriggerTests._FakeReflection(self._insights)
