@@ -1452,6 +1452,15 @@ class ReverieServer:
                 tlines.append(tline)
             persona.scratch.team_activity = "\n".join(tlines)
 
+            # NEW: give every persona a view of the shared economic reality.
+            # This is the foundation for "real stakes" and an alive society.
+            # Agents can now feel whether the team is making progress or not.
+            try:
+                econ_brief = self.town_center.get_economic_brief()
+                persona.scratch.economic_context = econ_brief
+            except Exception:
+                persona.scratch.economic_context = ""
+
     def _feed_tool_result_to_persona(self, persona, result: dict | None) -> None:
         """Store an executed tool's result as an observation in the persona's
         associative memory (Stage 1), so real outcomes ground future decisions.

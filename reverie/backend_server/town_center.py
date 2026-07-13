@@ -234,6 +234,45 @@ class TownCenterStore:
             "pending_approval_count": len(approval_queue),
         }
 
+    def get_economic_brief(self) -> str:
+        """Compact, LLM-safe summary of current team economic state for agent prompts.
+
+        This is a key piece for making the society feel 'alive' with real stakes.
+        Agents can now see the objective, starting position, current progress,
+        and that revenue only comes from human-verified record_delivery.
+
+        Architecture note: this is intentionally read-only view from the append-only
+        RewardLedger. No agent can credit themselves.
+        """
+        score = self.rewards.team_score()
+        points = int(score.get("points", 0))
+        revenue_cents = int(score.get("revenue_cents", 0))
+        revenue_dollars = revenue_cents / 100.0
+
+        objective = str(self.scenario.get("objective", "")).strip()
+        starting = self.scenario.get("starting_resources", {}) or {}
+        start_points = int(starting.get("team_points", 0))
+        start_cash = int(starting.get("cash_budget_cents", 0)) / 100.0
+
+        # Simple narrative pressure (no fabrication)
+        if revenue_cents > 0:
+            progress = f"Revenue recorded so far: ${revenue_dollars:.2f} (only from human-approved deliveries)."
+        elif points > start_points:
+            progress = f"Team has accumulated {points} points through approved work."
+        else:
+            progress = "No verified revenue yet. Progress depends on human-approved actions that lead to record_delivery with evidence."
+
+        lines = [
+            "=== TEAM STANDING & OBJECTIVE (real stakes) ===",
+            f"Objective: {objective}" if objective else "Objective: Generate real value through approved work.",
+            f"Starting resources: {start_points} points, ${start_cash:.2f} cash.",
+            f"Current: {points} points, ${revenue_dollars:.2f} verified revenue.",
+            progress,
+            "Important: Only a human can credit revenue via record_delivery with typed evidence. Agents cannot self-report success.",
+            "Your Town Center requests and their outcomes directly affect whether the team makes progress toward the objective.",
+        ]
+        return "\n".join(lines)
+
     def _current_requests(self, events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         by_id: OrderedDict[str, dict[str, Any]] = OrderedDict()
         for event in events:

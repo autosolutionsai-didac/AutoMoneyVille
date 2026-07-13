@@ -79,6 +79,15 @@ def retrieve_focal(persona, focal_keywords, n=8):
     """
     focal_set = {str(k).lower() for k in focal_keywords if k}
     candidates = _gather_candidates(persona, focal_keywords)
+
+    # A5: enforce node expiration so old thoughts/events do not pollute retrieval
+    curr_time = getattr(persona.scratch, "curr_time", None)
+    if curr_time:
+        candidates = [
+            c for c in candidates
+            if not getattr(c, "expiration", None) or c.expiration > curr_time
+        ]
+
     if not candidates:
         return []
 

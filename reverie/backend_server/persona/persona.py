@@ -1101,8 +1101,14 @@ class Persona:
                 else:
                     chat = []
 
-                # Add our line to the conversation
-                chat.append([self.name, social.conversation_line])
+                # A6: support bounded multi-turn dialogue (resolves faster, feels alive)
+                if social.dialogue:
+                    for speaker, line in social.dialogue:
+                        chat.append([speaker, line])
+                        cli.print_conversation_line(speaker, line)
+                elif social.conversation_line:
+                    chat.append([self.name, social.conversation_line])
+                    cli.print_conversation_line(self.name, social.conversation_line)
 
                 # Set chatting buffer for ALL nearby targets (for vision tracking)
                 chatting_with_buffer = {
@@ -1114,9 +1120,6 @@ class Persona:
                     minutes=action.duration_minutes
                 )
 
-                # Print conversation to CLI
-                cli.print_conversation_line(self.name, social.conversation_line)
-
         elif social.conversation_line and not social.wants_to_talk:
             # Just saying something (no formal conversation)
             if self.scratch.chat:
@@ -1125,6 +1128,14 @@ class Persona:
                 chat = []
             chat.append([self.name, social.conversation_line])
             cli.print_conversation_line(self.name, social.conversation_line)
+        elif social.dialogue:
+            # A6 multi-turn even without explicit wants_to_talk flag
+            for speaker, line in social.dialogue:
+                if self.scratch.chat:
+                    chat.append([speaker, line])
+                else:
+                    chat = [[speaker, line]]
+                cli.print_conversation_line(speaker, line)
 
         # Update scratch with the new action
         self.scratch.add_new_action(
@@ -1418,6 +1429,33 @@ class Persona:
 
         return tokens
 
+    def _derive_keywords(self, text: str, min_len: int = 4) -> set[str]:
+        """Derive searchable keywords from text content (A5 fix for thoughts).
+
+        Re-uses the focal-keyword tokenization rules + expanded STOPWORDS.
+        This makes reflective thoughts retrievable by their actual topics
+        (e.g. "funding", "client", "proposal") instead of the constant
+        generic keywords "thought"/"reflection". Still 100% keyword-based
+        per D-002; no embeddings.
+        """
+        if not text or not isinstance(text, str):
+            return set()
+
+        STOPWORDS = {
+            "the", "a", "an", "is", "are", "was", "were", "to", "of", "in",
+            "on", "at", "and", "or", "with", "for", "you", "your", "i", "it",
+            "this", "that", "be", "as", "from", "by", "has", "have", "had",
+            "thought", "reflection", "feel", "think", "will", "about", "need",
+            "want", "going", "just", "really", "should", "could", "would",
+        }
+
+        tokens = set()
+        for raw in text.replace(":", " ").split():
+            word = "".join(ch for ch in raw.lower() if ch.isalnum())
+            if len(word) >= min_len and word not in STOPWORDS:
+                tokens.add(word)
+        return tokens
+
     def _nearby_known_names(self, nearby_personas):
         """Names of currently-nearby personas we already have a record for.
 
@@ -1497,7 +1535,10 @@ class Persona:
         created = self.scratch.curr_time
         expiration = self.scratch.curr_time + datetime.timedelta(days=30)
         s, p, o = self.scratch.name, "feels", monologue[:50]
-        keywords = {"inner", "monologue", "feeling"}
+        # A5: derive from the actual monologue text (content-specific retrieval)
+        keywords = self._derive_keywords(monologue)
+        if not keywords:
+            keywords = {"feeling"}
 
         # Tie the monologue's importance to the action it accompanies (defaults to
         # the neutral 5 when no action importance is available).
@@ -1559,7 +1600,10 @@ class Persona:
             created = self.scratch.curr_time
             expiration = self.scratch.curr_time + datetime.timedelta(days=30)
             s, p, o = self.scratch.name, "thought", thought.content[:50]
-            keywords = set(["thought", "reflection"])
+            # A5: derive from actual content so topic-specific retrieval works
+            keywords = self._derive_keywords(thought.content)
+            if not keywords:
+                keywords = {"reflection"}
 
             self.a_mem.add_thought(
                 created,
@@ -1630,6 +1674,13 @@ class Persona:
             else:
                 self.scratch.chat = [[self.name, social.conversation_line]]
             cli.print_conversation_line(self.name, social.conversation_line)
+        elif getattr(social, 'dialogue', None):
+            for speaker, line in social.dialogue:
+                if self.scratch.chat:
+                    self.scratch.chat.append([speaker, line])
+                else:
+                    self.scratch.chat = [[speaker, line]]
+                cli.print_conversation_line(speaker, line)
 
     def _create_idle_execution(self):
         """

@@ -9,10 +9,13 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from reverie.backend_server.persona.prompt_template.claude_structure import (
     DEFAULT_CLAUDE_MODEL,
     MAIN_MODEL,
+    StepResponse,
+    _extract_json_object,
     build_day_planning_prompt,
     build_initial_prompt,
     build_step_prompt,
     get_model_for_tier,
+    parse_step_response,
 )
 from reverie.backend_server.tool_executor import ToolResult
 
@@ -142,6 +145,59 @@ class PromptScenarioContextTests(unittest.TestCase):
         self.assertEqual(get_model_for_tier("fast"), MAIN_MODEL)
         self.assertEqual(get_model_for_tier("reflect"), MAIN_MODEL)
         self.assertEqual(get_model_for_tier("unknown"), MAIN_MODEL)
+
+    # --- A4 structured JSON robustness tests ---
+
+    def test_a4_extract_json_object_clean_and_fallback(self):
+        # Clean whole-object case (ideal structured output)
+        self.assertEqual(
+            _extract_json_object('  {"continuing": true}  '),
+            '{"continuing": true}',
+        )
+        # Tolerates extra prose (old model behavior) via fallback
+        messy = 'Here is my thought.\n{"action": {"description": "work"}, "continuing": false}'
+        extracted = _extract_json_object(messy)
+        self.assertTrue(extracted is not None and extracted.startswith("{"))
+        self.assertIn("action", extracted)
+
+    def test_a4_parse_step_happy_path_minimal(self):
+        # Minimal valid step JSON (continuing) should parse with zero errors
+        valid_sectors = ["the Ville"]
+        valid_arenas = {"the Ville": ["startup office"]}
+        valid_objects = {"the Ville": {"startup office": ["desk"]}}
+
+        resp = parse_step_response(
+            '{"continuing": true, "social": {"wants_to_talk": false}, "thoughts": []}',
+            "Test Persona",
+            valid_sectors,
+            valid_arenas,
+            valid_objects,
+        )
+        self.assertIsInstance(resp, StepResponse)
+        self.assertEqual(resp.parse_errors, [])
+        self.assertTrue(resp.continuing)
+        self.assertIsNone(resp.action)
+
+    def test_a4_parse_step_with_action_and_thought(self):
+        valid_sectors = ["the Ville"]
+        valid_arenas = {"the Ville": ["town center"]}
+        valid_objects = {"the Ville": {"town center": ["cafe"]}}
+
+        json_text = (
+            '{"continuing": false, "social": {"wants_to_talk": false}, '
+            '"thoughts": [{"content": "feeling focused", "importance": 4}], '
+            '"action": {"description": "grab coffee", "duration_minutes": 10, '
+            '"location": {"sector": "the Ville", "arena": "town center", "object": "cafe"}, '
+            '"emoji": "☕", "event": ["Test", "grabs", "coffee"], "importance": 3}}'
+        )
+        resp = parse_step_response(
+            json_text, "Test Persona", valid_sectors, valid_arenas, valid_objects
+        )
+        self.assertEqual(resp.parse_errors, [])
+        self.assertFalse(resp.continuing)
+        self.assertIsNotNone(resp.action)
+        self.assertEqual(len(resp.thoughts), 1)
+        self.assertIn("focused", resp.thoughts[0].content)
 
 if __name__ == "__main__":
     unittest.main()

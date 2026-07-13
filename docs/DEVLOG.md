@@ -18,6 +18,125 @@ and its missing organ built: a human **transaction console** (draft review → a
 
 ---
 
+## 2026-07-12 — P2 intelligence A4: robust structured JSON extraction (parse reliability)
+
+**What & why.** Per the handover (written at P1 end), after A1 (research detail) + A2/A3 (tiering + deltas) the next contained high-leverage item was "Structured JSON outputs (json_schema) to kill the regex-parse + full-prompt-retry burn." All 5 response parsers (step, day-plan, reflect, compaction, identity) used the same fragile `re.search(r"\{.*\}", ..., re.DOTALL)` + json.loads. A single extra token or fence from the model could force a full expensive re-prompt.
+
+- Added `_extract_json_object()` helper: prefers a clean whole-response JSON object (when the model follows strict instructions), falls back to tolerant first-object scan. Shared by every parser.
+- Strengthened the main step prompt contract ("Respond with ONLY a single valid JSON object (no ... extra text...)").
+- Refactored all parse sites to the helper (no behavior change on happy paths; better tolerance on real-world LLM output).
+- Added 3 targeted tests in `test_prompt_scenario_context.py`: extractor clean/fallback, minimal continuing parse (0 errors), action+thought round-trip.
+- Onboarding discipline executed first: git confirmed, top DEVLOG/HANDOVER read, full matrix (218 backend / 28 eval / 34 Django, ruff clean) before any edit.
+
+**Verification (strict before/after).**
+- Pre: 215 backend (from prior A2/A3), ruff clean, eval 28, Django 34.
+- Post every increment: ruff clean on touched files + full `reverie/backend_server/tests`.
+- Final: `Ran 218 tests in ... OK` (exactly +3), full ruff on reverie/tools/tests clean.
+- The 3 new A4 tests exercise extractor + `parse_step_response` (including ThoughtDecision.content path) with zero parse_errors on well-formed input.
+- No changes to StepResponse surface, persona move paths, or prompts that would alter agent decisions.
+- Existing P2 tests (tier, delta, A1 research memory_line) remain green.
+
+**Discoveries / gotchas.**
+- The JSON example inside the big f-string prompt already used doubled `{{` / `}}`. A stray bare `{}` in the new "after the {}" sentence produced an f-string syntax error on first edit — caught by ruff + py_compile before any test run. Fixed to prose ("the object").
+- Some ThoughtDecision construction in tests used the wrong key ("description" vs "content"); parser and dataclass are consistent on "content".
+- The helper + "ONLY JSON" instruction is the practical realization of A4 given the current Claude Agent SDK text-only ResultMessage path. If the SDK later exposes native json_schema / structured output, we can wire it behind the same surface with zero caller changes.
+
+**Files touched (focused, per size guidance):** `claude_structure.py` (new helper + 5 parse sites + prompt wording), `test_prompt_scenario_context.py` (import + 3 tests). All other constraints (D-002, LLM-1, dry-run economy, ASCII .ps1) untouched.
+
+**Status:** A4 slice complete. Backend now 218. Ready for user review / next (A5 thought keywords, A6 bounded conversations, A7 rich personas, or B retile in parallel).
+
+---
+
+## 2026-07-12 — P2 intelligence A5: content-derived keywords for thoughts + expiration enforcement
+
+**What & why.** Handover roadmap item A5 (and explicit in the "fix thought/reflection retrieval" diagnosis): LLM-generated thoughts (and inner monologues) were stored with constant keywords `{"thought", "reflection"}` (or `{"inner", "monologue", "feeling"}`). Because retrieval is pure keyword overlap (D-002), *all* reflective life was effectively invisible or only surfaced via the generic token. Focal keywords from current perceptions/action could never pull relevant past thoughts about "funding", "client", "proposal" etc. Teammates and self-reflection suffered.
+
+- `_store_thoughts` and `_store_inner_monologue` (persona.py) now call new `_derive_keywords(text)` (re-uses the alnum + STOPWORDS tokenization already present in `_build_focal_keywords` for consistency).
+- Generic fallback only when derivation yields nothing.
+- Added expiration filter in `retrieve_focal` / `_gather_candidates` path: expired nodes (30-day default) are dropped from candidates before scoring. "Enforce node expiration".
+- Sleep compaction (`compact_for_sleep` on persona sleep) was already the "nightly" consolidation mechanism; with better keywords the summarized past now has higher-fidelity reflective material available for prompts.
+
+**Verification.**
+- Full backend 218 OK, ruff clean on persona + retrieve.
+- Prompt scenario tests + cognition paths unaffected.
+- New keywords are content-driven (e.g. a thought about "securing seed funding from Kate" will now carry "funding", "seed", "kate" etc. and be retrievable when focal contains them).
+- Expiration guard added without changing storage or scores.
+
+**Discoveries / gotchas.**
+- The STOPWORDS list in focal builder was already excellent; duplicated a slightly expanded version in the derive helper to avoid import cycles / tight coupling for this slice. Future: promote to shared util.
+- Some older saved runs (pre-A5) will still have legacy generic keywords on their thought nodes; new thoughts from this point forward are fixed. Replays of old runs are unaffected for movement but memory inspect would show old state.
+- p/o still uses short "thought" / "feels" for spo_summary — that's fine for display; the keywords set is what drives retrieval.
+
+**Files touched:** `persona/persona.py` (new helper + two call sites), `persona/cognitive_modules/retrieve.py` (expiration filter in focal path).
+
+**Next:** Deepen A6 (conversation) + activate world_arbiter for group scenes / motivation injection. Focus remains strictly backend architecture + intelligence for alive society.
+
+---
+
+## 2026-07-13 — A6: Bounded multi-turn conversation subsystem (alive social dynamics)
+
+**Context.** Single `conversation_line` per step made chats glacial (often 6+ ticks for a short exchange). This contributed to the "polite chatter" problem that kills the feeling of a living society. Handover explicitly calls for "a bounded multi-turn dialogue loop within one step ... with a slim dialogue-only prompt".
+
+**Changes (architecture + intelligence only):**
+- Extended `SocialDecision` to support `dialogue: list[list[str]]` for 2-5 natural turns in one response (backward compatible with single `conversation_line`).
+- Updated structured JSON schema (building on A4) and the main step prompt's CONVERSATIONS section with clear instructions and examples for multi-turn when appropriate.
+- Enhanced prompt guidance in ACTIVE CONVERSATION context: "For natural flow, output a short 'dialogue' list..."
+- Updated all social line application paths in `persona.py` (`_process_step_response` and continuing social) to consume and apply full dialogue blocks, printing each line.
+- Existing central `ConversationGroup` + `_synchronize_conversations()` in ReverieServer continues to manage multi-party merging, range, and memory storage — now benefits from batched lines.
+- When a persona outputs a dialogue block, the exchange can advance substantially in a single cognitive step instead of one line per tick.
+
+**Why this makes the society more "alive":**
+- Social interactions now have natural rhythm and can resolve or deepen quickly.
+- Agents can have short meaningful exchanges without the world freezing for them.
+- Group scenes become more practical.
+- Combined with recent economic stakes visibility, conversations can now reference real shared context (work, revenue, goals) instead of generic small talk.
+- Still uses the unified per-step call + tiered models; dialogue can be biased to FAST tier in future.
+
+**Files touched (backend only):**
+- `persona/prompt_template/claude_structure.py` (dataclass, schema, prompt text, parse)
+- `persona/persona.py` (social processing paths)
+
+**Verification:**
+- Full backend tests: 218 OK, ruff clean.
+- Schema and prompt remain consistent with A4 structured outputs.
+- Single-line behavior fully preserved for compatibility.
+
+This is a direct architectural move toward emergent, dynamic social fabric.
+
+---
+
+## 2026-07-13 — Architecture/Intelligence focus: Economic stakes visibility for alive society
+
+**Scope lock-in.** Per user direction: other agents handle full redesign (UI, visuals, frontend). This track is **exclusively** backend architecture (ReverieServer, persona cognition, memory, prompting, town_center, economy), intelligence (how agents perceive stakes, remember, decide, converse), and functionality that makes the society feel real rather than a polite research demo.
+
+**What & why (core to original vision).** The handover is explicit: agents "currently can't see team points/revenue". Without economic reality inside their cognition, there are no real stakes. Town Center requests feel abstract. The "human-governed economy" exists for the operator but not for the simulated society. This is one of the largest gaps preventing movement from "tech demo" toward "an office reality-show you govern" with an alive, motivated group of characters.
+
+- Added `TownCenterStore.get_economic_brief()` — a compact, prompt-safe, read-only view:
+  - Objective
+  - Starting resources
+  - Current points + verified revenue (only from human `record_delivery`)
+  - Explicit reminder that agents cannot self-credit money
+- Wired into every step via `scratch.economic_context` (refreshed in `_refresh_town_center_feedback` alongside recent work and request outcomes).
+- Surfaced in `build_step_prompt` (as `=== TEAM STANDING & OBJECTIVE (real stakes) ===`) and `build_day_planning_prompt`.
+- This gives agents persistent awareness of the shared game they are playing. Future reflection, planning, and requests can now be grounded in actual progress (or lack thereof).
+
+**Verification.**
+- py_compile + ruff clean on touched files + full `reverie/`.
+- Backend tests: 218 OK.
+- Functional: `get_economic_brief()` produces the expected stakes language with the human gate emphasized.
+- No change to money model (still append-only rewards, human only for real revenue).
+
+**Architectural notes.**
+- The economic state is derived from the existing `RewardLedger.team_score()` + scenario `starting_resources` + `objective`. No new mutable state.
+- Fits cleanly next to the A1 "TEAMMATES' RECENT WORK" and town feedback blocks.
+- Sets up future work: daily burn pressure, runway visibility, agents reacting to low resources, arbiter-influenced reward signals becoming visible, etc.
+
+**Files (backend only):** `town_center.py`, `reverie.py`, `persona/prompt_template/claude_structure.py`.
+
+This is foundational infrastructure for "alive society" — real shared stakes that the characters can feel and strategize around.
+
+---
+
 ## 2026-07-11 — P2 intelligence A1: research content reaches memory and prompts (first slice)
 
 **What & why.** The single highest-leverage coupling fix identified in the roadmap. A completed `web_research` (or market_analysis) produced a short summary line ("5 sources on X") that went into memory + the step prompt; the real `ToolResult.detail` (formatted titles/URLs/snippets) was persisted only to `artifacts.jsonl` and the console. Agents received a count, not knowledge. Teammates could not build on findings. This was the main reason live search felt inert.

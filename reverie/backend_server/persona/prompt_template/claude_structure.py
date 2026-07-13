@@ -137,11 +137,18 @@ class ActionDecision:
 
 @dataclass
 class SocialDecision:
-    """Parsed social decision from model response."""
+    """Parsed social decision from model response.
+
+    A6: Support for bounded multi-turn dialogue.
+    - Single line mode (backward compat): conversation_line
+    - Multi-turn mode: dialogue list of [speaker, line] turns.
+      The LLM can output a short natural exchange (2-5 turns) in one step.
+    """
 
     wants_to_talk: bool = False
     target: str | list[str] | None = None  # Single person or list for group/broadcast
     conversation_line: str | None = None
+    dialogue: list[list[str]] | None = None  # A6: [["Speaker", "line"], ...] for multi-turn
 
 
 @dataclass
@@ -357,9 +364,12 @@ with neighbors, maintain daily routines, and make your own decisions about how
 to spend your time. This is your life - act naturally as yourself.
 {memory_section}
 {scenario_section}
-=== HOW TO RESPOND ===
-When I describe what's happening around you, respond with a JSON object containing
-your decisions. The required format is:
+=== HOW TO RESPOND (A4 structured) ===
+Respond with ONLY a single valid JSON object (no markdown fences, no leading/trailing
+explanation, no extra text before or after the object). This is a strict contract so the
+simulation can parse your decision in one pass without retries.
+
+The required format is:
 
 ```json
 {{
@@ -381,7 +391,8 @@ your decisions. The required format is:
   "social": {{
     "wants_to_talk": false,
     "target": null,
-    "conversation_line": null
+    "conversation_line": null,
+    "dialogue": null
   }},
   "thoughts": [],
   "town_request": null
@@ -441,34 +452,40 @@ Town Center request format:
 }}
 ```
 
-=== CONVERSATIONS ===
+=== CONVERSATIONS (A6 - alive social dynamics) ===
 TALKING RANGE: You can only start conversations with people in "NEARBY PEOPLE (can talk)" - they're close enough to hear you.
 IN SIGHT: People under "IN SIGHT" are visible but too far to talk - approach them first if you want to chat.
 
 If no one is in talking range, you CANNOT start a conversation. You can approach someone in sight though.
 
-When talking to someone in NEARBY PEOPLE (can talk):
+SINGLE LINE (simple case):
 - Set wants_to_talk: true
-- Set target: their EXACT name from the list
-- Set conversation_line: what you actually SAY to them (dialogue in quotes)
+- Set target: exact name(s)
+- Set conversation_line: what you say
+
+MULTI-TURN DIALOGUE (preferred for real, alive conversation - resolves faster):
+When you want a natural back-and-forth, instead of one line use:
+- "dialogue": [ ["You", "line 1"], ["Target", "response"], ["You", "follow up"], ... ]
+- 2 to 5 short natural turns total. Keep it concise and realistic.
+- This lets a meaningful exchange happen in ONE step instead of dragging over many ticks.
 
 Examples:
-- One person: "target": "Maria", "conversation_line": "Hey Maria! How's your studying going?"
-- Multiple people: "target": ["Alice", "Bob", "Charlie"], "conversation_line": "Good morning everyone! Let's get started."
+- Single: "target": "Maria", "conversation_line": "Hey Maria! How's your studying going?"
+- Multi-turn: "target": "Maria", "dialogue": [
+    ["You", "Hey Maria, did you see the new lead from the research?"],
+    ["Maria", "Yeah, looks promising. Should we draft a proposal?"],
+    ["You", "Good idea. I'll start on the outline if you handle pricing."]
+  ]
 
-The conversation_line is ACTUAL DIALOGUE that will be shown as a speech bubble.
+The lines become real speech bubbles and are recorded in memory.
 
-NATURAL CONVERSATION FLOW:
-- Speak when you have something to say, stay silent when you don't
-- If you're done talking, simply don't provide a conversation_line - no explicit "end" needed
-- Conversations naturally end when: people walk away, start other activities, or go quiet
-- You can always start a new conversation later - even with the same person moments later
-- Don't feel obligated to keep talking just because someone spoke to you - respond only if you genuinely want to
+NATURAL FLOW & GROUP SCENES:
+- Speak when you have something real to say.
+- Use list of targets for group addressing.
+- Conversations can end naturally when no more lines or people move away.
+- For group scenes: multiple people can contribute lines in one dialogue block. A cheap central arbiter may help sequence if needed.
 
-GROUP ADDRESSING (lectures, announcements, etc):
-- Use a list of names when speaking to multiple people: "target": ["Student1", "Student2", "Student3"]
-- All names MUST be from the NEARBY PEOPLE (can talk) list
-- Any of them can respond back to you
+When in an ACTIVE CONVERSATION (see below section), the context will show recent lines. Respond naturally or continue the exchange with dialogue.
 
 === REALITY RULES ===
 1. PHYSICAL: You can only interact with objects at your current location. To use something elsewhere, travel there first.
@@ -788,6 +805,9 @@ def build_step_prompt(
 {convo_lines}
 
 {turn_hint}
+
+A6 MODE: For natural flow, output a short "dialogue" list of 2-4 turns instead of single conversation_line.
+This lets the exchange feel alive and resolve in one step. Example: "dialogue": [["You", "response"], ["Other", "reply"], ["You", "followup"]]
 """
         # Add positioning guidance for active conversation
         positioning_guidance = """
@@ -914,6 +934,14 @@ Only set "continuing": false with a new action if you have a compelling reason t
     # commitments in view step to step (read from GoalMemory, no LLM call).
     goals_step_section = _get_goals_step_line(persona)
 
+    # Economic stakes (core to "alive society"). Agents now see the actual
+    # team standing, objective, and that revenue is human-gated only.
+    # This creates real pressure and makes Town Center requests feel meaningful.
+    economic_section = ""
+    econ = getattr(scratch, "economic_context", "") or ""
+    if econ.strip():
+        economic_section = f"\n{econ.strip()}\n"
+
     # Phase 3a/3e: compact "PEOPLE YOU KNOW (nearby)" section + Phase 3b recall
     # of the last conversation with each nearby acquaintance. Both are passed in
     # pre-rendered from persona state (no embeddings, no extra LLM call).
@@ -958,6 +986,7 @@ CURRENT ACTIVITY: {current_action}{action_context}
 === YOUR SCHEDULE FOR TODAY ===
 {schedule_str}
 {scenario_section}
+{economic_section}
 {convo_section}{nearby_convo_section}{positioning_guidance}{decision_guidance}
 {team_activity_section}
 === TOWN CENTER REQUESTS ===
@@ -979,6 +1008,47 @@ def build_retry_prompt(original_prompt: str, errors: list[str]) -> str:
 Please respond again with ONLY valid JSON. Use EXACT location names from the options.
 
 {original_prompt}"""
+
+
+def build_slim_dialogue_prompt(
+    speaker_name: str,
+    target_names: list[str],
+    recent_lines: list[tuple[str, str]],
+    relationship_notes: str = "",
+    max_turns: int = 4,
+) -> str:
+    """A6: Slim, dialogue-only prompt for bounded multi-turn exchanges.
+
+    Much lighter than full step prompt. Used when we want fast, natural
+    conversation resolution within one cognitive step without re-sending
+    the entire world state every line.
+
+    Returns a prompt that asks for a short structured dialogue block.
+    """
+    history = "\n".join(f"{s}: {l}" for s, l in recent_lines[-6:]) if recent_lines else "(no prior lines)"
+
+    targets = ", ".join(target_names) if target_names else "the others"
+
+    return f"""You are {speaker_name} in a natural conversation with {targets}.
+
+Recent exchange (most recent last):
+{history}
+
+{relationship_notes}
+
+Generate a short, realistic continuation of 2-{max_turns} total turns (including your lines).
+Keep it concise, in-character, and grounded. No long monologues.
+
+Output ONLY this JSON:
+{{
+  "dialogue": [
+    ["{speaker_name}", "your first line"],
+    ["{targets.split(',')[0] if targets else 'Other'}", "their reply"],
+    ...
+  ]
+}}
+
+Respond with valid JSON only. No extra text."""
 
 
 def build_day_planning_prompt(persona: Persona, date_str: str) -> str:
@@ -1007,6 +1077,10 @@ def build_day_planning_prompt(persona: Persona, date_str: str) -> str:
     # new day's plan honors unfinished commitments instead of starting fresh.
     goals_section = _get_goals_block(persona)
 
+    # Economic reality for long-term planning (alive society stakes)
+    econ_ctx = getattr(scratch, "economic_context", "") or ""
+    econ_section = f"\n{econ_ctx.strip()}\n" if econ_ctx.strip() else ""
+
     return f"""You are {name}, a {age}-year-old.
 
 === WHO YOU ARE ===
@@ -1017,6 +1091,8 @@ Home: {living_area}
 Current focus: {currently}
 Daily plan requirement: {daily_plan_req}
 {iss_section}{goals_section}
+{econ_section}
+
 === TODAY ===
 Today is {date_str}. Plan your day.
 
@@ -1149,14 +1225,14 @@ def parse_day_planning_response(response_text: str) -> DayPlanResponse:
     """Parse the JSON response from day planning prompt."""
     result = DayPlanResponse()
 
-    # Try to extract JSON from response
-    json_match = re.search(r"\{.*\}", response_text, re.DOTALL)
-    if not json_match:
+    # A4: use robust extractor (whole-JSON first, then tolerant scan)
+    json_str = _extract_json_object(response_text)
+    if not json_str:
         result.parse_errors.append("No JSON object found in response")
         return result
 
     try:
-        data = json.loads(json_match.group())
+        data = json.loads(json_str)
         result.raw_json = data
     except json.JSONDecodeError as e:
         result.parse_errors.append(f"Invalid JSON: {e}")
@@ -1223,14 +1299,14 @@ def parse_step_response(
     """
     result = StepResponse()
 
-    # Try to extract JSON from response
-    json_match = re.search(r"\{.*\}", response_text, re.DOTALL)
-    if not json_match:
+    # A4: use robust extractor (whole-JSON first, then tolerant scan)
+    json_str = _extract_json_object(response_text)
+    if not json_str:
         result.parse_errors.append("No JSON object found in response")
         return result
 
     try:
-        data = json.loads(json_match.group())
+        data = json.loads(json_str)
         result.raw_json = data
     except json.JSONDecodeError as e:
         result.parse_errors.append(f"Invalid JSON: {e}")
@@ -1306,13 +1382,26 @@ def parse_step_response(
             importance=importance,
         )
 
-    # Parse social
+    # Parse social (A6: support single line or multi-turn dialogue)
     social_data = data.get("social", {})
-    result.social = SocialDecision(
-        wants_to_talk=social_data.get("wants_to_talk", False),
-        target=social_data.get("target"),
-        conversation_line=social_data.get("conversation_line"),
-    )
+    dialogue = social_data.get("dialogue")
+    if dialogue and isinstance(dialogue, list):
+        # Normalize to list of [str, str]
+        clean_dialogue = []
+        for turn in dialogue:
+            if isinstance(turn, (list, tuple)) and len(turn) >= 2:
+                clean_dialogue.append([str(turn[0]), str(turn[1])])
+        result.social = SocialDecision(
+            wants_to_talk=social_data.get("wants_to_talk", bool(clean_dialogue)),
+            target=social_data.get("target"),
+            dialogue=clean_dialogue if clean_dialogue else None,
+        )
+    else:
+        result.social = SocialDecision(
+            wants_to_talk=social_data.get("wants_to_talk", False),
+            target=social_data.get("target"),
+            conversation_line=social_data.get("conversation_line"),
+        )
 
     # Parse thoughts
     thoughts_data = data.get("thoughts", [])
@@ -1440,13 +1529,14 @@ def parse_reflection_response(response_text: str) -> ReflectionResponse:
     """Parse the JSON insight list from a reflection prompt."""
     result = ReflectionResponse()
 
-    json_match = re.search(r"\{.*\}", response_text, re.DOTALL)
-    if not json_match:
+    # A4: use robust extractor (whole-JSON first, then tolerant scan)
+    json_str = _extract_json_object(response_text)
+    if not json_str:
         result.parse_errors.append("No JSON object found in response")
         return result
 
     try:
-        data = json.loads(json_match.group())
+        data = json.loads(json_str)
         result.raw_json = data
     except json.JSONDecodeError as e:
         result.parse_errors.append(f"Invalid JSON: {e}")
@@ -1580,14 +1670,15 @@ def parse_compaction_summary(response_text: str) -> CompactionSummary:
     """
     result = CompactionSummary()
 
-    json_match = re.search(r"\{.*\}", response_text or "", re.DOTALL)
-    if not json_match:
+    # A4: use robust extractor (whole-JSON first, then tolerant scan)
+    json_str = _extract_json_object(response_text or "")
+    if not json_str:
         result.narrative = (response_text or "").strip()
         result.parse_errors.append("No JSON object found; kept text as narrative")
         return result
 
     try:
-        data = json.loads(json_match.group())
+        data = json.loads(json_str)
         result.raw_json = data
     except json.JSONDecodeError as e:
         result.narrative = (response_text or "").strip()
@@ -1711,13 +1802,14 @@ def parse_identity_update_response(response_text: str) -> IdentityUpdateResponse
     """Parse the identity evolution + drift JSON, clamping the drift score."""
     result = IdentityUpdateResponse()
 
-    json_match = re.search(r"\{.*\}", response_text or "", re.DOTALL)
-    if not json_match:
+    # A4: use robust extractor (whole-JSON first, then tolerant scan)
+    json_str = _extract_json_object(response_text or "")
+    if not json_str:
         result.parse_errors.append("No JSON object found in response")
         return result
 
     try:
-        data = json.loads(json_match.group())
+        data = json.loads(json_str)
         result.raw_json = data
     except json.JSONDecodeError as e:
         result.parse_errors.append(f"Invalid JSON: {e}")
@@ -1763,6 +1855,27 @@ def _fuzzy_match(target: str, options: list[str]) -> str | None:
     for opt in options:
         if target_lower in opt.lower() or opt.lower() in target_lower:
             return opt
+    return None
+
+
+def _extract_json_object(text: str | None) -> str | None:
+    """Robustly extract the first top-level JSON object string.
+
+    A4 improvement: try a clean whole-response JSON first (when the model
+    follows structured instructions strictly). Fall back to the tolerant
+    first-{...} scan. This reduces parse failures and the expensive full-prompt
+    retry loop without changing any call sites or StepResponse shape.
+    """
+    if not text:
+        return None
+    s = text.strip()
+    # Ideal case: model emitted *only* a JSON object (or with whitespace)
+    if s.startswith("{") and s.endswith("}"):
+        return s
+    # Fallback: first plausible object (preserves prior behavior for messy output)
+    m = re.search(r"\{.*\}", s, re.DOTALL)
+    if m:
+        return m.group()
     return None
 
 
