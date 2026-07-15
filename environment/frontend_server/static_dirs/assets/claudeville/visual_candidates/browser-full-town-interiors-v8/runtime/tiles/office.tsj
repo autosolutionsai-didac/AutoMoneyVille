@@ -1,0 +1,12 @@
+{
+  "columns": 4,
+  "image": "office.png",
+  "imageheight": 48,
+  "imagewidth": 64,
+  "name": "claudeville_v2_runtime_office",
+  "tilecount": 10,
+  "tileheight": 16,
+  "tilewidth": 16,
+  "type": "tileset",
+  "version": "1.10"
+}

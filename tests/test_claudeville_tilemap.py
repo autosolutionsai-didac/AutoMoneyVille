@@ -16,7 +16,7 @@ from tools.mapgen import build_tilemap, curate_modern_pixels_v2
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ASSET_ROOT = REPO_ROOT / "environment/frontend_server/static_dirs/assets/claudeville"
 AUTHORING_ROOT = build_tilemap.AUTHORING_ROOT
-APPROVED_ROOT = ASSET_ROOT / "visual_candidates/browser-full-town-v7"
+APPROVED_ROOT = ASSET_ROOT / "visual_candidates/browser-full-town-interiors-v8"
 SOURCE_MAP = build_tilemap.AUTHORING_MAP
 COLLISION = ASSET_ROOT / "matrix/maze/collision_maze.csv"
 SPEC = REPO_ROOT / "tools/mapgen/town_spec.json"
@@ -43,7 +43,7 @@ class HandAuthoredClaudevilleTests(unittest.TestCase):
         )
         self.assertEqual(
             {Path(tileset["source"]).stem for tileset in source["tilesets"]},
-            {"terrain", "town", "office"},
+            {"terrain", "town", "office", "interiors"},
         )
         self.assertEqual(
             {property["name"]: property["value"] for property in source["properties"]},
@@ -75,10 +75,10 @@ class HandAuthoredClaudevilleTests(unittest.TestCase):
         atlas = load_json(AUTHORING_ROOT / "atlas.json")
         catalog = load_json(AUTHORING_ROOT / "catalog.json")
         credits = load_json(AUTHORING_ROOT / "credits.json")
-        self.assertEqual(atlas["mode"], "exteriors-office-native-16")
+        self.assertEqual(atlas["mode"], "exteriors-office-interiors-native-16")
         self.assertEqual(atlas["tile_size"], 16)
         self.assertEqual({source["pack"] for source in atlas["sources"]}, {
-            "Modern Exteriors", "Modern Office Revamped",
+            "Modern Exteriors", "Modern Office Revamped", "Modern Interiors",
         })
         self.assertNotIn("modern_interiors_free", json.dumps(atlas).lower())
         self.assertNotIn("rpg", json.dumps(atlas).lower())
@@ -181,6 +181,18 @@ class HandAuthoredClaudevilleTests(unittest.TestCase):
                 SOURCE_MAP.with_name("claudeville_bg.png")
             )
             rejected(bad_source, "reviewed hash")
+
+            bad_gid_map = load_json(candidate_root / "claudeville_v2.json")
+            furniture = next(
+                layer for layer in bad_gid_map["layers"]
+                if layer["name"] == "Interior Furniture L1"
+            )
+            furniture["data"][next(index for index, gid in enumerate(furniture["data"]) if gid)] = 999999
+            bad_gid_path = candidate_root / "tampered-gid-map.json"
+            bad_gid_path.write_text(json.dumps(bad_gid_map), encoding="utf-8")
+            bad_gid = dict(original)
+            bad_gid["tilemap_url"] = build_tilemap._static_url(bad_gid_path)
+            rejected(bad_gid, "unresolved GID 999999")
 
             bad_prop_map = load_json(candidate_root / "claudeville_v2.json")
             depth_objects = next(
