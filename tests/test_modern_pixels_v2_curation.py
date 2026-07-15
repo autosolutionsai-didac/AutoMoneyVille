@@ -9,12 +9,12 @@ from tempfile import TemporaryDirectory
 
 from PIL import Image
 
-from tools.mapgen import curate_modern_pixels_v2
+from tools.mapgen import curate_modern_pixels_v2, modern_interiors_source
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ASSET_ROOT = REPO_ROOT / "environment/frontend_server/static_dirs/assets/claudeville"
 AUTHORING_CACHE = curate_modern_pixels_v2.DEFAULT_OUTPUT_ROOT
-APPROVED_ROOT = ASSET_ROOT / "visual_candidates/browser-full-town-v7"
+APPROVED_ROOT = ASSET_ROOT / "visual_candidates/browser-full-town-interiors-v8"
 
 
 class ModernPixelsV2CurationTests(unittest.TestCase):
@@ -36,7 +36,7 @@ class ModernPixelsV2CurationTests(unittest.TestCase):
         atlas = json.loads((AUTHORING_CACHE / "atlas.json").read_text(encoding="utf-8"))
         catalog = json.loads((AUTHORING_CACHE / "catalog.json").read_text(encoding="utf-8"))
         credits = json.loads((AUTHORING_CACHE / "credits.json").read_text(encoding="utf-8"))
-        self.assertEqual(atlas["mode"], "exteriors-office-native-16")
+        self.assertEqual(atlas["mode"], "exteriors-office-interiors-native-16")
         self.assertEqual(atlas["tile_size"], 16)
         self.assertEqual({source["pack"] for source in atlas["sources"]}, set(curate_modern_pixels_v2.PACKS))
         self.assertTrue(all("free" not in source["relative_path"].lower() for source in atlas["sources"]))
@@ -48,6 +48,19 @@ class ModernPixelsV2CurationTests(unittest.TestCase):
         self.assertTrue(all(prop["display_scale"] == 1 for prop in catalog["props"]))
         self.assertFalse(credits["distribution_allowed"])
         self.assertIn("Local authoring cache", credits["distribution_scope"])
+        self.assertEqual(
+            {page["key"] for page in atlas["atlases"]},
+            {"terrain", "town", "office", "interiors"},
+        )
+        interior_sources = [
+            source for source in atlas["sources"]
+            if source["pack"] == modern_interiors_source.PACK_NAME
+        ]
+        self.assertEqual(sum(source["tile_count"] for source in interior_sources), 18711)
+        self.assertEqual(
+            {source["sha256"] for source in interior_sources},
+            {sheet.expected_sha256 for sheet in modern_interiors_source.SHEETS},
+        )
         for page in atlas["atlases"]:
             with Image.open(AUTHORING_CACHE / page["image"]) as image:
                 self.assertEqual(image.size, (page["width"], page["height"]))
@@ -59,17 +72,17 @@ class ModernPixelsV2CurationTests(unittest.TestCase):
         credits = json.loads((APPROVED_ROOT / "runtime/credits.json").read_text(encoding="utf-8"))
         world = json.loads((ASSET_ROOT / "world.json").read_text(encoding="utf-8"))
         runtime_tile_count = sum(page["tile_count"] for page in manifest["tilesets"])
-        self.assertEqual(runtime_tile_count, 428)
-        self.assertLess(runtime_tile_count, 500)
+        self.assertEqual(runtime_tile_count, len(manifest["tile_asset_remap"]))
+        self.assertLess(runtime_tile_count, 4096)
         self.assertEqual(manifest["credits"], "credits.json")
         self.assertEqual(
             {pack["name"] for pack in credits["packs"]},
-            {"Modern Exteriors", "Modern Office Revamped"},
+            {"Modern Exteriors", "Modern Office Revamped", "Modern Interiors"},
         )
         self.assertNotIn("free", json.dumps(credits).lower())
         self.assertEqual(
             world["credits_url"],
-            "assets/claudeville/visual_candidates/browser-full-town-v7/runtime/credits.json",
+            "assets/claudeville/visual_candidates/browser-full-town-interiors-v8/runtime/credits.json",
         )
         for page in manifest["tilesets"]:
             with Image.open(APPROVED_ROOT / "runtime" / page["image"]) as image:
@@ -79,6 +92,20 @@ class ModernPixelsV2CurationTests(unittest.TestCase):
         limit = (curate_modern_pixels_v2.MAX_ATLAS_SIZE // curate_modern_pixels_v2.TILE_SIZE) ** 2
         with self.assertRaisesRegex(curate_modern_pixels_v2.CurationError, "4096x4096"):
             curate_modern_pixels_v2.atlas_dimensions(limit + 1)
+
+    @unittest.skipUnless(AUTHORING_CACHE.is_dir(), "licensed authoring cache not generated")
+    def test_interior_tile_keys_encode_normalized_source_rows_and_columns(self):
+        tiles = json.loads((AUTHORING_CACHE / "tiles.json").read_text(encoding="utf-8"))["tiles"]
+        interiors = [tile for tile in tiles if tile["atlas"] == "interiors"]
+        self.assertEqual(len(interiors), 18711)
+        for tile in interiors:
+            expected = (
+                f"tile.{tile['source_id']}.r{tile['source_row']:04d}."
+                f"c{tile['source_col']:02d}"
+            )
+            self.assertEqual(tile["asset_key"], expected)
+            self.assertEqual(tile["source_x"], tile["source_col"] * 16)
+            self.assertEqual(tile["source_y"], tile["source_row"] * 16)
 
     @unittest.skipUnless(AUTHORING_CACHE.is_dir(), "licensed authoring cache not generated")
     def test_semantic_catalog_uses_verified_wall_and_prop_sources(self):

@@ -5,18 +5,20 @@ from __future__ import annotations
 import argparse
 import json
 import math
-from dataclasses import dataclass
 from pathlib import Path
+from typing import NamedTuple
 
 from PIL import Image
 
 try:
+    from tools.mapgen import tiled_gid
     from tools.mapgen.tilemap_culler import (
         CullError,
         cull_runtime_tilesets,
         stable_source_sha256,
     )
 except ModuleNotFoundError:  # Direct ``python tools/mapgen/build_tilemap.py``.
+    import tiled_gid
     from tilemap_culler import CullError, cull_runtime_tilesets, stable_source_sha256
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -29,37 +31,25 @@ COLLISION_PATH = WORLD_ROOT / "matrix/maze/collision_maze.csv"
 WORLD_MANIFEST_PATH = WORLD_ROOT / "world.json"
 ALIAS_MANIFEST_PATH = WORLD_ROOT / "legacy_address_aliases.v1.json"
 VISUAL_CANDIDATES_ROOT = WORLD_ROOT / "visual_candidates"
-LOGICAL_SIZE = (88, 48, 32)
-VISUAL_SIZE = (176, 96, 16)
+LOGICAL_SIZE, VISUAL_SIZE = (88, 48, 32), (176, 96, 16)
 TILE_LAYERS = (
-    "Bottom Ground",
-    "Exterior Ground",
-    "Exterior Decoration L1",
-    "Exterior Decoration L2",
-    "Interior Ground",
-    "Wall",
-    "Interior Furniture L1",
-    "Interior Furniture L2",
-    "Foreground L1",
-    "Foreground L2",
-    "Collisions",
+    "Bottom Ground", "Exterior Ground", "Exterior Decoration L1",
+    "Exterior Decoration L2", "Interior Ground", "Wall",
+    "Interior Furniture L1", "Interior Furniture L2", "Foreground L1", "Foreground L2", "Collisions",
 )
 OBJECT_LAYERS = ("Depth Props", "Overhead Props")
 MAP_LAYER_ORDER = (*TILE_LAYERS[:-1], *OBJECT_LAYERS, TILE_LAYERS[-1])
-FLIP_MASK = 0x1FFFFFFF
 
 
 class TilemapError(ValueError): ...
 
 
-@dataclass(frozen=True)
-class BuildResult:
+class BuildResult(NamedTuple):
     candidate_root: Path
     map_path: Path
     preview_path: Path
     manifest_path: Path
     source_sha256: str
-    collision_mismatches: int
 
 
 def _read_json(path: Path, label: str) -> dict:
@@ -173,14 +163,14 @@ def _validate_map_layers(source: dict) -> dict[str, dict]:
 def _validate_source(source: dict) -> dict[str, dict]:
     layers = _validate_map_layers(source)
     tilesets = source.get("tilesets")
-    if not isinstance(tilesets, list) or len(tilesets) != 3:
-        raise TilemapError("TMJ must reference terrain, town, and office tilesets")
+    if not isinstance(tilesets, list) or len(tilesets) != 4:
+        raise TilemapError("TMJ must reference terrain, town, office, and interiors tilesets")
     names = {Path(str(entry.get("source", ""))).stem for entry in tilesets if isinstance(entry, dict)}
     firstgids = [entry.get("firstgid") for entry in tilesets if isinstance(entry, dict)]
-    if names != {"terrain", "town", "office"} or len(firstgids) != 3 or \
+    if names != {"terrain", "town", "office", "interiors"} or len(firstgids) != 4 or \
             any(not isinstance(value, int) or value < 1 for value in firstgids) or \
             len(firstgids) != len(set(firstgids)):
-        raise TilemapError("TMJ must use unique curated terrain, town, and office TSJs")
+        raise TilemapError("TMJ must use unique curated terrain, town, office, and interiors TSJs")
     return layers
 
 
@@ -249,8 +239,11 @@ def _embed_tilesets(runtime_root: Path, runtime: dict) -> tuple[list[dict], list
 def _remap_layers(source: dict, layers: dict[str, dict], runtime: dict, blocked: list[bool],
                   collision_gid: int) -> list[dict]:
     remap = runtime.get("tile_gid_remap")
-    flip_bits_mask = runtime.get("tile_gid_flip_mask", ~FLIP_MASK)
-    if not isinstance(remap, dict) or not isinstance(flip_bits_mask, int):
+    flip_bits_mask = runtime.get("tile_gid_flip_mask", tiled_gid.ORTHOGONAL_FLIP_MASK)
+    clear_bits_mask = runtime.get("tile_gid_clear_mask", tiled_gid.ALL_FLAG_MASK)
+    if not isinstance(remap, dict) or not all(
+        isinstance(mask, int) for mask in (flip_bits_mask, clear_bits_mask)
+    ):
         raise TilemapError("runtime culler remap is malformed")
     result = []
     for source_layer in source["layers"]:
@@ -263,7 +256,7 @@ def _remap_layers(source: dict, layers: dict[str, dict], runtime: dict, blocked:
         elif name in TILE_LAYERS:
             values = []
             for raw_gid in source_layer["data"]:
-                source_gid = raw_gid & ~flip_bits_mask
+                source_gid = raw_gid & ~clear_bits_mask
                 if not source_gid:
                     values.append(0)
                     continue
@@ -300,7 +293,7 @@ def _render_preview(map_data: dict, runtime_root: Path, output: Path) -> None:
                 continue
             if layer["type"] == "tilelayer":
                 for index, raw_gid in enumerate(layer["data"]):
-                    gid = raw_gid & FLIP_MASK
+                    gid = raw_gid & tiled_gid.GID_MASK
                     if not gid:
                         continue
                     tileset = max((item for item in tilesets if item["firstgid"] <= gid),
@@ -309,7 +302,10 @@ def _render_preview(map_data: dict, runtime_root: Path, output: Path) -> None:
                     columns = tileset["columns"]
                     source = images[tileset["firstgid"]]
                     sx, sy = (tile_id % columns) * 16, (tile_id // columns) * 16
-                    preview.alpha_composite(source.crop((sx, sy, sx + 16, sy + 16)),
+                    tile = tiled_gid.transform_orthogonal_tile(
+                        source.crop((sx, sy, sx + 16, sy + 16)), raw_gid
+                    )
+                    preview.alpha_composite(tile,
                                             ((index % VISUAL_SIZE[0]) * 16,
                                              (index // VISUAL_SIZE[0]) * 16))
             elif layer["type"] == "objectgroup" and prop_image is not None:
@@ -393,7 +389,7 @@ def build_candidate(source_path: Path = AUTHORING_MAP, *, candidate_root: Path |
     candidate_manifest.pop("aliases", None)
     manifest_path = root / "world.json"
     _write_json(manifest_path, candidate_manifest)
-    return BuildResult(root, map_path, preview_path, manifest_path, source_sha, 0)
+    return BuildResult(root, map_path, preview_path, manifest_path, source_sha)
 
 
 def promote_candidate(candidate_manifest_path: Path, *, approved_source_sha256: str) -> Path:
@@ -432,6 +428,10 @@ def promote_candidate(candidate_manifest_path: Path, *, approved_source_sha256: 
     manifest_tilesets = candidate.get("tilesets")
     if not isinstance(embedded, list) or not embedded or not isinstance(manifest_tilesets, list):
         raise TilemapError("candidate runtime tilesets are malformed")
+    try:
+        tiled_gid.validate_runtime_gids(layers, embedded, TILE_LAYERS)
+    except tiled_gid.TiledGidError as exc:
+        raise TilemapError(str(exc)) from exc
     embedded_names = {item.get("name") for item in embedded if isinstance(item, dict)}
     declared_names = {item.get("name") for item in manifest_tilesets if isinstance(item, dict)}
     if embedded_names != declared_names or candidate.get("collision_tileset") not in embedded_names:
@@ -466,7 +466,7 @@ def promote_candidate(candidate_manifest_path: Path, *, approved_source_sha256: 
         raise TilemapError("candidate object asset keys do not resolve in the runtime atlas")
     blocked, _spec = _load_collision()
     expected = _collision_data(blocked, 1)
-    mismatches = sum(bool(actual & FLIP_MASK) != bool(wanted) for actual, wanted in
+    mismatches = sum(bool(actual & tiled_gid.GID_MASK) != bool(wanted) for actual, wanted in
                      zip(layers["Collisions"]["data"], expected))
     if mismatches:
         raise TilemapError(f"candidate collision has {mismatches} canonical mismatches")

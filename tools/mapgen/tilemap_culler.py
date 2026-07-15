@@ -11,6 +11,7 @@ from pathlib import Path
 from PIL import Image
 
 try:
+    from tools.mapgen import tiled_gid
     from tools.mapgen.curate_modern_pixels_v2 import (
         DEFAULT_OUTPUT_ROOT,
         MAX_ATLAS_SIZE,
@@ -19,6 +20,7 @@ try:
         atlas_dimensions,
     )
 except ModuleNotFoundError:  # Direct ``python tools/mapgen/cull_modern_pixels_v2.py``.
+    import tiled_gid
     from curate_modern_pixels_v2 import (
         DEFAULT_OUTPUT_ROOT,
         MAX_ATLAS_SIZE,
@@ -29,7 +31,7 @@ except ModuleNotFoundError:  # Direct ``python tools/mapgen/cull_modern_pixels_v
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_SIZE = (176, 96)
-FLIP_MASK = 0x1FFFFFFF
+FLIP_MASK = tiled_gid.GID_MASK
 
 
 class CullError(CurationError):
@@ -85,8 +87,10 @@ def _map_tilesets(source: dict) -> list[tuple[int, str]]:
             raise CullError("TMJ tilesets need integer firstgid values")
         source_path = entry.get("source")
         key = Path(str(source_path)).stem if isinstance(source_path, str) else None
-        if key not in {"terrain", "town", "office"}:
-            raise CullError("TMJ may reference only curated terrain, town, or office TSJs")
+        if key not in {"terrain", "town", "office", "interiors"}:
+            raise CullError(
+                "TMJ may reference only curated terrain, town, office, or interiors TSJs"
+            )
         result.append((entry["firstgid"], key))
     if len({firstgid for firstgid, _ in result}) != len(result):
         raise CullError("TMJ tileset firstgid values must be unique")
@@ -195,11 +199,11 @@ def _validate_requested_props(authoring: Path, requested: list[str]) -> None:
 def _write_runtime_tiles(output: Path, authoring: Path, selected: dict[str, dict]):
     atlas_meta = _read_json(authoring / "atlas.json", "authoring atlas metadata")
     pages = {page.get("key"): page for page in atlas_meta.get("atlases", []) if isinstance(page, dict)}
-    groups = {"terrain": [], "town": [], "office": []}
+    groups = {"terrain": [], "town": [], "office": [], "interiors": []}
     for record in selected.values():
         groups[record["atlas"]].append(record)
     runtime_pages, asset_remap, firstgid = [], {}, 1
-    for key in ("terrain", "town", "office"):
+    for key in ("terrain", "town", "office", "interiors"):
         records = sorted(groups[key], key=lambda item: item["atlas_index"])
         if not records:
             continue
@@ -298,7 +302,9 @@ def cull_runtime_tilesets(source_tmj: Path, output_root: Path, *, authoring_root
         "authoring_root_sha256": sha256((authoring / "atlas.json").read_bytes()).hexdigest(),
         "credits": "credits.json",
         "props": props_manifest, "schema_version": 1, "source_tmj_sha256": stable_source_sha256(source_path),
-        "tile_asset_remap": asset_remap, "tile_gid_flip_mask": FLIP_MASK ^ 0xFFFFFFFF,
+        "tile_asset_remap": asset_remap,
+        "tile_gid_clear_mask": tiled_gid.ALL_FLAG_MASK,
+        "tile_gid_flip_mask": tiled_gid.ORTHOGONAL_FLIP_MASK,
         "tile_gid_remap": remap, "tile_size": TILE_SIZE, "tilesets": pages,
     }
     _write_json(output / "runtime_manifest.json", manifest)

@@ -10,7 +10,7 @@ from tempfile import TemporaryDirectory
 
 from PIL import Image
 
-from tools.mapgen import tilemap_culler
+from tools.mapgen import tiled_gid, tilemap_culler
 
 
 def write_json(path: Path, payload: object) -> None:
@@ -26,8 +26,14 @@ class TilemapCullerTests(unittest.TestCase):
         terrain.paste(Image.new("RGBA", (16, 16), (20, 90, 50, 255)), (0, 0))
         terrain.paste(Image.new("RGBA", (16, 16), (40, 100, 150, 255)), (16, 0))
         terrain.save(tiles / "terrain.png")
+        Image.new("RGBA", (16, 16), (160, 90, 60, 255)).save(
+            tiles / "interiors.png"
+        )
         write_json(authoring / "atlas.json", {
-            "atlases": [{"key": "terrain", "image": "tiles/terrain.png", "columns": 2}],
+            "atlases": [
+                {"key": "terrain", "image": "tiles/terrain.png", "columns": 2},
+                {"key": "interiors", "image": "tiles/interiors.png", "columns": 1},
+            ],
         })
         write_json(authoring / "credits.json", {
             "packs": [{"name": "Test Pack", "license_sha256": "a" * 64}],
@@ -35,6 +41,11 @@ class TilemapCullerTests(unittest.TestCase):
         write_json(authoring / "tiles.json", {"tiles": [
             {"asset_key": "tile.test.grass", "atlas": "terrain", "atlas_index": 0},
             {"asset_key": "tile.test.water", "atlas": "terrain", "atlas_index": 1},
+            {
+                "asset_key": "tile.interiors.full.r0000.c00",
+                "atlas": "interiors",
+                "atlas_index": 0,
+            },
         ]})
         props = Image.new("RGBA", (32, 16), (0, 0, 0, 0))
         props.paste(Image.new("RGBA", (16, 16), (240, 210, 90, 255)), (0, 0))
@@ -69,6 +80,10 @@ class TilemapCullerTests(unittest.TestCase):
             manifest = tilemap_culler.cull_runtime_tilesets(source, first, authoring_root=authoring)
             tilemap_culler.cull_runtime_tilesets(source, second, authoring_root=authoring)
             self.assertEqual(manifest["tile_gid_remap"], {"1": 1, "2": 2})
+            self.assertEqual(manifest["tile_gid_clear_mask"], tiled_gid.ALL_FLAG_MASK)
+            self.assertEqual(
+                manifest["tile_gid_flip_mask"], tiled_gid.ORTHOGONAL_FLIP_MASK
+            )
             self.assertEqual(manifest["props"]["asset_keys"], ["prop.plaza.fountain"])
             self.assertEqual(manifest["tilesets"][0]["tile_count"], 2)
             props = json.loads((first / "props.json").read_text(encoding="utf-8"))
@@ -103,6 +118,26 @@ class TilemapCullerTests(unittest.TestCase):
             write_json(source, payload)
             with self.assertRaisesRegex(tilemap_culler.CullError, "176x96"):
                 tilemap_culler.cull_runtime_tilesets(source, root / "runtime", authoring_root=authoring)
+
+    def test_culls_the_fourth_interiors_atlas_without_shipping_full_sources(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            authoring = self._authoring_root(root)
+            source = self._tmj(root)
+            payload = json.loads(source.read_text(encoding="utf-8"))
+            payload["tilesets"].append({"firstgid": 3, "source": "interiors.tsj"})
+            payload["layers"][0]["data"][3] = 3
+            write_json(source, payload)
+            runtime = root / "runtime"
+            manifest = tilemap_culler.cull_runtime_tilesets(
+                source, runtime, authoring_root=authoring
+            )
+            self.assertEqual(
+                [page["key"] for page in manifest["tilesets"]],
+                ["terrain", "interiors"],
+            )
+            self.assertEqual(manifest["tilesets"][1]["tile_count"], 1)
+            self.assertTrue((runtime / "tiles/interiors.png").is_file())
 
     def test_runtime_prop_packer_grows_for_a_finished_civic_building(self):
         school = Image.new("RGBA", (384, 368), (64, 90, 112, 255))

@@ -14,23 +14,21 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, UnidentifiedImageError
 from PIL import __version__ as PILLOW_VERSION
 
+try:
+    from tools.mapgen import modern_interiors_source
+except ModuleNotFoundError:  # Direct ``python tools/mapgen/curate_modern_pixels_v2.py``.
+    import modern_interiors_source
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SOURCE_ROOT = REPO_ROOT.parents[1] / "Modern Pixels"
-DEFAULT_OUTPUT_ROOT = (
-    REPO_ROOT
-    / "output/claudeville/modern_pixels_v2"
-)
+DEFAULT_OUTPUT_ROOT = REPO_ROOT / "output/claudeville/modern_pixels_v2"
 TILE_SIZE = 16
 MAX_ATLAS_SIZE = 4096
 SUPPORTED_PILLOW_VERSION = "12.2.0"
-FORBIDDEN_PART = re.compile(
-    r"(?:^|[^a-z0-9])(free|rpg|preview|old|previous|zip|generator|exe)(?:$|[^a-z0-9])",
-    re.IGNORECASE,
-)
+FORBIDDEN_PART = re.compile(r"(?:^|[^a-z0-9])(free|rpg|preview|old|previous|zip|generator|exe)(?:$|[^a-z0-9])", re.IGNORECASE)
 
 
-class CurationError(ValueError):
-    """Raised when an input source or output target breaks the v2 asset contract."""
+class CurationError(ValueError): ...
 
 
 @dataclass(frozen=True)
@@ -55,16 +53,9 @@ class PropSpec:
 
 
 PACKS = {
-    "Modern Exteriors": {
-        "creator": "LimeZu",
-        "license_file": "modernexteriors-win/Modern_Exteriors_License.pdf",
-        "source_url": "https://limezu.itch.io/modernexteriors",
-    },
-    "Modern Office Revamped": {
-        "creator": "LimeZu",
-        "license_file": "Modern_Office_Revamped_v1.2/LICENSE.txt",
-        "source_url": "https://limezu.itch.io/modernoffice",
-    },
+    "Modern Exteriors": {"creator": "LimeZu", "license_file": "modernexteriors-win/Modern_Exteriors_License.pdf", "source_url": "https://limezu.itch.io/modernexteriors"},
+    "Modern Office Revamped": {"creator": "LimeZu", "license_file": "Modern_Office_Revamped_v1.2/LICENSE.txt", "source_url": "https://limezu.itch.io/modernoffice"},
+    modern_interiors_source.PACK_NAME: modern_interiors_source.PACK_CREDIT,
 }
 EXTERIOR_SORTER = "modernexteriors-win/Modern_Exteriors_16x16/ME_Theme_Sorter_16x16"
 OFFICE_ROOT = "Modern_Office_Revamped_v1.2"
@@ -102,8 +93,6 @@ def _office_prop(key: str, number: int) -> PropSpec:
 
 
 PROP_SPECS = (
-    # Complete building compositions give the town a readable exterior silhouette;
-    # room-builder tiles are reserved for the roofless interior cutaways beneath them.
     _exterior_prop("prop.building.clock_tower", "building", "13_School_Singles_16x16", "ME_Singles_School_16x16_Clock_Tower_1.png"),
     _exterior_prop("prop.building.bakery", "building", "5_Floor_Modular_Building_Singles_16x16", "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Bakery_1.png"),
     _exterior_prop("prop.building.country_house", "building", "24_Additional_Houses_Singles_16x16", "24_Additional_Houses_Country_House_16x16.png"),
@@ -202,8 +191,6 @@ PROP_SPECS = (
     _office_prop("prop.office.coffee_station", 318),
 )
 
-# The map author starts from these intentional, named choices.  The full sheet
-# catalog remains available for variation, but these keys avoid a blind atlas hunt.
 SEMANTIC_TILE_KEYS = {
     "terrain.grass": "tile.exteriors_terrain.0272.0112",
     "terrain.river_water": "tile.exteriors_terrain.0448.0080",
@@ -315,15 +302,22 @@ def _read_sheets(root: Path, sheets: Iterable[SourceSheet]):
 
 def _write_tiles(output: Path, entries: list[tuple], source_records: list[dict]) -> list[dict]:
     pages, catalog = [], []
-    for atlas_key in ("terrain", "town", "office"):
+    for atlas_key in ("terrain", "town", "office", "interiors"):
         selected = [entry for entry in entries if entry[0] == atlas_key]
         width, height, columns = atlas_dimensions(len(selected))
         image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         for index, (_, source_id, source_x, source_y, tile) in enumerate(selected):
             image.paste(tile, ((index % columns) * TILE_SIZE, (index // columns) * TILE_SIZE))
+            source_row, source_col = source_y // TILE_SIZE, source_x // TILE_SIZE
+            asset_key = (
+                f"tile.{source_id}.r{source_row:04d}.c{source_col:02d}"
+                if source_id.startswith("interiors.")
+                else f"tile.{source_id}.{source_x:04d}.{source_y:04d}"
+            )
             catalog.append({
-                "asset_key": f"tile.{source_id}.{source_x:04d}.{source_y:04d}",
+                "asset_key": asset_key,
                 "atlas": atlas_key, "atlas_index": index, "source_id": source_id,
+                "source_col": source_col, "source_row": source_row,
                 "source_x": source_x, "source_y": source_y,
             })
         directory = output / "tiles"
@@ -359,9 +353,6 @@ def _write_tiles(output: Path, entries: list[tuple], source_records: list[dict])
 def _pack_props(records: list[tuple[PropSpec, Path, Image.Image]]):
     records = sorted(records, key=lambda record: record[0].asset_key)
     for width in (256, 512, 1024, 2048, 4096):
-        # Complete civic buildings can be wider than a small prop page.  Try
-        # the next bounded runtime page instead of treating a 256px page as a
-        # hard limit for every curated sprite.
         if any(image.width + 4 > width for _, _, image in records):
             continue
         x = y = row_height = 2
@@ -414,10 +405,13 @@ def _write_props(output: Path, root: Path, props: Iterable[PropSpec]) -> list[di
     return catalog
 
 
-def _contact_sheet(output: Path, root: Path, source_records: list[dict], prop_records: list[dict]) -> None:
+def _contact_sheet(output: Path, root: Path, source_records: list[dict],
+                   prop_records: list[dict]) -> None:
     font = ImageFont.load_default()
     cards = []
     for record in source_records:
+        if record.get("source_scope") == "project":
+            continue
         image = _open_png(_safe_source(root, record["relative_path"]))
         image.thumbnail((144, 96), Image.Resampling.NEAREST)
         cards.append((record["source_id"], image))
@@ -433,7 +427,7 @@ def _contact_sheet(output: Path, root: Path, source_records: list[dict], prop_re
     rows = math.ceil(len(cards) / columns)
     sheet = Image.new("RGBA", (columns * card_width, header + rows * card_height), (31, 38, 35, 255))
     draw = ImageDraw.Draw(sheet)
-    draw.text((12, 12), "Claudeville v2 - Modern Exteriors + Modern Office (native 16px)", fill=(236, 226, 195, 255), font=font)
+    draw.text((12, 12), "Claudeville v2 - licensed Modern Pixels (native 16px)", fill=(236, 226, 195, 255), font=font)
     for index, (label, image) in enumerate(cards):
         x = (index % columns) * card_width
         y = header + (index // columns) * card_height
@@ -445,8 +439,9 @@ def _contact_sheet(output: Path, root: Path, source_records: list[dict], prop_re
     _write_png(output / "contact_sheet.png", sheet)
 
 
-def curate_assets(source_root: Path = DEFAULT_SOURCE_ROOT, output_root: Path = DEFAULT_OUTPUT_ROOT) -> dict:
-    """Build reproducible Exteriors + Office v2 assets without copying vendor packs."""
+def curate_assets(source_root: Path = DEFAULT_SOURCE_ROOT,
+                  output_root: Path = DEFAULT_OUTPUT_ROOT) -> dict:
+    """Build reproducible native-16 v2 assets without copying vendor packs."""
     if PILLOW_VERSION != SUPPORTED_PILLOW_VERSION:
         raise CurationError(f"unsupported Pillow {PILLOW_VERSION}; expected {SUPPORTED_PILLOW_VERSION}")
     root = Path(source_root).expanduser().resolve(strict=True)
@@ -455,10 +450,13 @@ def curate_assets(source_root: Path = DEFAULT_SOURCE_ROOT, output_root: Path = D
         raise CurationError("source and output roots must be separate directories")
     output.mkdir(parents=True, exist_ok=True)
     entries, source_records = _read_sheets(root, SOURCE_SHEETS)
+    interior_entries, interior_records = modern_interiors_source.read_source_tiles()
+    entries.extend(interior_entries)
+    source_records.extend(interior_records)
     pages = _write_tiles(output, entries, source_records)
     prop_records = _write_props(output, root, PROP_SPECS)
     _write_json(output / "atlas.json", {
-        "atlases": pages, "mode": "exteriors-office-native-16", "schema_version": 2,
+        "atlases": pages, "mode": "exteriors-office-interiors-native-16", "schema_version": 2,
         "sources": source_records, "tile_catalog": "tiles.json", "tile_size": TILE_SIZE,
     })
     _write_json(output / "catalog.json", {
@@ -467,6 +465,9 @@ def curate_assets(source_root: Path = DEFAULT_SOURCE_ROOT, output_root: Path = D
     })
     licenses = []
     for name, details in PACKS.items():
+        if name == modern_interiors_source.PACK_NAME:
+            licenses.append(modern_interiors_source.credit_record())
+            continue
         path = root / details["license_file"]
         if not path.is_file():
             raise CurationError(f"license evidence is missing: {details['license_file']}")
@@ -488,7 +489,7 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     try:
         result = curate_assets(args.source_root, args.output_root)
-    except (OSError, CurationError) as exc:
+    except (OSError, CurationError, modern_interiors_source.ModernInteriorsSourceError) as exc:
         parser.error(str(exc))
     print(f"Curated {result['prop_count']} props into {result['output_root']}")
     return 0
