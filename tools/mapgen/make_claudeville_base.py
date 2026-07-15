@@ -38,9 +38,10 @@ MATRIX = (
 SCENARIOS = REPO_ROOT / "reverie/backend_server/scenarios"
 
 HOME_SECTOR = "Home 1"
-HOME_ARENA = "bedroom"
+HOME_ARENA = "home_1.bedroom"
 STANDUP_OLD = "Academia de Agentes:classroom"
-STANDUP_NEW = "Agent Academy:classroom"
+STANDUP_PREVIOUS = "Agent Academy:classroom"
+STANDUP_NEW = "Agent Academy:academy.classroom"
 
 # Deterministic seed day for created_day stamps on seeded goals (reproducible).
 SEED_DAY = "2023-02-13"
@@ -137,9 +138,10 @@ def write_persona(
     scratch["last_name"] = name.split()[-1]
     scratch["living_area"] = home
     if scratch.get("daily_plan_req"):
-        scratch["daily_plan_req"] = scratch["daily_plan_req"].replace(
-            STANDUP_OLD, STANDUP_NEW
-        )
+        for previous in (STANDUP_OLD, STANDUP_PREVIOUS):
+            scratch["daily_plan_req"] = scratch["daily_plan_req"].replace(
+                previous, STANDUP_NEW
+            )
 
     if ground:
         identity = persona_factory.build_scratch_identity(name, role, mission)

@@ -1,21 +1,21 @@
-32500, Claudeville, Bank, main, sp
-32501, Claudeville, Home 1, bedroom, sp
-32502, Claudeville, University, main, sp
-32503, Claudeville, Agent Academy, classroom, sp
-32504, Claudeville, Post Office, main, sp
-32505, Claudeville, Market, main, sp
-32506, Claudeville, Workshop, main, sp
-32507, Claudeville, Community Center, main, sp
-32508, Claudeville, Library, reading room, sp
-32509, Claudeville, Home 2, bedroom, sp
-32510, Claudeville, Home 3, bedroom, sp
-32511, Claudeville, Home 4, bedroom, sp
-32512, Claudeville, Home 5, bedroom, sp
-32513, Claudeville, Home 6, bedroom, sp
-32514, Claudeville, Town Hall, main, sp
-32515, Claudeville, Home 7, bedroom, sp
-32516, Claudeville, Home 8, bedroom, sp
-32517, Claudeville, Home 9, bedroom, sp
-32518, Claudeville, Home 10, bedroom, sp
-32519, Claudeville, Central Plaza, plaza, central-plaza
-32520, Claudeville, Claudeville Cafe, cafe, claudeville-cafe
+32500, Claudeville, Agent Academy, academy.reception, sp
+32501, Claudeville, Bank, bank.circulation, sp
+32502, Claudeville, Central Plaza, plaza, central-plaza
+32503, Claudeville, Claudeville Cafe, cafe.dining, claudeville-cafe
+32504, Claudeville, Community Center, community.lounge, sp
+32505, Claudeville, Home 1, home_1.bedroom, sp
+32506, Claudeville, Home 10, home_10.bedroom, sp
+32507, Claudeville, Home 2, home_2.main_room, sp
+32508, Claudeville, Home 3, home_3.main_room, sp
+32509, Claudeville, Home 4, home_4.main_room, sp
+32510, Claudeville, Home 5, home_5.bedroom, sp
+32511, Claudeville, Home 6, home_6.bedroom, sp
+32512, Claudeville, Home 7, home_7.bedroom, sp
+32513, Claudeville, Home 8, home_8.bedroom, sp
+32514, Claudeville, Home 9, home_9.bedroom, sp
+32515, Claudeville, Library, library.circulation, sp
+32516, Claudeville, Market, market.retail, sp
+32517, Claudeville, Post Office, post.sorting, sp
+32518, Claudeville, Town Hall, hall.public_service, sp
+32519, Claudeville, University, university.cafeteria, sp
+32520, Claudeville, Workshop, workshop.circulation, sp

@@ -133,9 +133,11 @@ class PathfindingBoundTests(unittest.TestCase):
     def test_long_real_maze_route_completes_end_to_end(self):
         """A near-diameter route on the real maze must reach its target."""
         start, end, diameter = _farthest_pair(self.grid)
-        # Sanity: this maze's diameter exceeds the old 150 cap, so this is a
-        # route the old code could not complete.
-        self.assertGreater(diameter, 150, "expected a route longer than old cap")
+        self.assertGreater(
+            diameter,
+            100,
+            "the real town must retain a substantial end-to-end route",
+        )
 
         pf = PathFinder(self.grid, _COLLISION_ID)
         path = pf.find_path(start, end)
@@ -148,10 +150,11 @@ class PathfindingBoundTests(unittest.TestCase):
         self.assertEqual(len(path), diameter + 1)
 
     def test_old_cap_would_have_truncated_this_route(self):
-        """Guard: prove the previous fixed cap=150 silently truncated it."""
-        start, end, diameter = _farthest_pair(self.grid)
-        self.assertGreater(diameter, 150)
-        reached_old = _legacy_find_path(self.grid, start, end, cap=150)
+        """Guard the old cap regression independently of town art topology."""
+        corridor_len = 200
+        grid = [["0"] * corridor_len]
+        start, end = (0, 0), (corridor_len - 1, 0)
+        reached_old = _legacy_find_path(grid, start, end, cap=150)
         self.assertFalse(
             reached_old, "old cap=150 should have failed to reach the target"
         )

@@ -1,5 +1,3 @@
-"""Compose Claudeville's interiors from licensed Modern Interiors assemblies."""
-
 from __future__ import annotations
 
 import argparse
@@ -10,92 +8,53 @@ from pathlib import Path
 from PIL import Image, ImageChops
 
 try:
+    import tools.mapgen.claudeville_exterior_cleanup as exterior_cleanup
+    import tools.mapgen.claudeville_purpose_layouts as purpose
     from tools.mapgen import modern_interiors_source, tiled_gid
+    from tools.mapgen.claudeville_entry_paths import apply_entry_paths
     from tools.mapgen.claudeville_interior_layouts import (
         BUILDING_BOUNDS,
         FLOOR_THEMES,
         HOME_FLOOR_THEMES,
         HOMES,
-        PUBLIC_STAMPS,
         SOURCE_TEMPLATES,
         Rect,
         Stamp,
     )
 except ModuleNotFoundError:  # Direct ``python tools/mapgen/compose_claudeville_interiors.py``.
+    import claudeville_exterior_cleanup as exterior_cleanup  # type: ignore[no-redef]
+    import claudeville_purpose_layouts as purpose  # type: ignore[no-redef]
     import modern_interiors_source  # type: ignore[no-redef]
     import tiled_gid  # type: ignore[no-redef]
+    from claudeville_entry_paths import apply_entry_paths  # type: ignore[no-redef]
     from claudeville_interior_layouts import (  # type: ignore[no-redef]
         BUILDING_BOUNDS,
         FLOOR_THEMES,
         HOME_FLOOR_THEMES,
         HOMES,
-        PUBLIC_STAMPS,
         SOURCE_TEMPLATES,
         Rect,
         Stamp,
     )
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 AUTHORING_ROOT = REPO_ROOT / "output/claudeville/modern_pixels_v2"
-SOURCE_MAP = (
-    REPO_ROOT
-    / "environment/frontend_server/static_dirs/assets/claudeville/visuals"
-    / "claudeville_full_town_v2.tmj"
-)
-OLD_MAP_ROOT = (
-    REPO_ROOT
-    / "environment/frontend_server/static_dirs/assets/the_ville/visuals"
-)
+SOURCE_MAP = REPO_ROOT / "environment/frontend_server/static_dirs/assets/claudeville/visuals/claudeville_full_town_v2.tmj"
+OLD_MAP_ROOT = REPO_ROOT / "environment/frontend_server/static_dirs/assets/the_ville/visuals"
 OLD_MAP = OLD_MAP_ROOT / "the_ville_jan7.json"
 WIDTH, HEIGHT = 176, 96
 FLIP_MASK = tiled_gid.GID_MASK
 HORIZONTAL_FLIP = tiled_gid.HORIZONTAL_FLIP
 INTERIORS_SOURCE = "../../../../../../output/claudeville/modern_pixels_v2/tiles/interiors.tsj"
 TILESET_ROOT = "../../../../../../output/claudeville/modern_pixels_v2/tiles"
-EXPECTED_TILESETS = (
-    (1, f"{TILESET_ROOT}/terrain.tsj"),
-    (5117, f"{TILESET_ROOT}/town.tsj"),
-    (37398, f"{TILESET_ROOT}/office.tsj"),
-    (38214, INTERIORS_SOURCE),
-)
-PUBLIC_LAYERS = (
-    "Interior Furniture L1",
-    "Interior Furniture L2 ",
-    "Foreground L1",
-    "Foreground L2",
-)
-HOME_LAYERS = (
-    "Interior Ground",
-    "Wall",
-    *PUBLIC_LAYERS,
-)
+EXPECTED_TILESETS = ((1, f"{TILESET_ROOT}/terrain.tsj"), (5117, f"{TILESET_ROOT}/town.tsj"), (37398, f"{TILESET_ROOT}/office.tsj"), (38214, INTERIORS_SOURCE))
+PUBLIC_LAYERS = ("Interior Furniture L1", "Interior Furniture L2 ", "Foreground L1", "Foreground L2")
+HOME_LAYERS = ("Interior Ground", "Wall", *PUBLIC_LAYERS)
 TARGET_LAYER = {"Interior Furniture L2 ": "Interior Furniture L2"}
-CLEARABLE_PROP_PREFIXES = ("prop.office.", "prop.cafe.", "prop.community.")
-OUTDOOR_PROP_PREFIXES = ("prop.landscape.", "prop.garden.", "prop.street.")
-KEEP_PROPS = {
-    "University": {
-        "prop.office.coffee_station",
-        "prop.office.computer_desk",
-        "prop.office.display_cabinet",
-        "prop.office.vending_machine",
-        "prop.office.whiteboard",
-    },
-    "Agent Academy": {
-        "prop.office.dual_monitors",
-        "prop.office.monitor_blue",
-        "prop.office.town_map",
-        "prop.office.training_station",
-        "prop.office.wall_chart",
-        "prop.office.water_cooler",
-        "prop.office.whiteboard",
-    },
-}
-PRESERVE_MIXED_PROPS = {"Workshop", "Post Office", "Town Hall"}
+ATLAS_FIRSTGIDS = {"terrain": 1, "town": 5117, "office": 37398, "interiors": 38214}
+PURPOSE_OBJECT_ID_BASE = 10000
+PURPOSE_ID_PREFIX = "claudeville-purpose/"
 
-
-class CompositionError(ValueError):
-    """Raised when a licensed source or map composition contract is invalid."""
-
+class CompositionError(ValueError): ...
 
 def _read_json(path: Path) -> dict:
     try:
@@ -106,7 +65,6 @@ def _read_json(path: Path) -> dict:
         raise CompositionError(f"JSON source root must be an object: {path}")
     return value
 
-
 def _write_json(path: Path, value: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.tmp")
@@ -116,7 +74,6 @@ def _write_json(path: Path, value: dict) -> None:
     )
     temporary.replace(path)
 
-
 def _properties(value: object) -> dict:
     if not isinstance(value, list):
         return {}
@@ -125,7 +82,6 @@ def _properties(value: object) -> dict:
         for item in value
         if isinstance(item, dict) and isinstance(item.get("name"), str)
     }
-
 
 def _inside(rect: Rect, x: int | float, y: int | float) -> bool:
     left, top, right, bottom = rect
@@ -142,7 +98,7 @@ def _layers(map_data: dict) -> dict[str, dict]:
     }
     required = {
         "Interior Ground", "Wall", "Interior Furniture L1", "Interior Furniture L2",
-        "Foreground L1", "Foreground L2", "Depth Props",
+        "Foreground L1", "Foreground L2", "Depth Props", "Collisions",
     }
     if not required <= result.keys():
         raise CompositionError("map is missing required interior layers")
@@ -172,6 +128,30 @@ def _tile_catalog() -> tuple[dict[str, int], int]:
     if len(lookup) != page["tile_count"]:
         raise CompositionError("curated Modern Interiors tile keys are incomplete")
     return lookup, page["tile_count"]
+
+
+def _atlas_tile_gids() -> dict[tuple[str, int, int], int]:
+    records = _read_json(AUTHORING_ROOT / "tiles.json").get("tiles")
+    if not isinstance(records, list):
+        raise CompositionError("curated tile catalog is malformed")
+    result: dict[tuple[str, int, int], int] = {}
+    for item in records:
+        if not isinstance(item, dict):
+            continue
+        atlas = item.get("atlas")
+        source_id = item.get("source_id")
+        row, column = item.get("source_row"), item.get("source_col")
+        atlas_index = item.get("atlas_index")
+        if (
+            atlas not in ATLAS_FIRSTGIDS
+            or not isinstance(source_id, str)
+            or not all(isinstance(value, int) for value in (row, column, atlas_index))
+        ):
+            continue
+        result[source_id, column, row] = ATLAS_FIRSTGIDS[atlas] + atlas_index
+    if not result:
+        raise CompositionError("curated tile source index is empty")
+    return result
 
 
 def _add_interiors_tileset(map_data: dict, tile_count: int) -> int:
@@ -286,7 +266,6 @@ def _old_gid_converter(old: dict, tile_keys: dict[str, int], firstgid: int):
         mapped = firstgid + atlas_index
         cache[base_gid] = (mapped, kind)
         return mapped | (raw_gid & tiled_gid.ORTHOGONAL_FLIP_MASK), kind
-
     return convert, split_images
 
 
@@ -311,12 +290,13 @@ def _retile_floors(
                 index = y * WIDTH + x
                 if not ground[index]:
                     continue
-                row = source_row + (y - top) % 2
-                column = source_column + (x - left) % 4
-                key = f"tile.interiors.room_builder.r{row:04}.c{column:02}"
+                key = (
+                    f"tile.interiors.room_builder.r{source_row:04}."
+                    f"c{source_column:02}"
+                )
                 atlas_index = tile_keys.get(key)
                 if atlas_index is None:
-                    raise CompositionError(f"floor motif tile is missing: {key}")
+                    raise CompositionError(f"floor tile is missing: {key}")
                 ground[index] = firstgid + atlas_index
                 changed += 1
     return changed
@@ -332,8 +312,20 @@ def _copy_stamp(
     source_layers: tuple[str, ...], convert, bounds: Rect, support: list[bool] | None,
     *, allow_room_builder: bool,
 ) -> int:
-    source_x, source_y, width, height = SOURCE_TEMPLATES[stamp.template]
-    destination_x, destination_y = stamp.destination
+    return _copy_legacy_rect(
+        old_layers, target_layers, SOURCE_TEMPLATES[stamp.template], stamp.destination,
+        source_layers, convert, bounds, support, allow_room_builder=allow_room_builder,
+        mirror_x=stamp.mirror_x,
+    )
+
+
+def _copy_legacy_rect(
+    old_layers: dict[str, dict], target_layers: dict[str, dict], source_rect: Rect,
+    destination: tuple[int, int], source_layers: tuple[str, ...], convert, bounds: Rect,
+    support: list[bool] | None, *, allow_room_builder: bool, mirror_x: bool = False,
+) -> int:
+    source_x, source_y, width, height = source_rect
+    destination_x, destination_y = destination
     added = 0
     for old_name in source_layers:
         target_name = TARGET_LAYER.get(old_name, old_name)
@@ -345,80 +337,118 @@ def _copy_stamp(
                 mapped = convert(raw_gid)
                 if mapped is None or (mapped[1] == "room_builder" and not allow_room_builder):
                     continue
-                target_x = destination_x + (width - 1 - offset_x if stamp.mirror_x else offset_x)
+                target_x = destination_x + (width - 1 - offset_x if mirror_x else offset_x)
                 target_y = destination_y + offset_y
                 if not _inside(bounds, target_x, target_y):
                     continue
                 index = target_y * WIDTH + target_x
                 if support is not None and not support[index]:
                     continue
-                gid = mapped[0] ^ (HORIZONTAL_FLIP if stamp.mirror_x else 0)
+                gid = mapped[0] ^ (HORIZONTAL_FLIP if mirror_x else 0)
                 target_data[index] = gid
                 added += 1
     return added
 
 
-def _clear_interior_props(layers: dict[str, dict], support: list[bool]) -> int:
+def _copy_atlas_stamp(
+    layers: dict[str, dict], stamp, gids: dict[tuple[str, int, int], int], bounds: Rect,
+) -> int:
+    source_x, source_y, width, height = stamp.source_rect
+    destination_x, destination_y = stamp.destination
+    target = layers.get(stamp.target_layer)
+    if not isinstance(target, dict) or not isinstance(target.get("data"), list):
+        raise CompositionError(f"invalid purpose target layer: {stamp.target_layer}")
+    added = 0
+    for offset_y in range(height):
+        for offset_x in range(width):
+            gid = gids.get((stamp.source_id, source_x + offset_x, source_y + offset_y))
+            x, y = destination_x + offset_x, destination_y + offset_y
+            if not gid or not _inside(bounds, x, y):
+                continue
+            index = y * WIDTH + x
+            if stamp.blocker_policy == "require-blocked" and not layers["Collisions"]["data"][index]:
+                raise CompositionError(f"purpose blocker must occupy collision at {x},{y}")
+            target["data"][index] = gid
+            added += 1
+    return added
+
+
+def _rebuild_purpose_props(map_data: dict, layers: dict[str, dict]) -> tuple[int, int]:
+    bounds = (*purpose.PUBLIC_BUILDING_BOUNDS.values(), *purpose.TERRACE_BOUNDS.values())
     objects = layers["Depth Props"]["objects"]
     retained = []
-    removed = 0
     for obj in objects:
-        x, y = obj.get("x", -1) / 16, obj.get("y", -1) / 16
-        key = _properties(obj.get("properties")).get("asset_key", "")
-        building = next(
-            (name for name, bounds in BUILDING_BOUNDS.items() if _inside(bounds, x, y)),
-            None,
-        )
-        clearable = isinstance(key, str) and key.startswith(CLEARABLE_PROP_PREFIXES)
-        keep = key in KEEP_PROPS.get(building, set()) or building in PRESERVE_MIXED_PROPS
-        cell_x, cell_y = int(x), int(y)
-        on_interior = 0 <= cell_x < WIDTH and 0 <= cell_y < HEIGHT and support[cell_y * WIDTH + cell_x]
-        outdoor_inside = (
-            isinstance(key, str)
-            and (key.startswith(OUTDOOR_PROP_PREFIXES) or key == "prop.post.truck")
-            and on_interior
-        )
-        if building and ((clearable and not keep) or outdoor_inside):
-            removed += 1
-        else:
-            retained.append(obj)
+        values = _properties(obj.get("properties"))
+        x, y = obj.get("x", -16) / 16, obj.get("y", -16) / 16
+        if str(values.get("purpose_id", "")).startswith(PURPOSE_ID_PREFIX) or any(
+            _inside(rect, x, y) for rect in bounds
+        ):
+            continue
+        retained.append(obj)
+    declared = sorted(
+        ((sector, item) for sector, items in purpose.PURPOSE_PROPS.items() for item in items),
+        key=lambda pair: (
+            pair[0], pair[1].visual_y, pair[1].visual_x, pair[1].asset_key,
+            pair[1].semantic_type, pair[1].zone,
+        ),
+    )
+    missing = sorted({item.asset_key for _sector, item in declared} - set(_read_json(AUTHORING_ROOT / "props.json").get("frames", {})))
+    if missing:
+        raise CompositionError(f"purpose prop assets are missing: {missing}")
+    if len(set(declared)) != len(declared):
+        raise CompositionError("purpose props must be unique")
+    for ordinal, (sector, item) in enumerate(declared):
+        object_id = PURPOSE_OBJECT_ID_BASE + ordinal
+        if object_id in {obj.get("id") for obj in retained}:
+            raise CompositionError(f"purpose object id is already used: {object_id}")
+        purpose_id = f"{PURPOSE_ID_PREFIX}{ordinal:03d}"
+        properties = [
+            {"name": name, "type": kind, "value": value} for name, kind, value in (
+                ("asset_key", "string", item.asset_key), ("anchor_x", "float", 0.5), ("anchor_y", "float", 1),
+                ("display_scale", "float", 1), ("sector", "string", sector), ("zone", "string", item.zone),
+                ("semantic_type", "string", item.semantic_type), ("blocks", "bool", item.blocks), ("purpose_id", "string", purpose_id),
+                ("depth_offset", "float", 0),
+            )
+        ]
+        retained.append({"id": object_id, "name": item.name or (item.semantic_type or "purpose prop").title(),
+                         "type": item.semantic_type or "purpose prop", "x": item.visual_x * 16, "y": item.visual_y * 16,
+                         "width": 0, "height": 0, "rotation": 0, "visible": True, "properties": properties})
     layers["Depth Props"]["objects"] = retained
-    return removed
+    map_data["nextobjectid"] = max(obj["id"] for obj in retained) + 1
+    return len(objects) - len(retained) + len(declared), len(declared)
 
 
 def compose(source: Path = SOURCE_MAP, output: Path | None = None) -> dict:
-    source = Path(source).expanduser().resolve(strict=True)
     output = Path(output or source).expanduser().resolve(strict=False)
-    map_data = _read_json(source)
+    map_data = _read_json(Path(source).expanduser().resolve(strict=True))
     if (map_data.get("width"), map_data.get("height"), map_data.get("tilewidth")) != (176, 96, 16):
         raise CompositionError("Claudeville authoring map must remain 176x96 at native 16px")
     layers = _layers(map_data)
     tile_keys, tile_count = _tile_catalog()
+    atlas_gids = _atlas_tile_gids()
     firstgid = _add_interiors_tileset(map_data, tile_count)
     old = _read_json(OLD_MAP)
     old_layers = {layer["name"]: layer for layer in old["layers"]}
     convert, split_images = _old_gid_converter(old, tile_keys, firstgid)
-    support = [
-        bool(ground or wall)
-        for ground, wall in zip(layers["Interior Ground"]["data"], layers["Wall"]["data"])
-    ]
-    stats: dict[str, int] = {
-        "retiled_floor_cells": _retile_floors(
-            layers, tile_keys, firstgid
-        )
-    }
+    support = [bool(ground or wall) for ground, wall in zip(layers["Interior Ground"]["data"], layers["Wall"]["data"])]
+    stats: dict[str, int] = {"retiled_floor_cells": _retile_floors(layers, tile_keys, firstgid)}
     try:
-        for building, stamps in PUBLIC_STAMPS.items():
-            bounds = BUILDING_BOUNDS[building]
-            _clear_rect(layers["Interior Furniture L1"], bounds)
-            _clear_rect(layers["Interior Furniture L2"], bounds)
-            stats[building] = sum(
-                _copy_stamp(
-                    old_layers, layers, stamp, PUBLIC_LAYERS, convert, bounds, support,
-                    allow_room_builder=False,
-                )
-                for stamp in stamps
-            )
+        for building, bounds in purpose.PUBLIC_BUILDING_BOUNDS.items():
+            for name in ("Interior Furniture L1", "Interior Furniture L2", *PUBLIC_LAYERS[2:]):
+                _clear_rect(layers[name], bounds)
+            stats[building] = len(purpose.PURPOSE_PROPS.get(building, ()))
+            for stamp in purpose.PURPOSE_STAMPS.get(building, ()):
+                if stamp.blocker_policy not in purpose.BLOCKER_POLICIES:
+                    raise CompositionError(f"invalid blocker policy: {stamp.blocker_policy}")
+                if stamp.source_id == "legacy_the_ville":
+                    if stamp.target_layer != "source-layers":
+                        raise CompositionError("legacy purpose stamps must use source-layers")
+                    stats[building] += _copy_legacy_rect(
+                        old_layers, layers, stamp.source_rect, stamp.destination,
+                        PUBLIC_LAYERS, convert, bounds, support, allow_room_builder=False,
+                    )
+                else:
+                    stats[building] += _copy_atlas_stamp(layers, stamp, atlas_gids, bounds)
         for home in HOMES:
             stamp_rect = _stamp_rect(home.stamp)
             for name in ("Interior Furniture L1", "Interior Furniture L2"):
@@ -429,17 +459,28 @@ def compose(source: Path = SOURCE_MAP, output: Path | None = None) -> dict:
                 old_layers, layers, home.stamp, HOME_LAYERS, convert, home.bounds, None,
                 allow_room_builder=True,
             )
+            for stamp in purpose.HOME_KITCHEN_STAMPS.get(home.name, ()):
+                rect = (*stamp.destination, stamp.destination[0] + stamp.source_rect[2],
+                        stamp.destination[1] + stamp.source_rect[3])
+                for name in PUBLIC_LAYERS:
+                    _clear_rect(layers[TARGET_LAYER.get(name, name)], rect)
+                if stamp.source_id != "legacy_the_ville" or stamp.target_layer != "source-layers":
+                    raise CompositionError("home kitchens must use restricted legacy furniture")
+                stats[home.name] += _copy_legacy_rect(
+                    old_layers, layers, stamp.source_rect, stamp.destination,
+                    PUBLIC_LAYERS, convert, home.bounds, None, allow_room_builder=False,
+                )
+        stats["entry_path_cells"] = apply_entry_paths(layers, atlas_gids, WIDTH)
     finally:
         for image in split_images.values():
             image.close()
-    final_support = [
-        bool(ground or wall)
-        for ground, wall in zip(
-            layers["Interior Ground"]["data"], layers["Wall"]["data"]
-        )
-    ]
-    stats["removed_legacy_props"] = _clear_interior_props(layers, final_support)
-    if any(stats.get(name, 0) < 12 for name in (*PUBLIC_STAMPS, *(home.name for home in HOMES))):
+    removed, added = _rebuild_purpose_props(map_data, layers)
+    stats.update({"removed_legacy_props": removed, "purpose_props": added})
+    stats.update(exterior_cleanup.apply_exterior_cleanup(
+        map_data, _read_json(AUTHORING_ROOT / "props.json").get("frames", {})
+    ))
+    names = (*purpose.PUBLIC_BUILDING_BOUNDS, *(home.name for home in HOMES))
+    if any(stats.get(name, 0) < 1 for name in names):
         raise CompositionError(f"one or more interiors were not populated: {stats}")
     if "modern_interiors_free" in json.dumps(map_data).casefold():
         raise CompositionError("Free Modern Interiors must never enter the runtime map")
@@ -447,13 +488,11 @@ def compose(source: Path = SOURCE_MAP, output: Path | None = None) -> dict:
     return stats
 
 
-def main() -> int:
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, default=SOURCE_MAP)
     parser.add_argument("--output", type=Path)
-    args = parser.parse_args()
-    print(json.dumps(compose(args.source, args.output), indent=2, sort_keys=True))
-    return 0
+    print(json.dumps(compose(**vars(parser.parse_args())), indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":

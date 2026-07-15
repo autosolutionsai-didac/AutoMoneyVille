@@ -74,6 +74,20 @@ def _tree_digest(root: Path) -> str:
     return digest.hexdigest()
 
 
+def _spatial_memory_from_spec(spec: dict) -> dict:
+    world = spec["world_name"]
+    memory = {world: {}}
+    for sector in spec["sectors"]:
+        memory[world].setdefault(sector["name"], {})
+    for arena in spec["arenas"]:
+        memory[world].setdefault(arena["sector"], {}).setdefault(arena["name"], [])
+    for obj in spec["objects"]:
+        objects = memory[world][obj["sector"]].setdefault(obj["arena"], [])
+        if obj["type"] not in objects:
+            objects.append(obj["type"])
+    return memory
+
+
 class ClaudevilleV2WorldTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -108,21 +122,37 @@ class ClaudevilleV2WorldTests(unittest.TestCase):
                 ("Central Plaza", "plaza", "fountain"),
                 ("Central Plaza", "plaza", "bench"),
                 ("Central Plaza", "plaza", "notice board"),
-                ("Claudeville Cafe", "cafe", "counter"),
-                ("Claudeville Cafe", "cafe", "table"),
-                ("Claudeville Cafe", "cafe", "seating"),
+                ("Claudeville Cafe", "cafe.service", "service counter"),
+                ("Claudeville Cafe", "cafe.dining", "dining table"),
+                ("Claudeville Cafe", "cafe.terrace", "terrace table"),
             }.issubset(objects)
         )
 
     def test_canonical_and_legacy_addresses_resolve_but_output_is_english(self):
-        canonical = "Claudeville:Bank:main:counter"
-        legacy = "Claudeville:Banco:main:counter"
-        self.assertEqual(self.maze.resolve_address(legacy), canonical)
-        self.assertEqual(
-            self.maze.address_tiles[legacy], self.maze.address_tiles[canonical]
-        )
-        self.assertNotIn(legacy, self.maze.address_tiles.keys())
+        cases = {
+            "Claudeville:Banco:main:counter": (
+                "Claudeville:Bank:bank.teller:teller counter"
+            ),
+            "Claudeville:Academia de Agentes:classroom:classroom student seating": (
+                "Claudeville:Agent Academy:academy.classroom:classroom seating"
+            ),
+            "Claudeville:Biblioteca:reading room:library table": (
+                "Claudeville:Library:library.reading:reading table"
+            ),
+            "Claudeville:Residencia 2:bedroom:bed": (
+                "Claudeville:Home 2:home_2.main_room"
+            ),
+        }
+        for legacy, canonical in cases.items():
+            with self.subTest(legacy=legacy):
+                self.assertEqual(self.maze.resolve_address(legacy), canonical)
+                self.assertEqual(
+                    self.maze.address_tiles[legacy],
+                    self.maze.address_tiles[canonical],
+                )
+                self.assertNotIn(legacy, self.maze.address_tiles.keys())
 
+        legacy, canonical = next(iter(cases.items()))
         tile = next(iter(self.maze.address_tiles[legacy]))
         self.assertEqual(self.maze.get_tile_path(tile, "game_object"), canonical)
 
@@ -241,9 +271,9 @@ class ClaudevilleV2WorldTests(unittest.TestCase):
                 "Claudeville:Central Plaza:plaza:fountain",
                 "Claudeville:Central Plaza:plaza:bench",
                 "Claudeville:Central Plaza:plaza:notice board",
-                "Claudeville:Claudeville Cafe:cafe:counter",
-                "Claudeville:Claudeville Cafe:cafe:table",
-                "Claudeville:Claudeville Cafe:cafe:seating",
+                "Claudeville:Claudeville Cafe:cafe.service:service counter",
+                "Claudeville:Claudeville Cafe:cafe.dining:dining table",
+                "Claudeville:Claudeville Cafe:cafe.terrace:terrace table",
             }
         )
         for address in required:
@@ -270,6 +300,19 @@ class ClaudevilleV2WorldTests(unittest.TestCase):
                 (boot / "spatial_memory.json").read_text(encoding="utf-8")
             )
             self.assertEqual(set(spatial["Claudeville"]), CANONICAL_SECTORS)
+            self.assertEqual(
+                spatial,
+                _spatial_memory_from_spec(self.spec),
+                "active spatial memory must mirror the current semantic map",
+            )
+            self.assertEqual(
+                scratch.get("living_area"),
+                "Claudeville:Home 1:home_1.bedroom",
+            )
+            self.assertIn(
+                "Agent Academy:academy.classroom",
+                scratch.get("daily_plan_req", ""),
+            )
             references = json.dumps(
                 {
                     "living_area": scratch.get("living_area"),

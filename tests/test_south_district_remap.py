@@ -32,9 +32,11 @@ class SouthDistrictTests(unittest.TestCase):
         for arena in spec["arenas"]:
             if arena["sector"] not in EXPECTED:
                 continue
-            x0, y0, x1, y1 = arena["rect"]
-            self.assertTrue(inside(sectors[arena["sector"]], (x0, y0)))
-            self.assertTrue(inside(sectors[arena["sector"]], (x1, y1)))
+            rects = arena.get("rects", [arena.get("rect")])
+            self.assertTrue(all(rect is not None for rect in rects))
+            for x0, y0, x1, y1 in rects:
+                self.assertTrue(inside(sectors[arena["sector"]], (x0, y0)))
+                self.assertTrue(inside(sectors[arena["sector"]], (x1, y1)))
         for collection, key in ((spec["objects"], "tiles"), (spec["spawns"], "tile")):
             for item in collection:
                 if item["sector"] not in EXPECTED:

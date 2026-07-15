@@ -136,11 +136,17 @@ def main() -> None:
             fails.append(f"spawn {sp['name']} @ {sp['tile']} is on a wall tile")
     # each arena must contain >=1 walkable floor tile (else it is fully walled/furnished)
     for a in spec.get("arenas", []):
-        x0, y0, x1, y1 = a["rect"]
+        rects = a.get("rects")
+        if rects is None and "rect" in a:
+            rects = [a["rect"]]
+        if not isinstance(rects, list) or not rects:
+            fails.append(f"arena {a.get('sector')}:{a.get('name')} has no rectangles")
+            continue
         floor = sum(
             1
-            for yy in range(y0, y1 + 1)
-            for xx in range(x0, x1 + 1)
+            for rect in rects
+            for yy in range(rect[1], rect[3] + 1)
+            for xx in range(rect[0], rect[2] + 1)
             if not on_wall(xx, yy)
         )
         if floor == 0:
