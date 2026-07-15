@@ -14,7 +14,12 @@ from tools.mapgen import curate_modern_pixels_v2, modern_interiors_source
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ASSET_ROOT = REPO_ROOT / "environment/frontend_server/static_dirs/assets/claudeville"
 AUTHORING_CACHE = curate_modern_pixels_v2.DEFAULT_OUTPUT_ROOT
-APPROVED_ROOT = ASSET_ROOT / "visual_candidates/browser-full-town-interiors-v8"
+ACTIVE_WORLD = json.loads((ASSET_ROOT / "world.json").read_text(encoding="utf-8"))
+APPROVED_ROOT = (
+    REPO_ROOT
+    / "environment/frontend_server/static_dirs"
+    / Path(ACTIVE_WORLD["tilemap_url"]).parent
+)
 
 
 class ModernPixelsV2CurationTests(unittest.TestCase):
@@ -70,7 +75,7 @@ class ModernPixelsV2CurationTests(unittest.TestCase):
             (APPROVED_ROOT / "runtime/runtime_manifest.json").read_text(encoding="utf-8")
         )
         credits = json.loads((APPROVED_ROOT / "runtime/credits.json").read_text(encoding="utf-8"))
-        world = json.loads((ASSET_ROOT / "world.json").read_text(encoding="utf-8"))
+        world = ACTIVE_WORLD
         runtime_tile_count = sum(page["tile_count"] for page in manifest["tilesets"])
         self.assertEqual(runtime_tile_count, len(manifest["tile_asset_remap"]))
         self.assertLess(runtime_tile_count, 4096)
@@ -82,7 +87,7 @@ class ModernPixelsV2CurationTests(unittest.TestCase):
         self.assertNotIn("free", json.dumps(credits).lower())
         self.assertEqual(
             world["credits_url"],
-            "assets/claudeville/visual_candidates/browser-full-town-interiors-v8/runtime/credits.json",
+            f"{Path(world['tilemap_url']).parent.as_posix()}/runtime/credits.json",
         )
         for page in manifest["tilesets"]:
             with Image.open(APPROVED_ROOT / "runtime" / page["image"]) as image:

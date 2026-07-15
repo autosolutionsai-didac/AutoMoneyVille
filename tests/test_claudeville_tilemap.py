@@ -16,7 +16,6 @@ from tools.mapgen import build_tilemap, curate_modern_pixels_v2
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ASSET_ROOT = REPO_ROOT / "environment/frontend_server/static_dirs/assets/claudeville"
 AUTHORING_ROOT = build_tilemap.AUTHORING_ROOT
-APPROVED_ROOT = ASSET_ROOT / "visual_candidates/browser-full-town-interiors-v8"
 SOURCE_MAP = build_tilemap.AUTHORING_MAP
 COLLISION = ASSET_ROOT / "matrix/maze/collision_maze.csv"
 SPEC = REPO_ROOT / "tools/mapgen/town_spec.json"
@@ -24,6 +23,14 @@ SPEC = REPO_ROOT / "tools/mapgen/town_spec.json"
 
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+ACTIVE_WORLD = load_json(ASSET_ROOT / "world.json")
+APPROVED_ROOT = (
+    REPO_ROOT
+    / "environment/frontend_server/static_dirs"
+    / Path(ACTIVE_WORLD["tilemap_url"]).parent
+)
 
 
 class HandAuthoredClaudevilleTests(unittest.TestCase):
