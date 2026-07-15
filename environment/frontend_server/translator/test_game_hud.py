@@ -9,6 +9,7 @@ TEMPLATES = ROOT / "templates/home"
 STATIC = ROOT / "static_dirs"
 HUD_HARNESS = Path(__file__).with_name("js_tests") / "hud_drawers_harness.js"
 DEPTH_HARNESS = Path(__file__).with_name("js_tests") / "demo_depth_harness.js"
+CAMERA_HARNESS = Path(__file__).with_name("js_tests") / "world_camera_harness.js"
 
 
 class GameHudContractTests(SimpleTestCase):
@@ -82,6 +83,24 @@ class GameHudContractTests(SimpleTestCase):
                 str(HUD_HARNESS),
                 str(STATIC / "js/hud_drawers.js"),
                 str(STATIC / "js/replay_mode_guard.js"),
+            ],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
+        self.assertEqual(json.loads(result.stdout), {"ok": True})
+
+    def test_finite_world_camera_centers_only_oversized_axes(self):
+        home = (TEMPLATES / "home.html").read_text(encoding="utf-8")
+        self.assertLess(home.index("js/world_camera.js"), home.index("main_script.html"))
+        result = subprocess.run(
+            [
+                "node",
+                str(CAMERA_HARNESS),
+                str(STATIC / "js/world_camera.js"),
+                str(TEMPLATES / "main_phaser_controls.html"),
             ],
             cwd=ROOT,
             check=False,

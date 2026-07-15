@@ -55,7 +55,8 @@ async function saveGame() {
 		if (!MODE_GUARD.canMutate())
 ClaudevilleWorld.queueWorld ClaudevilleWorld.createWorld
 worldManifest.resident_manifest_url ClaudevilleAddresses.displayAddress
-ClaudevilleWorld.zoomCameraAtPointer(camera, pointer, zoomLevel);
+compatibility: ClaudevilleWorld.zoomCameraAtPointer(camera, pointer, zoomLevel);
+ClaudevilleCamera.zoomCameraAtPointer(camera, pointer, zoomLevel, mapBounds);
 if (!IS_REPLAY && !localStorage Replay · frozen step
 ClaudevilleHUD?.blocksCameraInput
 current_action__ target_address__

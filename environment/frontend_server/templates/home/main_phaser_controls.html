@@ -51,7 +51,7 @@
 	    const viewportHeight = Math.round(mapBounds.height * zoomLevel);
 	    if (viewportWidth > fullWidth || viewportHeight > fullHeight) {
 	      camera.setViewport(0, 0, fullWidth, fullHeight);
-	      camera.setBounds(0, 0, mapBounds.width, mapBounds.height);
+	      ClaudevilleCamera.constrainFiniteWorld(camera, mapBounds);
 	      camera.centerOn(mapBounds.width / 2, mapBounds.height / 2);
 	      const container = document.getElementById('game-container');
 	      container?.style.setProperty('--world-letterbox-x', '0px');
@@ -71,7 +71,7 @@
 	    const fullWidth = this.scale.gameSize.width;
 	    const fullHeight = this.scale.gameSize.height;
 	    camera.setViewport(0, 0, fullWidth, fullHeight);
-	    camera.setBounds(0, 0, mapBounds.width, mapBounds.height);
+	    ClaudevilleCamera.constrainFiniteWorld(camera, mapBounds);
 	    const container = document.getElementById('game-container');
 	    container?.style.setProperty('--world-letterbox-x', '0px');
 	    container?.style.setProperty('--world-letterbox-y', '0px');
@@ -131,7 +131,7 @@
 	    } else if (deltaY > 0) {
 	      zoomLevel = Math.max(zoomMin, zoomLevel - zoomStep);
 	    }
-	    ClaudevilleWorld.zoomCameraAtPointer(camera, pointer, zoomLevel);
+	    ClaudevilleCamera.zoomCameraAtPointer(camera, pointer, zoomLevel, mapBounds);
 
 	    const zoomIndicator = document.getElementById('zoom-indicator');
 	    if (zoomIndicator) {

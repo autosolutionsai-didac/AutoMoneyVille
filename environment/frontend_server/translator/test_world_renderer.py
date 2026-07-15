@@ -292,9 +292,12 @@ class WorldRendererTemplateTests(SimpleTestCase):
             )
         )
         self.assertEqual(
-            output["translated"], "walking @Claudeville:Town Hall:main"
+            output["translated"],
+            "walking @Claudeville:Town Hall:hall.public_service",
         )
-        self.assertEqual(output["display"], "Bank \u203a main \u203a counter")
+        self.assertEqual(
+            output["display"], "Bank \u203a bank.teller \u203a teller counter"
+        )
         self.assertEqual(
             output["historical"], "walking @Claudeville:Oficina de Gobierno:main"
         )
