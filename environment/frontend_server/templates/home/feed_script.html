@@ -14,10 +14,7 @@
 
 	let afterId = 0;
 	let activeFilter = 'all';
-	let collapsed = false;
-
 	const list = document.getElementById('feed-list');
-	const feedPanel = document.getElementById('event-feed');
 
 	function addRow(category, type, simTime, text, tile, personas) {
 		const row = document.createElement('div');
@@ -86,13 +83,9 @@
 		});
 	});
 
-	document.getElementById('feed-collapse').addEventListener('click', function () {
-		collapsed = !collapsed;
-		feedPanel.classList.toggle('collapsed', collapsed);
-		this.textContent = collapsed ? '▶' : '◀';
-	});
-
-	pollFeed();
-	setInterval(pollFeed, POLL_MS);
+	if (!IS_REPLAY) {
+		pollFeed();
+		setInterval(pollFeed, POLL_MS);
+	}
 })();
 </script>

@@ -1,0 +1,14 @@
+{
+  "iris morgan": {
+    "name": "Iris Morgan",
+    "familiarity": 1,
+    "affinity": 0.3,
+    "sentiment": "friendly",
+    "last_topics": [],
+    "beliefs": [
+      "hands them the validated pain to package"
+    ],
+    "last_interaction": null,
+    "times_talked": 0
+  }
+}

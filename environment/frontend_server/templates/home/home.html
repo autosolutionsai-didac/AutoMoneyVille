@@ -1,9 +1,15 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/game_hud.css' %}?v=3">
+{% endblock extra_head %}
+
 {% block content %}
 <!-- Game fills entire screen -->
 <div id="game-container"></div>
+<div id="location-pill" class="ui-overlay location-pill hidden" role="status"
+  aria-live="polite"></div>
 
 <!-- Hidden data elements for JavaScript (single source — main_script reads these) -->
 <div id="step" class="hidden-data">{{step}}</div>
@@ -16,16 +22,13 @@
   {% endfor %}
 </div>
 
-<!-- Replay badge (shown by main_script when mode=replay) -->
-<div id="replay-badge" class="ui-overlay replay-badge hidden">REPLAY — recorded run (frozen; use /demo/ for smooth playback)</div>
-
 <!-- First-run hint (dismissed once, remembered in localStorage) -->
 <div id="first-run-hint" class="ui-overlay first-run-hint hidden">
   <div class="hint-title">Welcome to Claudeville</div>
   <div class="hint-body">
     Press <strong>▶ Play</strong> to wake the town — the first step calls Claude for every persona (~1-2 min).<br>
     Drag to pan · wheel to zoom · click a persona for their mind · <strong>Space</strong> play/pause · <strong>ESC</strong> menu.<br>
-    When an agent needs your approval, the Town Center panel (bottom-left) will summon you.
+    When an agent needs your approval, open the Town Center chip at the lower-left edge.
   </div>
   <button id="first-run-dismiss" class="town-action approve">Got it</button>
 </div>
@@ -36,16 +39,16 @@
     <span id="game-time-content">{{ initial_curr_time|default:"--:--" }}</span>
   </div>
   <div class="control-buttons">
-    <button id="play_button" class="control-btn" title="Play">
+    <button id="play_button" class="control-btn" title="Play" data-live-mutation>
       <span class="icon">▶</span>
     </button>
     <button id="pause_button" class="control-btn" title="Pause">
       <span class="icon">⏸</span>
     </button>
-    <button id="skip_button" class="control-btn" title="Skip to next action">
+    <button id="skip_button" class="control-btn" title="Skip to next action" data-live-mutation>
       <span class="icon">⏭</span>
     </button>
-    <button id="follow_button" class="control-btn active" title="Auto-follow the active persona">
+    <button id="follow_button" class="control-btn" title="Follow the selected persona">
       <span class="icon">🎥</span>
     </button>
   </div>
@@ -56,21 +59,27 @@
   </div>
   <div class="zoom-display">
     <span>Zoom:</span>
-    <span id="zoom-indicator">100%</span>
+    <span id="zoom-indicator">80%</span>
+  </div>
+  <div id="sim-status" class="sim-status" role="status" aria-live="polite">
+    <span id="sim-status-text">Ready</span>
+    <div id="sim-progress" class="sim-progress-bar"></div>
   </div>
 </div>
 
 <!-- Persona Panel - Collapsible Side Panel -->
-<div id="persona-panel" class="ui-overlay side-panel">
+<div id="persona-panel" class="ui-overlay side-panel collapsed" data-hud-drawer="personas">
   <div class="panel-header">
     <span>Personas</span>
-    <button id="toggle-panel" class="toggle-btn">▶</button>
+    <button id="toggle-panel" class="toggle-btn" type="button"
+      aria-controls="persona-panel" aria-expanded="false" aria-label="Open personas">▶</button>
   </div>
-  <div class="panel-content">
+  <div id="persona-panel-content" class="panel-content" inert aria-hidden="true">
     {% for p_name, p_name_os in persona_names %}
     <div class="persona-card" id="card__{{ p_name_os }}" data-persona-name="{{ p_name }}">
       <div class="persona-avatar">
-        <img src="{% static 'assets/characters/' %}{{ p_name_os }}.png"
+        <img data-character-portrait="{{ p_name }}"
+             src="{% static 'assets/characters/profile/' %}{{ p_name_os }}.png"
              onerror="this.src='{% static 'img/atlas.png' %}';">
       </div>
       <div class="persona-info">
@@ -90,18 +99,19 @@
 </div>
 
 <!-- Event Feed (filled by feed_script.html) -->
-<div id="event-feed" class="ui-overlay event-feed">
+<div id="event-feed" class="ui-overlay event-feed collapsed" data-hud-drawer="events">
   <div class="feed-header">
     <span>Events</span>
-    <div class="feed-filters">
+    <div id="event-feed-filters" class="feed-filters" inert aria-hidden="true">
       <button class="feed-filter active" data-filter="all">All</button>
       <button class="feed-filter" data-filter="chat">Chats</button>
       <button class="feed-filter" data-filter="economy">Economy</button>
       <button class="feed-filter" data-filter="sim">Sim</button>
     </div>
-    <button id="feed-collapse" class="toggle-btn" title="Collapse">◀</button>
+    <button id="feed-collapse" class="toggle-btn" type="button"
+      aria-controls="event-feed" aria-expanded="false" aria-label="Open events">◀</button>
   </div>
-  <div id="feed-list" class="feed-list"></div>
+  <div id="feed-list" class="feed-list" inert aria-hidden="true"></div>
 </div>
 
 <!-- Agent Inspector Drawer (filled by inspector_script.html) -->
@@ -116,6 +126,7 @@
     <button id="inspector-close" class="toggle-btn" title="Close">✕</button>
   </div>
   <div class="inspector-body">
+    <div id="inspector-state-scope" class="inspector-section inspector-subtext"></div>
     <div class="inspector-section">
       <div class="inspector-section-title">Now</div>
       <div id="inspector-action" class="inspector-text">--</div>
@@ -140,14 +151,11 @@
   </div>
 </div>
 
-<!-- Simulation Status Indicator -->
-<div id="sim-status" class="ui-overlay sim-status">
-  <span id="sim-status-text">Ready</span>
-  <div id="sim-progress" class="sim-progress-bar"></div>
-</div>
-
 <!-- Runtime Status Panel -->
-<div id="runtime-status-panel" class="ui-overlay runtime-status">
+<button id="runtime-status-toggle" class="ui-overlay hud-edge-chip runtime-chip" type="button"
+  data-live-panel-toggle aria-controls="runtime-status-panel" aria-expanded="false">Runtime</button>
+<div id="runtime-status-panel" class="ui-overlay runtime-status hud-secondary-drawer"
+  data-live-panel data-hud-drawer="runtime" aria-hidden="true" hidden inert>
   <div class="runtime-status-title">Runtime</div>
   <div class="runtime-row">
     <span>Playback</span>
@@ -176,7 +184,10 @@
 </div>
 
 <!-- Town Center Panel -->
-<div id="town-center-panel" class="ui-overlay town-center">
+<button id="town-center-toggle" class="ui-overlay hud-edge-chip town-chip" type="button"
+  data-live-panel-toggle aria-controls="town-center-panel" aria-expanded="false">Town Center</button>
+<div id="town-center-panel" class="ui-overlay town-center hud-secondary-drawer"
+  data-live-panel data-hud-drawer="town" aria-hidden="true" hidden inert>
   <div class="town-center-title">Town Center</div>
   <div class="town-center-objective" id="town-center-objective">Loading scenario...</div>
   <div class="town-row">
@@ -211,10 +222,10 @@
     <textarea id="town-review-note" class="town-delivery-input town-review-note"
       placeholder="Reviewer note (agents read this — say WHY)" rows="2"></textarea>
     <div class="town-approval-actions">
-      <button id="town-approve-request" class="town-action approve" title="Approve and execute">Approve ▶</button>
-      <button id="town-reject-request" class="town-action reject" title="Reject request">Reject</button>
-      <button id="town-complete-request" class="town-action complete" title="Mark completed">Done</button>
-      <button id="town-fail-request" class="town-action fail" title="Mark failed">Fail</button>
+      <button id="town-approve-request" class="town-action approve" title="Approve and execute" data-live-mutation>Approve ▶</button>
+      <button id="town-reject-request" class="town-action reject" title="Reject request" data-live-mutation>Reject</button>
+      <button id="town-complete-request" class="town-action complete" title="Mark completed" data-live-mutation>Done</button>
+      <button id="town-fail-request" class="town-action fail" title="Mark failed" data-live-mutation>Fail</button>
     </div>
   </div>
   <div class="town-center-latest" id="town-latest-request">No requests yet</div>
@@ -229,7 +240,7 @@
     </select>
     <input id="town-delivery-amount" class="town-delivery-input" type="number" min="0" step="0.01" placeholder="Revenue (USD, e.g. 42.00)">
     <input id="town-delivery-evidence" class="town-delivery-input" type="text" placeholder="Evidence (invoice #, payment ref)">
-    <button id="town-record-delivery" class="town-action approve" title="Credit confirmed revenue">Record delivery</button>
+    <button id="town-record-delivery" class="town-action approve" title="Credit confirmed revenue" data-live-mutation>Record delivery</button>
     <div class="town-delivery-status" id="town-delivery-status"></div>
   </div>
 </div>
@@ -256,7 +267,7 @@
       <p id="menu-sim-info">--</p>
     </div>
     <div class="menu-buttons">
-      <button id="menu-save-btn" class="menu-btn">Save Game</button>
+      <button id="menu-save-btn" class="menu-btn" data-live-mutation>Save Game</button>
       <button id="menu-resume-btn" class="menu-btn primary">Resume</button>
     </div>
     <div class="menu-section">
@@ -270,6 +281,13 @@
 </div>
 
 <script src='https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js'></script>
+<script src="{% static 'js/world_addresses.js' %}"></script>
+<script src="{% static 'js/world_renderer.js' %}?v=2"></script>
+<script src="{% static 'js/character_renderer.js' %}?v=2"></script>
+<script src="{% static 'js/inspector_state.js' %}"></script>
+<script src="{% static 'js/inspector_controller.js' %}"></script>
+<script src="{% static 'js/replay_mode_guard.js' %}"></script>
+<script src="{% static 'js/hud_drawers.js' %}?v=3"></script>
 {% include 'home/main_script.html' %}
 {% include 'home/inspector_script.html' %}
 {% include 'home/feed_script.html' %}

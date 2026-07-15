@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "asset_pack": "existing-96x128-sheets",
+  "rendering": {"texture_filter": "nearest"},
+  "active_residents": [
+    "Nora Vale",
+    "Milo Chen",
+    "Iris Morgan",
+    "Theo Grant",
+    "Lena Ortiz",
+    "Ravi Singh",
+    "June Park",
+    "Amara Cole",
+    "Felix Reed",
+    "Sofia Lane"
+  ],
+  "generation": {
+    "default_activation": false,
+    "required_full_pack": "Modern Interiors (paid)",
+    "free_pack_allowed": false
+  },
+  "residents": [
+    {
+      "name": "Nora Vale",
+      "texture_key": "Nora_Vale",
+      "sprite_url": "assets/characters/Nora_Vale.png",
+      "portrait_url": "assets/characters/profile/Nora_Vale.png",
+      "source": "fallback",
+      "sheet": {"width": 96, "height": 128},
+      "frame": {"width": 32, "height": 32},
+      "scale": 1.25,
+      "origin": {"x": 0.5, "y": 1},
+      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "animations": {
+        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
+        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "actions": {}
+      }
+    },
+    {
+      "name": "Milo Chen",
+      "texture_key": "Milo_Chen",
+      "sprite_url": "assets/characters/Milo_Chen.png",
+      "portrait_url": "assets/characters/profile/Milo_Chen.png",
+      "source": "fallback",
+      "sheet": {"width": 96, "height": 128},
+      "frame": {"width": 32, "height": 32},
+      "scale": 1.25,
+      "origin": {"x": 0.5, "y": 1},
+      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "animations": {
+        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
+        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "actions": {}
+      }
+    },
+    {
+      "name": "Iris Morgan",
+      "texture_key": "Iris_Morgan",
+      "sprite_url": "assets/characters/Iris_Morgan.png",
+      "portrait_url": "assets/characters/profile/Iris_Morgan.png",
+      "source": "fallback",
+      "sheet": {"width": 96, "height": 128},
+      "frame": {"width": 32, "height": 32},
+      "scale": 1.25,
+      "origin": {"x": 0.5, "y": 1},
+      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "animations": {
+        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
+        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "actions": {}
+      }
+    },
+    {
+      "name": "Theo Grant",
+      "texture_key": "Theo_Grant",
+      "sprite_url": "assets/characters/Theo_Grant.png",
+      "portrait_url": "assets/characters/profile/Theo_Grant.png",
+      "source": "fallback",
+      "sheet": {"width": 96, "height": 128},
+      "frame": {"width": 32, "height": 32},
+      "scale": 1.25,
+      "origin": {"x": 0.5, "y": 1},
+      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "animations": {
+        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
+        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "actions": {}
+      }
+    },
+    {
+      "name": "Lena Ortiz",
+      "texture_key": "Lena_Ortiz",
+      "sprite_url": "assets/characters/Lena_Ortiz.png",
+      "portrait_url": "assets/characters/profile/Lena_Ortiz.png",
+      "source": "fallback",
+      "sheet": {"width": 96, "height": 128},
+      "frame": {"width": 32, "height": 32},
+      "scale": 1.25,
+      "origin": {"x": 0.5, "y": 1},
+      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "animations": {
+        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
+        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "actions": {}
+      }
+    },
+    {
+      "name": "Ravi Singh",
+      "texture_key": "Ravi_Singh",
+      "sprite_url": "assets/characters/Ravi_Singh.png",
+      "portrait_url": "assets/characters/profile/Ravi_Singh.png",
+      "source": "fallback",
+      "sheet": {"width": 96, "height": 128},
+      "frame": {"width": 32, "height": 32},
+      "scale": 1.25,
+      "origin": {"x": 0.5, "y": 1},
+      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "animations": {
+        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
+        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "actions": {}
+      }
+    },
+    {
+      "name": "June Park",
+      "texture_key": "June_Park",
+      "sprite_url": "assets/characters/June_Park.png",
+      "portrait_url": "assets/characters/profile/June_Park.png",
+      "source": "fallback",
+      "sheet": {"width": 96, "height": 128},
+      "frame": {"width": 32, "height": 32},
+      "scale": 1.25,
+      "origin": {"x": 0.5, "y": 1},
+      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "animations": {
+        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
+        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "actions": {}
+      }
+    },
+    {
+      "name": "Amara Cole",
+      "texture_key": "Amara_Cole",
+      "sprite_url": "assets/characters/Amara_Cole.png",
+      "portrait_url": "assets/characters/profile/Amara_Cole.png",
+      "source": "fallback",
+      "sheet": {"width": 96, "height": 128},
+      "frame": {"width": 32, "height": 32},
+      "scale": 1.25,
+      "origin": {"x": 0.5, "y": 1},
+      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "animations": {
+        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
+        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "actions": {}
+      }
+    },
+    {
+      "name": "Felix Reed",
+      "texture_key": "Felix_Reed",
+      "sprite_url": "assets/characters/Felix_Reed.png",
+      "portrait_url": "assets/characters/profile/Felix_Reed.png",
+      "source": "fallback",
+      "sheet": {"width": 96, "height": 128},
+      "frame": {"width": 32, "height": 32},
+      "scale": 1.25,
+      "origin": {"x": 0.5, "y": 1},
+      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "animations": {
+        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
+        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "actions": {}
+      }
+    },
+    {
+      "name": "Sofia Lane",
+      "texture_key": "Sofia_Lane",
+      "sprite_url": "assets/characters/Sofia_Lane.png",
+      "portrait_url": "assets/characters/profile/Sofia_Lane.png",
+      "source": "fallback",
+      "sheet": {"width": 96, "height": 128},
+      "frame": {"width": 32, "height": 32},
+      "scale": 1.25,
+      "origin": {"x": 0.5, "y": 1},
+      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "animations": {
+        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
+        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "actions": {}
+      }
+    }
+  ]
+}

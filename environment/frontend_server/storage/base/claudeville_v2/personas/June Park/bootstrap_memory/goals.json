@@ -1,0 +1,44 @@
+{
+  "next_id": 4,
+  "goals": {
+    "g1": {
+      "id": "g1",
+      "text": "Keep tasks and handoffs flowing between teammates",
+      "kind": "goal",
+      "status": "active",
+      "progress": 0.0,
+      "created_day": "2023-02-13",
+      "target_day": null,
+      "source": "persona seed",
+      "notes": [],
+      "sub_goals": [],
+      "last_updated": null
+    },
+    "g2": {
+      "id": "g2",
+      "text": "Surface and clear blockers before they spread",
+      "kind": "project",
+      "status": "active",
+      "progress": 0.0,
+      "created_day": "2023-02-13",
+      "target_day": null,
+      "source": "persona seed",
+      "notes": [],
+      "sub_goals": [],
+      "last_updated": null
+    },
+    "g3": {
+      "id": "g3",
+      "text": "Mission: Coordinate tasks, dependencies, and team handoffs.",
+      "kind": "goal",
+      "status": "active",
+      "progress": 0.0,
+      "created_day": "2023-02-13",
+      "target_day": null,
+      "source": "persona seed",
+      "notes": [],
+      "sub_goals": [],
+      "last_updated": null
+    }
+  }
+}

@@ -1,0 +1,394 @@
+
+{% load static %}
+	function updateTownCenterPanel(snapshot) {
+		const objective = document.getElementById('town-center-objective');
+		const points = document.getElementById('town-points-content');
+		const revenue = document.getElementById('town-revenue-content');
+		const requests = document.getElementById('town-requests-content');
+		const approvals = document.getElementById('town-approvals-content');
+		const latest = document.getElementById('town-latest-request');
+		const approvalTitle = document.getElementById('town-approval-title');
+		const approvalMeta = document.getElementById('town-approval-meta');
+
+		const score = snapshot?.team_score || {};
+		const requestList = snapshot?.requests || [];
+		const approvalQueue = sortedApprovalQueue(snapshot?.approval_queue || []);
+		const latestRequest = requestList[requestList.length - 1];
+
+		// Sticky selection: keep the operator's chosen request while it is still
+		// pending; otherwise fall back to the top of the (risk-sorted) queue.
+		let activeApproval =
+			approvalQueue.find(r => r.id === selectedTownCenterRequestId) || null;
+		if (!activeApproval) {
+			activeApproval = approvalQueue[0] || null;
+			selectedTownCenterRequestId = activeApproval?.id || null;
+		}
+
+		if (objective) objective.textContent = snapshot?.scenario?.objective || 'Scenario unavailable';
+		if (points) points.textContent = score.points ?? 0;
+		if (revenue) revenue.textContent = formatRevenue(score.revenue_cents);
+		if (requests) requests.textContent = requestList.length;
+		if (approvals) approvals.textContent = snapshot?.pending_approval_count ?? 0;
+		if (approvalTitle) {
+			approvalTitle.textContent = activeApproval
+				? activeApproval.title
+				: 'No pending approvals';
+			approvalTitle.title = approvalTitle.textContent;
+		}
+		if (approvalMeta) {
+			approvalMeta.textContent = activeApproval
+				? `${activeApproval.actor || 'unknown'} - ${activeApproval.type || 'request'}`
+				: '--';
+			approvalMeta.title = approvalMeta.textContent;
+		}
+		setTownApprovalButtonsEnabled(Boolean(activeApproval));
+		if (latest) {
+			latest.textContent = latestRequest
+				? `${latestRequest.current_state}: ${latestRequest.title}`
+				: 'No requests yet';
+			latest.title = latest.textContent;
+		}
+		renderTownQueue(approvalQueue);
+		updateTownApprovalDetail(activeApproval);
+		updateTownArtifacts(snapshot?.artifacts || []);
+		updateTownDeliveryOptions(requestList);
+		notifyNewApprovals(approvalQueue);
+	}
+
+	function renderTownQueue(queue) {
+		const list = document.getElementById('town-queue-list');
+		const title = document.getElementById('town-queue-title');
+		if (!list) return;
+		if (title) title.textContent = `Approval queue (${queue.length})`;
+		list.textContent = '';
+		for (const req of queue) {
+			const row = document.createElement('div');
+			row.className = 'town-queue-row'
+				+ (req.id === selectedTownCenterRequestId ? ' selected' : '');
+			const risk = (req.payload || {}).risk_label || 'unlabeled';
+			const dot = document.createElement('span');
+			dot.className = `town-risk-dot risk-${risk}`;
+			dot.title = `risk: ${risk}`;
+			const label = document.createElement('span');
+			label.className = 'town-queue-label';
+			label.textContent = `${req.actor || '?'}: ${req.title || '(untitled)'}`;
+			label.title = label.textContent;
+			row.appendChild(dot);
+			row.appendChild(label);
+			row.addEventListener('click', () => {
+				selectedTownCenterRequestId = req.id;
+				refreshTownCenter();
+			});
+			list.appendChild(row);
+		}
+	}
+
+	// All agent-authored text below is set via textContent (never innerHTML) so
+	// a hostile draft can't inject markup into the console (LLM-1 in the DOM).
+	function updateTownApprovalDetail(approval) {
+		const detail = document.getElementById('town-approval-detail');
+		if (!detail) return;
+		if (!approval) {
+			detail.classList.add('hidden');
+			return;
+		}
+		const payload = approval.payload || {};
+		detail.classList.remove('hidden');
+		const tool = document.getElementById('town-detail-tool');
+		const risk = document.getElementById('town-detail-risk');
+		const claimed = document.getElementById('town-detail-claimed');
+		const preview = document.getElementById('town-detail-preview');
+		if (tool) tool.textContent = payload.tool || payload.requested_tool || 'none';
+		if (risk) risk.textContent = payload.risk_label || 'unlabeled';
+		if (claimed) claimed.textContent = payload.expected_payoff
+			? `${payload.expected_payoff} (agent claim, unverified)`
+			: '--';
+		if (preview) preview.textContent = payload.preview
+			? String(payload.preview)
+			: '(no draft preview attached)';
+	}
+
+	// Artifact browser: every executed ToolResult (incl. DRY-RUN drafts) is
+	// browsable with its FULL sanitized body — the draft an email WOULD have
+	// sent is the most consequential thing an operator reviews.
+	function updateTownArtifacts(artifacts) {
+		const toggle = document.getElementById('town-artifacts-toggle');
+		const list = document.getElementById('town-artifacts-list');
+		if (!toggle || !list) return;
+		const expanded = !list.classList.contains('hidden');
+		toggle.textContent = `Artifacts (${artifacts.length}) ${expanded ? '▾' : '▸'}`;
+		if (!expanded) return;
+		list.textContent = '';
+		for (const artifact of artifacts.slice().reverse()) {
+			const result = artifact.tool_result || {};
+			const row = document.createElement('div');
+			row.className = 'town-artifact-row';
+			const head = document.createElement('div');
+			head.className = 'town-artifact-head';
+			head.textContent =
+				`${artifact.dry_run ? '[DRY-RUN] ' : ''}${artifact.actor || '?'} — ` +
+				`${result.summary || artifact.title || artifact.tool || 'result'}`;
+			head.title = 'Click to expand';
+			const body = document.createElement('div');
+			body.className = 'town-artifact-body hidden';
+			const bodyText = [
+				result.detail || '',
+				result.evidence && result.evidence.preview
+					? `--- draft ---\n${result.evidence.preview}` : '',
+			].filter(Boolean).join('\n');
+			body.textContent = bodyText || '(no detail body)';
+			head.addEventListener('click', () => body.classList.toggle('hidden'));
+			row.appendChild(head);
+			row.appendChild(body);
+			list.appendChild(row);
+		}
+	}
+
+	function updateTownDeliveryOptions(requestList) {
+		const select = document.getElementById('town-delivery-request');
+		if (!select) return;
+		const completed = requestList.filter(r => r.current_state === 'completed');
+		const previous = select.value;
+		select.textContent = '';
+		if (!completed.length) {
+			const option = document.createElement('option');
+			option.value = '';
+			option.textContent = 'No completed requests yet';
+			select.appendChild(option);
+			return;
+		}
+		for (const req of completed) {
+			const option = document.createElement('option');
+			option.value = req.id;
+			option.textContent = `${req.title} — ${req.actor || '?'}`;
+			select.appendChild(option);
+		}
+		if (previous && completed.some(r => r.id === previous)) {
+			select.value = previous;
+		}
+	}
+
+	function setTownDeliveryStatus(message, isError) {
+		const status = document.getElementById('town-delivery-status');
+		if (!status) return;
+		status.textContent = message || '';
+		status.classList.toggle('error', Boolean(isError));
+	}
+
+	async function recordTownDelivery() {
+		if (!MODE_GUARD.canMutate()) return;
+		const select = document.getElementById('town-delivery-request');
+		const amountInput = document.getElementById('town-delivery-amount');
+		const evidenceInput = document.getElementById('town-delivery-evidence');
+		const requestId = select ? select.value : '';
+		const evidence = evidenceInput ? evidenceInput.value.trim() : '';
+		const dollars = amountInput ? parseFloat(amountInput.value) : NaN;
+		if (!requestId) {
+			setTownDeliveryStatus('Pick a completed request first.', true);
+			return;
+		}
+		if (!evidence) {
+			setTownDeliveryStatus('Evidence is required (invoice #, payment ref).', true);
+			return;
+		}
+		if (!Number.isFinite(dollars) || dollars < 0) {
+			setTownDeliveryStatus('Enter a valid non-negative USD amount.', true);
+			return;
+		}
+		const deliveryUrl = "{% url 'api_town_center_record_delivery' 'REQUEST_ID' %}"
+			.replace('REQUEST_ID', encodeURIComponent(requestId));
+		try {
+			const response = await fetch(deliveryUrl, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRFToken': getCookie('csrftoken')
+				},
+				body: JSON.stringify({
+					revenue_cents: Math.round(dollars * 100),
+					evidence: evidence,
+					reviewer: 'human'
+				})
+			});
+			const result = await response.json();
+			if (!response.ok) {
+				setTownDeliveryStatus(result.error || `Failed (${response.status})`, true);
+			} else if (result.already_recorded) {
+				setTownDeliveryStatus('Already recorded for this request.', true);
+			} else {
+				setTownDeliveryStatus(
+					`Recorded ${formatRevenue(result.revenue_cents)} for ${result.actor}.`, false);
+				if (amountInput) amountInput.value = '';
+				if (evidenceInput) evidenceInput.value = '';
+			}
+		} catch (error) {
+			setTownDeliveryStatus(`Request failed: ${error}`, true);
+		}
+		await refreshTownCenter();
+	}
+
+	async function refreshTownCenter() {
+		if (!MODE_GUARD.canMutate()) return;
+		try {
+			const response = await fetch("{% url 'api_town_center' %}");
+			const snapshot = await response.json();
+			if (snapshot.error) {
+				updateTownCenterPanel({ scenario: { objective: 'Town center unavailable' } });
+				return;
+			}
+			updateTownCenterPanel(snapshot);
+		} catch (error) {
+			updateTownCenterPanel({ scenario: { objective: 'Town center unavailable' } });
+		}
+	}
+
+	async function transitionTownCenterRequest(state) {
+		if (!MODE_GUARD.canMutate()) return;
+		if (!selectedTownCenterRequestId) return;
+		setTownApprovalButtonsEnabled(false);
+		const noteInput = document.getElementById('town-review-note');
+		// The reviewer note is fed back into the requesting agent's prompt —
+		// it is the operator's one steering channel, so pass it through verbatim.
+		const note = (noteInput ? noteInput.value.trim() : '')
+			|| `${state} from simulator town center`;
+		const transitionUrl = "{% url 'api_town_center_request_transition' 'REQUEST_ID' %}"
+			.replace('REQUEST_ID', encodeURIComponent(selectedTownCenterRequestId));
+		try {
+			await fetch(transitionUrl, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRFToken': getCookie('csrftoken')
+				},
+				body: JSON.stringify({
+					state: state,
+					reviewer: 'human',
+					note: note,
+					// Approve chains to completed server-side: one click =
+					// approve + execute + artifact + agent memory feed.
+					execute: state === 'approved'
+				})
+			});
+			if (noteInput) noteInput.value = '';
+		} catch (error) {
+			console.error('[TOWN] Transition failed:', error);
+		}
+		await refreshTownCenter();
+	}
+
+	// ---- Operator summons: never let an approval rot unseen again ----------
+	let knownPendingApprovalIds = null;  // null until first snapshot (no boot spam)
+	const baseDocumentTitle = document.title;
+
+	function ensureNotificationPermission() {
+		if ('Notification' in window && Notification.permission === 'default') {
+			Notification.requestPermission();
+		}
+	}
+
+	function playSummonsChime() {
+		try {
+			const ctx = new (window.AudioContext || window.webkitAudioContext)();
+			const osc = ctx.createOscillator();
+			const gain = ctx.createGain();
+			osc.type = 'sine';
+			osc.frequency.value = 880;
+			gain.gain.setValueAtTime(0.08, ctx.currentTime);
+			gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+			osc.connect(gain).connect(ctx.destination);
+			osc.start();
+			osc.stop(ctx.currentTime + 0.4);
+		} catch (e) { /* audio blocked until user gesture — fine */ }
+	}
+
+	function showToast(message) {
+		const toast = document.createElement('div');
+		toast.className = 'town-toast';
+		toast.textContent = message;
+		document.body.appendChild(toast);
+		setTimeout(() => toast.classList.add('visible'), 20);
+		setTimeout(() => {
+			toast.classList.remove('visible');
+			setTimeout(() => toast.remove(), 400);
+		}, 6000);
+	}
+
+	function notifyNewApprovals(queue) {
+		const ids = new Set(queue.map(r => r.id));
+		// Title badge always reflects backlog size.
+		document.title = ids.size > 0
+			? `(${ids.size}) ${baseDocumentTitle}`
+			: baseDocumentTitle;
+		if (knownPendingApprovalIds === null) {
+			knownPendingApprovalIds = ids;  // first snapshot: baseline, no alerts
+			return;
+		}
+		const fresh = queue.filter(r => !knownPendingApprovalIds.has(r.id));
+		knownPendingApprovalIds = ids;
+		if (!fresh.length) return;
+		const first = fresh[0];
+		const message = fresh.length === 1
+			? `${first.actor || 'An agent'} requests approval: ${first.title || ''}`
+			: `${fresh.length} new approval requests (first: ${first.title || ''})`;
+		showToast(message);
+		playSummonsChime();
+		if ('Notification' in window && Notification.permission === 'granted'
+			&& document.hidden) {
+			const n = new Notification('Claudeville needs you', { body: message });
+			n.onclick = () => { window.focus(); n.close(); };
+		}
+	}
+
+	async function requestSimulation(numSteps, forceRequest = false) {
+		if (!MODE_GUARD.canMutate()) return;
+		if (isSimulating || (backendBusy && !forceRequest)) return;
+		isSimulating = true;
+		setPlaybackState('simulating');
+		updateSimStatus('Simulating...', true);
+
+		try {
+			const response = await fetch("{% url 'api_simulate' %}", {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-Claudeville-Client': CLIENT_VERSION,
+					'X-CSRFToken': getCookie('csrftoken')
+				},
+				body: JSON.stringify({ steps: numSteps })
+			});
+			const result = await response.json();
+			if (response.status === 504) {
+				backendBusy = true;
+				setPlaybackState('backend busy');
+				updateSimStatus('Backend timeout - waiting for completion', true);
+			} else if (result.status === 'ok') {
+				backendBusy = false;
+				simulatedStep = result.current_step;
+				queuedMovements = result.queued_movements;
+			} else if (result.status === 'busy') {
+				backendBusy = true;
+				queuedMovements = result.queued_movements ?? queuedMovements;
+				setPlaybackState('backend busy');
+				updateSimStatus('Backend busy - waiting for next movement', true);
+			} else if (result.error) {
+				console.error('[SIM] Backend error:', result.error);
+				handleSimulationError(result.error);
+			}
+		} catch (error) {
+			console.error('[SIM] Request failed:', error);
+			handleSimulationError(String(error));
+		}
+
+		isSimulating = false;
+		if (isPaused && !isSkipping) {
+			setPlaybackState('paused');
+		} else if (backendBusy) {
+			setPlaybackState('backend busy');
+		} else if (!isPaused && !isSkipping && playbackState !== 'backend busy') {
+			setPlaybackState('playing');
+		}
+		if (simulationActive && !backendBusy) {
+			updateSimStatus('Ready', false);
+		}
+		refreshRuntimeHealth();
+	}

@@ -1,0 +1,52 @@
+{
+    "Nora Vale": {
+        "maze": "claudeville",
+        "x": 18,
+        "y": 18
+    },
+    "Milo Chen": {
+        "maze": "claudeville",
+        "x": 42,
+        "y": 19
+    },
+    "Iris Morgan": {
+        "maze": "claudeville",
+        "x": 70,
+        "y": 21
+    },
+    "Theo Grant": {
+        "maze": "claudeville",
+        "x": 68,
+        "y": 25
+    },
+    "Lena Ortiz": {
+        "maze": "claudeville",
+        "x": 22,
+        "y": 29
+    },
+    "Ravi Singh": {
+        "maze": "claudeville",
+        "x": 37,
+        "y": 31
+    },
+    "June Park": {
+        "maze": "claudeville",
+        "x": 37,
+        "y": 33
+    },
+    "Amara Cole": {
+        "maze": "claudeville",
+        "x": 23,
+        "y": 35
+    },
+    "Felix Reed": {
+        "maze": "claudeville",
+        "x": 35,
+        "y": 38
+    },
+    "Sofia Lane": {
+        "maze": "claudeville",
+        "x": 45,
+        "y": 40
+    }
+}

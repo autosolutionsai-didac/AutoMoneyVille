@@ -1,0 +1,26 @@
+{
+  "lena ortiz": {
+    "name": "Lena Ortiz",
+    "familiarity": 1,
+    "affinity": 0.3,
+    "sentiment": "friendly",
+    "last_topics": [],
+    "beliefs": [
+      "coordinates handoffs with me"
+    ],
+    "last_interaction": null,
+    "times_talked": 0
+  },
+  "nora vale": {
+    "name": "Nora Vale",
+    "familiarity": 1,
+    "affinity": 0.2,
+    "sentiment": "friendly",
+    "last_topics": [],
+    "beliefs": [
+      "keeps me aligned to the plan"
+    ],
+    "last_interaction": null,
+    "times_talked": 0
+  }
+}

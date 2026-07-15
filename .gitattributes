@@ -1,5 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+*.tmj text eol=lf
 
 # Binary assets — never EOL-normalize (OPS-9)
 *.png binary

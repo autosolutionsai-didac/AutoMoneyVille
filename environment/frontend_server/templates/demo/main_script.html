@@ -67,7 +67,7 @@
 
 	// Persona related variables. This should have the name of the persona as its
 	// keys, and the instances of the Persona class as the values.
-	let persona_names = {{ persona_init_pos|safe }};
+	let persona_names = JSON.parse(document.getElementById("demo-persona-init").textContent);
 	var spawn_tile_loc = {};
 	for (var key in persona_names){
 		spawn_tile_loc[key] = persona_names[key] ;
@@ -76,17 +76,16 @@
 	var personas = {};
 	var pronunciatios = {};
 	var speech_bubbles = {};
+	var personaShadows = {};
 	let anims_direction;
 	let pre_anims_direction;
 	let pre_anims_direction_dict = {};
 
 	// <tile_width> is the width of one individual tile (tiles are square)
 	let tile_width = 32;
-	// World selector: the_ville renders a Tiled tilemap; other worlds (e.g. claudeville)
-	// render a flat PNG background. Map pixel size comes from the view context.
-	let curr_maze = "{{ maze_name|default:'the_ville' }}";
-	let map_width_px = {{ map_width_px|default:4480 }};
-	let map_height_px = {{ map_height_px|default:3200 }};
+	let renderedWorldController = null;
+	const world_manifest_url = "{% static world_manifest_path %}?v=2";
+	const static_asset_root = "{% static '' %}";
 	// Important: tile_width % movement_speed has to be 0.
 	// <movement_speed> determines how fast we move at each upate cylce.
 	let movement_speed = {{play_speed}};
@@ -95,7 +94,7 @@
 	let execute_count_max = tile_width/movement_speed;
 	let execute_count = execute_count_max;
 	let movement_target = {};
-	let all_movement = {{ all_movement|safe }};
+	let all_movement = JSON.parse(document.getElementById("demo-all-movement").textContent);
 
   let start_datetime =new Date(Date.parse("{{start_datetime}}"));
   var datetime_options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -125,140 +124,22 @@
 		// CORS settings, and django AWS settings.
 		this.load.crossOrigin = '';
 
-	  // Loading the necessary images (e.g., the background image, character
-	  // sprites).
-	  // Joon: for load.image, the first parameter is simply the key value that
-	  //       you are passing in. The second parameter should be pointed to the
-	  //       png file that contains the tileset.
-	  //       Also IMPORTANT: when you create a tileset in Tiled, always be
-	  //       sure to check the "embedded" option.
-	  if (curr_maze === "the_ville") {
-	  this.load.image("blocks_1", "{% static 'assets/the_ville/visuals/map_assets/blocks/blocks_1.png' %}");
-	  this.load.image("walls", "{% static 'assets/the_ville/visuals/map_assets/v1/Room_Builder_32x32.png' %}");
-	  this.load.image("interiors_pt1", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt1.png' %}");
-	  this.load.image("interiors_pt2", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt2.png' %}");
-	  this.load.image("interiors_pt3", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt3.png' %}");
-	  this.load.image("interiors_pt4", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt4.png' %}");
-	  this.load.image("interiors_pt5", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt5.png' %}");
-	  this.load.image("CuteRPG_Field_B", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Field_B.png' %}");
-	  this.load.image("CuteRPG_Field_C", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Field_C.png' %}");
-	  this.load.image("CuteRPG_Harbor_C", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Harbor_C.png' %}");
-	  this.load.image("CuteRPG_Village_B", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Village_B.png' %}");
-	  this.load.image("CuteRPG_Forest_B", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Forest_B.png' %}");
-	  this.load.image("CuteRPG_Desert_C", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Desert_C.png' %}");
-	  this.load.image("CuteRPG_Mountains_B", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Mountains_B.png' %}");
-	  this.load.image("CuteRPG_Desert_B", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Desert_B.png' %}");
-	  this.load.image("CuteRPG_Forest_C", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Forest_C.png' %}");
-
-	  // Joon: This is the export json file you get from Tiled.
-	  this.load.tilemapTiledJSON("map", "{% static 'assets/the_ville/visuals/the_ville_jan7.json' %}");
-	  } else {
-	  // Other worlds render a single flat background PNG (assets/<maze>/visuals/<maze>_bg.png)
-	  this.load.image("world_bg", "{% static 'assets/' %}" + curr_maze + "/visuals/" + curr_maze + "_bg.png");
-	  }
-
-	  // An atlas is a way to pack multiple images together into one texture. I'm
-	  // using it to load all the player animations (walking left, walking right,
-	  // etc.) in one image. For more info see:
-	  // https://labs.phaser.io/view.html?src=src/animation/texture%20atlas%20animation.js
-	  // If you don't use an atlas, you can do the same thing with a spritesheet,
-	  // see: https://labs.phaser.io/view.html?src=src/animation/single%20sprite%20sheet.js
-	  // Joon: Technically, I think this guy had the best tutorial for atlas:
-	  //       https://www.youtube.com/watch?v=fdXcD9X4NrQ&ab_channel=MorganPage
-	  this.load.atlas("atlas", "{% static 'assets/characters/Yuriko_Yamamoto.png' %}",
-	  												     "{% static 'assets/characters/atlas.json' %}");
-
-	  {% for p in persona_names %}
-		  {% with 'assets/characters/'|add:p.underscore|add:'.png' as image_static %}
-			  this.load.atlas("{{p.underscore}}", "{% static image_static %}",
-		  										  		     "{% static 'assets/characters/atlas.json' %}");
-			{% endwith %}
-	  {% endfor %}
+	  ClaudevilleWorld.queueWorld(
+	    this, world_manifest_url, static_asset_root,
+	    worldManifest => ClaudevilleCharacters.queueCharacters(
+	      this, worldManifest.resident_manifest_url, static_asset_root
+	    )
+	  );
 
 	  this.load.image('speech_bubble', "{% static 'assets/speech_bubble/v3.png' %}");
 	}
 
 	function create() {
-	  let worldW, worldH;
-	  if (curr_maze === "the_ville") {
-	  const map = this.make.tilemap({ key: "map" });
-	  // Joon: Logging map is really helpful for debugging here:
-	  //       console.log(map);
-
-	  // The first parameter is the name you gave to the tileset in Tiled and then
-	  // the key of the tileset image in Phaser's cache (i.e. the name you used in
-	  // preload)
-	  // Joon: for the first parameter here, really take a look at the
-	  //       console.log(map) output. You need to make sure that the name
-	  //       matches.
-	  const collisions = map.addTilesetImage("blocks", "blocks_1");
-	  const walls = map.addTilesetImage("Room_Builder_32x32", "walls");
-	  const interiors_pt1 = map.addTilesetImage("interiors_pt1", "interiors_pt1");
-	  const interiors_pt2 = map.addTilesetImage("interiors_pt2", "interiors_pt2");
-	  const interiors_pt3 = map.addTilesetImage("interiors_pt3", "interiors_pt3");
-	  const interiors_pt4 = map.addTilesetImage("interiors_pt4", "interiors_pt4");
-	  const interiors_pt5 = map.addTilesetImage("interiors_pt5", "interiors_pt5");
-	  const CuteRPG_Field_B = map.addTilesetImage("CuteRPG_Field_B", "CuteRPG_Field_B");
-	  const CuteRPG_Field_C = map.addTilesetImage("CuteRPG_Field_C", "CuteRPG_Field_C");
-	  const CuteRPG_Harbor_C = map.addTilesetImage("CuteRPG_Harbor_C", "CuteRPG_Harbor_C");
-	  const CuteRPG_Village_B = map.addTilesetImage("CuteRPG_Village_B", "CuteRPG_Village_B");
-	  const CuteRPG_Forest_B = map.addTilesetImage("CuteRPG_Forest_B", "CuteRPG_Forest_B");
-	  const CuteRPG_Desert_C = map.addTilesetImage("CuteRPG_Desert_C", "CuteRPG_Desert_C");
-	  const CuteRPG_Mountains_B = map.addTilesetImage("CuteRPG_Mountains_B", "CuteRPG_Mountains_B");
-	  const CuteRPG_Desert_B = map.addTilesetImage("CuteRPG_Desert_B", "CuteRPG_Desert_B");
-	  const CuteRPG_Forest_C = map.addTilesetImage("CuteRPG_Forest_C", "CuteRPG_Forest_C");
-
-	  // The first parameter is the layer name (or index) taken from Tiled, the
-	  // second parameter is the tileset you set above, and the final two
-	  // parameters are the x, y coordinate.
-	  // Joon: The "layer name" that comes as the first parameter value
-	  //       literally is taken from our Tiled layer name. So to find out what
-	  //       they are; you actually need to open up tiled and see how you
-	  //       named things there.
-	  let tileset_group_1 = [CuteRPG_Field_B, CuteRPG_Field_C, CuteRPG_Harbor_C, CuteRPG_Village_B,
-	  											 CuteRPG_Forest_B, CuteRPG_Desert_C, CuteRPG_Mountains_B, CuteRPG_Desert_B, CuteRPG_Forest_C,
-	  											 interiors_pt1, interiors_pt2, interiors_pt3, interiors_pt4, interiors_pt5, walls];
-	  const bottomGroundLayer = map.createLayer("Bottom Ground", tileset_group_1, 0, 0);
-	  const exteriorGroundLayer = map.createLayer("Exterior Ground", tileset_group_1, 0, 0);
-	  const exteriorDecorationL1Layer = map.createLayer("Exterior Decoration L1", tileset_group_1, 0, 0);
-	  const exteriorDecorationL2Layer = map.createLayer("Exterior Decoration L2", tileset_group_1, 0, 0);
-	  const interiorGroundLayer = map.createLayer("Interior Ground", tileset_group_1, 0, 0);
-	  const wallLayer = map.createLayer("Wall", [CuteRPG_Field_C, walls], 0, 0);
-	  const interiorFurnitureL1Layer = map.createLayer("Interior Furniture L1", tileset_group_1, 0, 0);
-	  const interiorFurnitureL2Layer = map.createLayer("Interior Furniture L2 ", tileset_group_1, 0, 0);
-	  const foregroundL1Layer = map.createLayer("Foreground L1", tileset_group_1, 0, 0);
-	  const foregroundL2Layer = map.createLayer("Foreground L2", tileset_group_1, 0, 0);
-
-	  const collisionsLayer = map.createLayer("Collisions", collisions, 0, 0);
-	  // const groundLayer = map.createLayer("Ground", walls, 0, 0);
-	  // const indoorGroundLayer = map.createLayer("Indoor Ground", walls, 0, 0);
-	  // const wallsLayer = map.createLayer("Walls", walls, 0, 0);
-	  // const interiorsLayer = map.createLayer("Furnitures", interiors, 0, 0);
-	  // const builtInLayer = map.createLayer("Built-ins", interiors, 0, 0);
-	  // const appliancesLayer = map.createLayer("Appliances", interiors, 0, 0);
-	  // const foregroundLayer = map.createLayer("Foreground", interiors, 0, 0);
-
-	  // Joon : This is where you want to create a custom field for the tileset
-	  //        in Tiled. Take a look at this guy's tutorial:
-	  //        https://www.youtube.com/watch?v=MR2CvWxOEsw&ab_channel=MattWilber
-	  collisionsLayer.setCollisionByProperty({ collide: true });
-	  // By default, everything gets depth sorted on the screen in the order we
-	  // created things. Here, we want the "Above Player" layer to sit on top of
-	  // the player, so we explicitly give it a depth. Higher depths will sit on
-	  // top of lower depth objects.
-	  // Collisions layer should get a negative depth since we do not want to see
-	  // it.
-	  collisionsLayer.setDepth(-1);
-	  foregroundL1Layer.setDepth(2);
-	  foregroundL2Layer.setDepth(2);
-	  worldW = map.widthInPixels;
-	  worldH = map.heightInPixels;
-	  } else {
-	  // Flat PNG background world (e.g. claudeville).
-	  this.add.image(0, 0, "world_bg").setOrigin(0, 0).setDepth(-1);
-	  worldW = map_width_px;
-	  worldH = map_height_px;
-	  }
+		  renderedWorldController = ClaudevilleWorld.createWorld(this);
+		  const renderedWorld = renderedWorldController;
+		  window.setFocusedWorldSector = sector => renderedWorld.setFocusedSector?.(sector || null);
+	  const worldW = renderedWorld.bounds.width;
+	  const worldH = renderedWorld.bounds.height;
 
 	  // *** SET UP CAMERA ***
 	  // "player" is to be set as the center of mass for our "camera." We
@@ -282,72 +163,44 @@
 
 	  // *** SET UP PERSONAS ***
 	  // We start by creating the game sprite objects.
+	  ClaudevilleCharacters.createAnimations(this, Object.keys(spawn_tile_loc));
 	  for (let i=0; i<Object.keys(spawn_tile_loc).length; i++) {
 	    let persona_name = Object.keys(spawn_tile_loc)[i];
 	    let start_pos = [spawn_tile_loc[persona_name][0] * tile_width + tile_width / 2,
 	                     spawn_tile_loc[persona_name][1] * tile_width + tile_width];
-	    let new_sprite = this.physics.add
-	                         .sprite(start_pos[0], start_pos[1], persona_name, "down")
-	                         .setSize(30, 40)
-	                         .setOffset(0, 0);
-	    // Scale up the sprite
-      new_sprite.displayWidth = 40;
-      new_sprite.scaleY = new_sprite.scaleX;
+		    let new_sprite = ClaudevilleCharacters.createSprite(
+	      this, persona_name, start_pos[0], start_pos[1]
+		    ).setSize(30, 40).setOffset(0, 0);
 
 	    // Here, we are creating the persona and its pronunciatio sprites.
 	    personas[persona_name] = new_sprite;
-	    speech_bubbles[persona_name] = this.add.image(new_sprite.body.x - 0,
-	    																						  new_sprite.body.y - 30,
-	    																						  'speech_bubble').setDepth(3);
+	    const spriteLayout = ClaudevilleCharacters.displayLayout(new_sprite);
+	    new_sprite.setDepth(ClaudevilleCharacters.depthForSprite(
+	      new_sprite, renderedWorldController
+	    ));
+	    personaShadows[persona_name] = this.add.ellipse(
+	      spriteLayout.foot.x, spriteLayout.foot.y, 22, 9, 0x000000, 0.3
+	    ).setDepth(new_sprite.depth - 1);
+	    speech_bubbles[persona_name] = this.add.image(
+	      spriteLayout.foot.x,
+	      spriteLayout.top - 6,
+	      'speech_bubble'
+	    ).setOrigin(0.5, 1).setDepth(100001);
       speech_bubbles[persona_name].displayWidth = 130;
       speech_bubbles[persona_name].displayHeight = 58;
 
 	    pronunciatios[persona_name] = this.add.text(
-	                                   new_sprite.body.x - 6,
-	                                   new_sprite.body.y - 42,
+	                                   spriteLayout.foot.x,
+	                                   spriteLayout.top - 35,
 	                                   "🦁", {
 	                                   font: "24px monospace",
 	                                   fill: "#000000",
 	                                   padding: { x: 8, y: 8},
 	                                   border:"solid",
-	                                   borderRadius:"10px"}).setDepth(3);
+	                                   borderRadius:"10px"})
+	                                   .setOrigin(0.5, 0.5).setDepth(100002);
 	  }
 
-	  // Create the player's walking animations from the texture atlas. These are
-	  // stored in the global animation manager so any sprite can access them.
-	  const anims = this.anims;
-		for (let i=0; i<Object.keys(persona_names).length; i++) {
-			let persona_name = Object.keys(persona_names)[i];
-			let left_walk_name = persona_name + "-left-walk";
-			let right_walk_name = persona_name + "-right-walk";
-			let down_walk_name = persona_name + "-down-walk";
-			let up_walk_name = persona_name + "-up-walk";
-
-			console.log(persona_name, left_walk_name, "DEUBG")
-		  anims.create({
-		    key: left_walk_name,
-		    frames: anims.generateFrameNames(persona_name, { prefix: "left-walk.", start: 0, end: 3, zeroPad: 3 }),
-		    frameRate: 4,
-		    repeat: -1 });
-
-		  anims.create({
-		    key: right_walk_name,
-		    frames: anims.generateFrameNames(persona_name, { prefix: "right-walk.", start: 0, end: 3, zeroPad: 3 }),
-		    frameRate: 4,
-		    repeat: -1 });
-
-		  anims.create({
-		    key: down_walk_name,
-		    frames: anims.generateFrameNames(persona_name, { prefix: "down-walk.", start: 0, end: 3, zeroPad: 3 }),
-		    frameRate: 4,
-		    repeat: -1 });
-
-		  anims.create({
-		    key: up_walk_name,
-		    frames: anims.generateFrameNames(persona_name, { prefix: "up-walk.", start: 0, end: 3, zeroPad: 3 }),
-		    frameRate: 4,
-		    repeat: -1 });
-	  }
 	}
 
 
@@ -418,7 +271,7 @@
 	        let chat_content = "";
 	        if (chat_content_raw != null ){
 		        for (let j=0; j<chat_content_raw.length; j++) {
-		        	chat_content += escHtml(chat_content_raw[j][0]) + ": " + escHtml(chat_content_raw[j][1]) + "<br>"
+		          chat_content += escHtml(ClaudevilleAddresses.translateText(chat_content_raw[j][0])) + ": " + escHtml(ClaudevilleAddresses.translateText(chat_content_raw[j][1])) + "<br>"
 		        }
 		      } else {
 		      	chat_content = "<em>None at the moment</em>"
@@ -436,8 +289,10 @@
 
 	        // Updating the status of each personas
 	        document.getElementById("quick_emoji-"+curr_persona_name).textContent = pronunciatio_content;
-	        document.getElementById("current_action__"+curr_persona_name).textContent = description_content.split("@")[0];
-	        document.getElementById("target_address__"+curr_persona_name).textContent = description_content.split("@")[1] || "";
+	        document.getElementById("current_action__"+curr_persona_name).textContent =
+	          ClaudevilleAddresses.translateText(description_content.split("@")[0]);
+	        document.getElementById("target_address__"+curr_persona_name).textContent =
+	          ClaudevilleAddresses.displayAddress(description_content.split("@")[1] || "");
 	        document.getElementById("chat__"+curr_persona_name).innerHTML = chat_content;
     		}
 
@@ -466,33 +321,36 @@
 	        	anims_direction = "";
 	        }
 
-	        curr_pronunciatio.x = curr_persona.body.x + 18;
-          curr_pronunciatio.y = curr_persona.body.y - 42 - 25; // DEBUG 1 --- I added 32 offset on Dec 29.
-          curr_speech_bubble.x = curr_persona.body.x + 80;
-          curr_speech_bubble.y = curr_persona.body.y - 39;
+	        const spriteLayout = ClaudevilleCharacters.displayLayout(curr_persona);
+	        curr_pronunciatio.x = spriteLayout.foot.x;
+          curr_pronunciatio.y = spriteLayout.top - 35;
+          curr_speech_bubble.x = spriteLayout.foot.x;
+	        curr_speech_bubble.y = spriteLayout.top - 6;
+          curr_persona.setDepth(ClaudevilleCharacters.depthForSprite(
+            curr_persona, renderedWorldController
+          ));
+          const currShadow = personaShadows[curr_persona_name];
+          if (currShadow) {
+            currShadow.x = spriteLayout.foot.x;
+            currShadow.y = spriteLayout.foot.y;
+            currShadow.setDepth(curr_persona.depth - 1);
+          }
 
-          let left_walk_name = curr_persona_name + "-left-walk";
-					let right_walk_name = curr_persona_name + "-right-walk";
-					let down_walk_name = curr_persona_name + "-down-walk";
-					let up_walk_name = curr_persona_name + "-up-walk";
-          if (anims_direction == "l") {
-			      curr_persona.anims.play(left_walk_name, true);
-			    } else if (anims_direction == "r") {
-			      curr_persona.anims.play(right_walk_name, true);
-			    } else if (anims_direction == "u") {
-			      curr_persona.anims.play(up_walk_name, true);
-			    } else if (anims_direction == "d") {
-			      curr_persona.anims.play(down_walk_name, true);
-			    };
-    		}
-    	} else {
-    		curr_persona.anims.stop();
-	      // If we were moving, pick an idle frame to use
-	      if (pre_anims_direction_dict[curr_persona_name] == "l") curr_persona.setTexture(curr_persona_name, "left"); else
-	      if (pre_anims_direction_dict[curr_persona_name] == "r") curr_persona.setTexture(curr_persona_name, "right"); else
-	      if (pre_anims_direction_dict[curr_persona_name] == "u") curr_persona.setTexture(curr_persona_name, "up"); else
-	      if (pre_anims_direction_dict[curr_persona_name] == "d") curr_persona.setTexture(curr_persona_name, "down");
-    	}
+          const walkDirection = { l: "left", r: "right", u: "up", d: "down" }[anims_direction];
+          if (walkDirection) {
+			      ClaudevilleCharacters.playWalk(
+			        curr_persona.scene, curr_persona, curr_persona_name, walkDirection
+			      );
+			    }
+			}
+		} else {
+	      const idleDirection = {
+	        l: "left", r: "right", u: "up", d: "down"
+	      }[pre_anims_direction_dict[curr_persona_name]] || "down";
+	      ClaudevilleCharacters.setIdle(
+	        curr_persona.scene, curr_persona, curr_persona_name, idleDirection
+	      );
+		}
 	 	}
 
 	  if (execute_count == 0) {
@@ -501,6 +359,16 @@
 	      let curr_persona = personas[curr_persona_name];
 	      curr_persona.body.x = movement_target[curr_persona_name][0];
 	      curr_persona.body.y = movement_target[curr_persona_name][1];
+	      const spriteLayout = ClaudevilleCharacters.displayLayout(curr_persona);
+	      curr_persona.setDepth(ClaudevilleCharacters.depthForSprite(
+	        curr_persona, renderedWorldController
+	      ));
+	      const currShadow = personaShadows[curr_persona_name];
+	      if (currShadow) {
+	        currShadow.x = spriteLayout.foot.x;
+	        currShadow.y = spriteLayout.foot.y;
+	        currShadow.setDepth(curr_persona.depth - 1);
+	      }
 	    }
 			execute_count = execute_count_max + 1;
 	    step = step + 1;

@@ -1,6 +1,7 @@
-"""Create a persona base run for the claudeville world by re-homing the existing
-startup_team_v1 personas. Clones the base, then rewrites only what references the
-old world: meta.maze_name, each persona's spatial_memory.json + scratch.json
+"""Create claudeville_v2 by cloning the immutable claudeville_v1 base.
+
+Clones the archive, then rewrites only what references the canonical world:
+meta.maze_name, each persona's spatial_memory.json + scratch.json
 (living_area, daily_plan_req), and environment/0.json spawns (on verified-walkable
 tiles read from the generated collision matrix).
 
@@ -28,18 +29,18 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SPEC = Path(__file__).resolve().parent / "town_spec.json"
 STORAGE = REPO_ROOT / "environment/frontend_server/storage/base"
-SRC = STORAGE / "startup_team_v1"
-DST = STORAGE / "claudeville_v1"
+SRC = STORAGE / "claudeville_v1"
+DST = STORAGE / "claudeville_v2"
 MATRIX = (
     REPO_ROOT
     / "environment/frontend_server/static_dirs/assets/claudeville/matrix"
 )
 SCENARIOS = REPO_ROOT / "reverie/backend_server/scenarios"
 
-HOME_SECTOR = "Residencia 1"
+HOME_SECTOR = "Home 1"
 HOME_ARENA = "bedroom"
-STANDUP_OLD = "Hobbs Cafe:cafe:cafe customer seating"
-STANDUP_NEW = "Academia de Agentes:classroom"
+STANDUP_OLD = "Academia de Agentes:classroom"
+STANDUP_NEW = "Agent Academy:classroom"
 
 # Deterministic seed day for created_day stamps on seeded goals (reproducible).
 SEED_DAY = "2023-02-13"
@@ -165,7 +166,11 @@ def generate(
     scenario_id: str = "startup_team_v1",
     ground: bool = True,
 ) -> dict:
-    """Build the claudeville_v1 base for ``count`` personas. Returns a summary."""
+    """Build claudeville_v2 for ``count`` personas. Returns a summary."""
+    if count is not None and count < 1:
+        raise ValueError("count must be a positive integer")
+    if SRC.resolve() == DST.resolve():
+        raise ValueError("claudeville_v1 source and claudeville_v2 destination differ")
     spec = json.loads(SPEC.read_text(encoding="utf-8"))
     world = spec["world_name"]
     folder = world.lower()
@@ -181,7 +186,7 @@ def generate(
     # meta.json
     meta = json.loads((DST / "reverie" / "meta.json").read_text())
     meta["maze_name"] = folder
-    meta["fork_sim_code"] = f"base_{folder}_v1"
+    meta["fork_sim_code"] = f"base_{folder}_v2"
     meta["persona_names"] = names
     (DST / "reverie" / "meta.json").write_text(json.dumps(meta, indent=4))
 

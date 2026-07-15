@@ -1,0 +1,202 @@
+{
+  "Claudeville": {
+    "Bank": {
+      "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ]
+    },
+    "Home 1": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ],
+      "living room": [
+        "sofa"
+      ]
+    },
+    "University": {
+      "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ],
+      "room 2": [
+        "table"
+      ]
+    },
+    "Agent Academy": {
+      "classroom": [
+        "blackboard",
+        "classroom student seating",
+        "desk"
+      ],
+      "office": [
+        "desk"
+      ],
+      "office 2": [
+        "desk"
+      ]
+    },
+    "Post Office": {
+      "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ],
+      "room 2": [
+        "table"
+      ]
+    },
+    "Market": {
+      "main": [
+        "counter"
+      ]
+    },
+    "Workshop": {
+      "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ],
+      "room 2": [
+        "table"
+      ]
+    },
+    "Community Center": {
+      "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ]
+    },
+    "Library": {
+      "reading room": [
+        "bookshelf",
+        "library table"
+      ],
+      "study": [
+        "desk"
+      ],
+      "study 2": [
+        "desk"
+      ]
+    },
+    "Home 2": {
+      "bedroom": [
+        "bed",
+        "desk",
+        "toilet",
+        "shower"
+      ]
+    },
+    "Home 3": {
+      "bedroom": [
+        "bed",
+        "desk",
+        "toilet",
+        "shower"
+      ]
+    },
+    "Home 4": {
+      "bedroom": [
+        "bed",
+        "desk",
+        "toilet",
+        "shower"
+      ]
+    },
+    "Home 5": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ],
+      "living room": [
+        "sofa"
+      ]
+    },
+    "Home 6": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ],
+      "living room": [
+        "sofa"
+      ]
+    },
+    "Town Hall": {
+      "main": [
+        "counter"
+      ],
+      "room": [
+        "table"
+      ]
+    },
+    "Home 7": {
+      "bedroom": [
+        "bed",
+        "desk",
+        "toilet",
+        "shower"
+      ]
+    },
+    "Home 8": {
+      "bedroom": [
+        "bed",
+        "desk",
+        "toilet",
+        "shower"
+      ]
+    },
+    "Home 9": {
+      "bedroom": [
+        "bed",
+        "desk"
+      ],
+      "bathroom": [
+        "toilet",
+        "shower"
+      ]
+    },
+    "Home 10": {
+      "bedroom": [
+        "bed",
+        "desk",
+        "toilet",
+        "shower"
+      ]
+    },
+    "Central Plaza": {
+      "plaza": [
+        "fountain",
+        "bench",
+        "notice board"
+      ]
+    },
+    "Claudeville Cafe": {
+      "cafe": [
+        "counter",
+        "table",
+        "seating"
+      ]
+    }
+  }
+}

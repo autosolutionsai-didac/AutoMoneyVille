@@ -9,7 +9,9 @@ world in a 2-dimensional matrix.
 
 import json
 import math
+from pathlib import Path
 
+from address_aliases import build_address_tile_index
 from utils import maze_assets_loc
 from utils.file_utils import read_file_to_list
 
@@ -23,7 +25,9 @@ class Maze:
         world_matrix = f"{maze_assets_loc}/{maze_name}/matrix"
         # Reading in the meta information about the world. If you want tp see the
         # example variables, check out the maze_meta_info.json file.
-        meta_info = json.load(open(f"{world_matrix}/maze_meta_info.json"))
+        meta_info = json.loads(
+            Path(f"{world_matrix}/maze_meta_info.json").read_text(encoding="utf-8")
+        )
         # <maze_width> and <maze_height> denote the number of tiles make up the
         # height and width of the map.
         self.maze_width = int(meta_info["maze_width"])
@@ -181,15 +185,12 @@ class Maze:
                     go_event = (object_name, None, None, None)
                     self.tiles[i][j]["events"].add(go_event)
 
-        # Reverse tile access.
-        # <self.address_tiles> -- given a string address, we return a set of all
-        # tile coordinates belonging to that address (this is opposite of
-        # self.tiles that give you the string address given a coordinate). This is
-        # an optimization component for finding paths for the personas' movement.
-        # self.address_tiles['<spawn_loc>bedroom-2-a'] == {(58, 9)}
-        # self.address_tiles['double studio:recreation:pool table']
-        #   == {(29, 14), (31, 11), (30, 14), (32, 11), ...},
-        self.address_tiles = dict()
+        self.address_tiles = build_address_tile_index(
+            self.tiles,
+            world_root=Path(world_matrix).parent,
+            manifest_name=meta_info.get("address_alias_manifest"),
+            expected_world=wb,
+        )
         # Per-step cache for get_nearby_tiles. Keyed by (tile, vision_r); the
         # result is a pure function of tile geometry + maze dimensions (it
         # returns coordinates only, never the mutable per-tile events), so
@@ -199,33 +200,9 @@ class Maze:
         # keeps the cache bounded and the invariant explicit).
         self._nearby_tiles_cache = {}
 
-        for i in range(self.maze_height):
-            for j in range(self.maze_width):
-                addresses = []
-                if self.tiles[i][j]["sector"]:
-                    add = f"{self.tiles[i][j]['world']}:"
-                    add += f"{self.tiles[i][j]['sector']}"
-                    addresses += [add]
-                if self.tiles[i][j]["arena"]:
-                    add = f"{self.tiles[i][j]['world']}:"
-                    add += f"{self.tiles[i][j]['sector']}:"
-                    add += f"{self.tiles[i][j]['arena']}"
-                    addresses += [add]
-                if self.tiles[i][j]["game_object"]:
-                    add = f"{self.tiles[i][j]['world']}:"
-                    add += f"{self.tiles[i][j]['sector']}:"
-                    add += f"{self.tiles[i][j]['arena']}:"
-                    add += f"{self.tiles[i][j]['game_object']}"
-                    addresses += [add]
-                if self.tiles[i][j]["spawning_location"]:
-                    add = f"<spawn_loc>{self.tiles[i][j]['spawning_location']}"
-                    addresses += [add]
-
-                for add in addresses:
-                    if add in self.address_tiles:
-                        self.address_tiles[add].add((j, i))
-                    else:
-                        self.address_tiles[add] = set([(j, i)])
+    def resolve_address(self, address):
+        """Resolve legacy input to the canonical address emitted by this world."""
+        return self.address_tiles.canonicalize(address)
 
     def turn_coordinate_to_tile(self, px_coordinate):
         """

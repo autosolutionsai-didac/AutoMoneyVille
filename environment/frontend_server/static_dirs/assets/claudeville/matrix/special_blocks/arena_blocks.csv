@@ -1,39 +1,41 @@
-32300, Claudeville, Banco, main
-32301, Claudeville, Banco, room
-32302, Claudeville, Residencia 1, bedroom
-32303, Claudeville, Residencia 1, bathroom
-32304, Claudeville, Residencia 1, living room
-32305, Claudeville, Universidad, main
-32306, Claudeville, Universidad, room
-32307, Claudeville, Universidad, room 2
-32308, Claudeville, Academia de Agentes, classroom
-32309, Claudeville, Academia de Agentes, office
-32310, Claudeville, Academia de Agentes, office 2
-32311, Claudeville, Oficina de Correos, main
-32312, Claudeville, Oficina de Correos, room
-32313, Claudeville, Oficina de Correos, room 2
-32314, Claudeville, Mercado, main
-32315, Claudeville, Taller de Trabajo, main
-32316, Claudeville, Taller de Trabajo, room
-32317, Claudeville, Taller de Trabajo, room 2
-32318, Claudeville, Sala de Acuerdos, main
-32319, Claudeville, Sala de Acuerdos, room
-32320, Claudeville, Biblioteca, reading room
-32321, Claudeville, Biblioteca, study
-32322, Claudeville, Biblioteca, study 2
-32323, Claudeville, Residencia 2, bedroom
-32324, Claudeville, Residencia 3, bedroom
-32325, Claudeville, Residencia 4, bedroom
-32326, Claudeville, Residencia 5, bedroom
-32327, Claudeville, Residencia 5, bathroom
-32328, Claudeville, Residencia 5, living room
-32329, Claudeville, Residencia 6, bedroom
-32330, Claudeville, Residencia 6, bathroom
-32331, Claudeville, Residencia 6, living room
-32332, Claudeville, Oficina de Gobierno, main
-32333, Claudeville, Oficina de Gobierno, room
-32334, Claudeville, Residencia 7, bedroom
-32335, Claudeville, Residencia 8, bedroom
-32336, Claudeville, Residencia 9, bedroom
-32337, Claudeville, Residencia 9, bathroom
-32338, Claudeville, Residencia 10, bedroom
+32300, Claudeville, Bank, main
+32301, Claudeville, Bank, room
+32302, Claudeville, Home 1, bedroom
+32303, Claudeville, Home 1, bathroom
+32304, Claudeville, Home 1, living room
+32305, Claudeville, University, main
+32306, Claudeville, University, room
+32307, Claudeville, University, room 2
+32308, Claudeville, Agent Academy, classroom
+32309, Claudeville, Agent Academy, office
+32310, Claudeville, Agent Academy, office 2
+32311, Claudeville, Post Office, main
+32312, Claudeville, Post Office, room
+32313, Claudeville, Post Office, room 2
+32314, Claudeville, Market, main
+32315, Claudeville, Workshop, main
+32316, Claudeville, Workshop, room
+32317, Claudeville, Workshop, room 2
+32318, Claudeville, Community Center, main
+32319, Claudeville, Community Center, room
+32320, Claudeville, Library, reading room
+32321, Claudeville, Library, study
+32322, Claudeville, Library, study 2
+32323, Claudeville, Home 2, bedroom
+32324, Claudeville, Home 3, bedroom
+32325, Claudeville, Home 4, bedroom
+32326, Claudeville, Home 5, bedroom
+32327, Claudeville, Home 5, bathroom
+32328, Claudeville, Home 5, living room
+32329, Claudeville, Central Plaza, plaza
+32330, Claudeville, Claudeville Cafe, cafe
+32331, Claudeville, Home 6, bedroom
+32332, Claudeville, Home 6, bathroom
+32333, Claudeville, Home 6, living room
+32334, Claudeville, Town Hall, main
+32335, Claudeville, Town Hall, room
+32336, Claudeville, Home 7, bedroom
+32337, Claudeville, Home 8, bedroom
+32338, Claudeville, Home 9, bedroom
+32339, Claudeville, Home 9, bathroom
+32340, Claudeville, Home 10, bedroom

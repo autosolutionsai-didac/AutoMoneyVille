@@ -1,0 +1,12 @@
+{
+  "columns": 20,
+  "image": "town.png",
+  "imageheight": 320,
+  "imagewidth": 320,
+  "name": "claudeville_v2_runtime_town",
+  "tilecount": 395,
+  "tileheight": 16,
+  "tilewidth": 16,
+  "type": "tileset",
+  "version": "1.10"
+}

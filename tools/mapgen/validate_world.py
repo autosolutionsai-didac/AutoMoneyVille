@@ -70,17 +70,21 @@ def main() -> None:
         obj_tiles = maze.address_tiles.get(
             f"{world}:{sec}:{o['arena']}:{o['type']}", set()
         )
-        # adjacent walkable tiles of the object
+        # Walkable interaction tiles around the object. A radius of three covers
+        # authored multi-tile compositions such as the bordered fountain basin.
         targets = []
         for (ox, oy) in obj_tiles:
-            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-                ax, ay = ox + dx, oy + dy
-                if (
-                    0 <= ay < maze.maze_height
-                    and 0 <= ax < maze.maze_width
-                    and maze.collision_maze[ay][ax] == "0"
-                ):
-                    targets.append((ax, ay))
+            for dx in range(-3, 4):
+                for dy in range(-3, 4):
+                    if not 1 <= abs(dx) + abs(dy) <= 3:
+                        continue
+                    ax, ay = ox + dx, oy + dy
+                    if (
+                        0 <= ay < maze.maze_height
+                        and 0 <= ax < maze.maze_width
+                        and maze.collision_maze[ay][ax] == "0"
+                    ):
+                        targets.append((ax, ay))
         ok = False
         for t in targets[:6]:
             path = pf.find_path(start, t)

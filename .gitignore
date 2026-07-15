@@ -110,6 +110,10 @@ celerybeat-schedule
 # dotenv
 .env
 
+# Generated from locally licensed Modern Pixels packs; never distribute this
+# broad authoring cache. Only the culled Claudeville runtime is committed.
+/output/
+
 # virtualenv
 venv/
 ENV/

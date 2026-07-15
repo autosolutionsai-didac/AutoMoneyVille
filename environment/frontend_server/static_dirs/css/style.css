@@ -22,6 +22,11 @@ html, body {
   display: block;
 }
 
+/* ===== UTILITY CLASSES ===== */
+.hidden {
+  display: none !important;
+}
+
 /* ===== UI OVERLAY BASE ===== */
 .ui-overlay {
   position: fixed;
