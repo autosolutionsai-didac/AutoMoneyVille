@@ -7,7 +7,7 @@ Emits, under environment/frontend_server/static_dirs/assets/<world>/matrix/:
 
 Collision model (hybrid):
   - Outdoor tiles (no sector): blocked from collision_draft.json (streets walkable; water/trees blocked).
-  - Building footprint tile inside a room (arena): walkable floor, UNLESS an object sits there (furniture -> blocked).
+  - Building room floor is walkable unless an object explicitly keeps the default blocking policy.
   - Building footprint tile NOT in any room: WALL (blocked, arena="") -> opaque per maze._is_wall.
   - blocked_regions / walkable_regions in the spec override afterward (e.g. carve a door, block a pond).
 Exact-match collision contract: blocked == collision_block_id string, free == "0" (path_finder compares ==).
@@ -330,6 +330,10 @@ def main() -> None:
     # --- objects: stamp ids + mark furniture (blocked, must be inside an arena) ---
     for o in spec.get("objects", []):
         oid = object_ids[o["type"]]
+        blocks = o.get("blocks", True)
+        if not isinstance(blocks, bool):
+            errors.append(f"object {o['type']} has a non-boolean blocks policy")
+            continue
         for x, y in o.get("tiles", []):
             if not (0 <= x < W and 0 <= y < H):
                 errors.append(f"object {o['type']} tile ({x},{y}) out of bounds")
@@ -340,7 +344,8 @@ def main() -> None:
                     f"(would become a wall, not furniture)"
                 )
             object_g[y][x] = oid
-            collision[y][x] = cbid  # furniture blocks pathing (sight ok: arena!='')
+            if blocks:
+                collision[y][x] = cbid  # Furniture blocks pathing, not sight.
 
     # --- spawns ---
     for i, sp in enumerate(spec.get("spawns", [])):

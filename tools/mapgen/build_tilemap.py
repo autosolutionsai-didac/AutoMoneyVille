@@ -8,17 +8,25 @@ import math
 from pathlib import Path
 from typing import NamedTuple
 
-from PIL import Image
-
 try:
-    from tools.mapgen import tiled_gid
+    from tools.mapgen import (
+        claudeville_tiled_authoring as tiled_authoring,
+    )
+    from tools.mapgen import (
+        tiled_gid,
+    )
+    from tools.mapgen.claudeville_tilemap_preview import (
+        render_preview as _render_preview,
+    )
     from tools.mapgen.tilemap_culler import (
         CullError,
         cull_runtime_tilesets,
         stable_source_sha256,
     )
 except ModuleNotFoundError:  # Direct ``python tools/mapgen/build_tilemap.py``.
+    import claudeville_tiled_authoring as tiled_authoring
     import tiled_gid
+    from claudeville_tilemap_preview import render_preview as _render_preview
     from tilemap_culler import CullError, cull_runtime_tilesets, stable_source_sha256
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -72,13 +80,6 @@ def _write_json(path: Path, payload: object) -> None:
     temporary.replace(path)
 
 
-def _write_png(path: Path, image: Image.Image) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(f".{path.name}.tmp")
-    image.save(temporary, format="PNG", compress_level=9, optimize=False)
-    temporary.replace(path)
-
-
 def _properties(value) -> dict:
     if isinstance(value, dict):
         return value
@@ -112,11 +113,13 @@ def _static_path(url: object, label: str, *, container: Path | None = None) -> P
 
 def _layer_index(source: dict) -> dict[str, dict]:
     layers = source.get("layers")
-    if not isinstance(layers, list):
+    if not isinstance(layers, list) or any(not isinstance(layer, dict) for layer in layers):
         raise TilemapError("TMJ must contain root-level layers")
-    if [layer.get("name") for layer in layers if isinstance(layer, dict)] != list(MAP_LAYER_ORDER):
+    names = [layer.get("name") for layer in layers]
+    allowed = (list(MAP_LAYER_ORDER), [*MAP_LAYER_ORDER, tiled_authoring.GROUP_NAME])
+    if names not in allowed:
         raise TilemapError("TMJ layers must follow the declared render and collision order")
-    return {layer["name"]: layer for layer in layers}
+    return {layer["name"]: layer for layer in layers if layer.get("name") in MAP_LAYER_ORDER}
 
 
 def _validate_map_layers(source: dict) -> dict[str, dict]:
@@ -162,6 +165,17 @@ def _validate_map_layers(source: dict) -> dict[str, dict]:
 
 def _validate_source(source: dict) -> dict[str, dict]:
     layers = _validate_map_layers(source)
+    has_authoring = any(
+        item.get("name") == tiled_authoring.GROUP_NAME
+        for item in source.get("layers", []) if isinstance(item, dict)
+    )
+    if has_authoring != tiled_authoring.is_tiled_first(source):
+        raise TilemapError("Tiled-first profile and hidden Authoring group must be declared together")
+    if has_authoring:
+        try:
+            tiled_authoring.validate_authoring_group(source)
+        except tiled_authoring.TiledAuthoringError as exc:
+            raise TilemapError(str(exc)) from exc
     tilesets = source.get("tilesets")
     if not isinstance(tilesets, list) or len(tilesets) != 4:
         raise TilemapError("TMJ must reference terrain, town, office, and interiors tilesets")
@@ -248,6 +262,8 @@ def _remap_layers(source: dict, layers: dict[str, dict], runtime: dict, blocked:
     result = []
     for source_layer in source["layers"]:
         name = source_layer["name"]
+        if name == tiled_authoring.GROUP_NAME:
+            continue
         layer = dict(source_layer)
         if name == "Collisions":
             layer["data"] = _collision_data(blocked, collision_gid)
@@ -274,74 +290,19 @@ def _remap_layers(source: dict, layers: dict[str, dict], runtime: dict, blocked:
     return result
 
 
-def _render_preview(map_data: dict, runtime_root: Path, output: Path) -> None:
-    tilesets = sorted(map_data["tilesets"], key=lambda item: item["firstgid"])
-    images = {}
-    for tileset in tilesets:
-        image_path = runtime_root / "tiles" / Path(str(tileset["image"])).name
-        with Image.open(image_path) as opened:
-            images[tileset["firstgid"]] = opened.convert("RGBA")
-    props_path = runtime_root / "props.png"
-    props_meta = runtime_root / "props.json"
-    props = _read_json(props_meta, "runtime prop metadata") if props_meta.is_file() else {"frames": {}}
-    frames = props.get("frames", {}) if isinstance(props, dict) else {}
-    prop_image = Image.open(props_path).convert("RGBA") if props_path.is_file() else None
-    preview = Image.new("RGBA", (LOGICAL_SIZE[0] * LOGICAL_SIZE[2], LOGICAL_SIZE[1] * LOGICAL_SIZE[2]))
-    try:
-        for layer in map_data["layers"]:
-            if layer["name"] == "Collisions" or layer.get("visible") is False:
-                continue
-            if layer["type"] == "tilelayer":
-                for index, raw_gid in enumerate(layer["data"]):
-                    gid = raw_gid & tiled_gid.GID_MASK
-                    if not gid:
-                        continue
-                    tileset = max((item for item in tilesets if item["firstgid"] <= gid),
-                                  key=lambda item: item["firstgid"])
-                    tile_id = gid - tileset["firstgid"]
-                    columns = tileset["columns"]
-                    source = images[tileset["firstgid"]]
-                    sx, sy = (tile_id % columns) * 16, (tile_id // columns) * 16
-                    tile = tiled_gid.transform_orthogonal_tile(
-                        source.crop((sx, sy, sx + 16, sy + 16)), raw_gid
-                    )
-                    preview.alpha_composite(tile,
-                                            ((index % VISUAL_SIZE[0]) * 16,
-                                             (index // VISUAL_SIZE[0]) * 16))
-            elif layer["type"] == "objectgroup" and prop_image is not None:
-                for obj in layer["objects"]:
-                    props_value = _properties(obj.get("properties"))
-                    frame = frames.get(props_value.get("asset_key"), {}).get("frame", {})
-                    if not all(isinstance(frame.get(axis), int) for axis in ("x", "y", "w", "h")):
-                        continue
-                    anchor_x = props_value.get("anchor_x", 0.5)
-                    anchor_y = props_value.get("anchor_y", 1)
-                    if not all(isinstance(value, (int, float)) for value in (anchor_x, anchor_y, obj.get("x"), obj.get("y"))):
-                        continue
-                    display_scale = props_value.get("display_scale", 1)
-                    if (not isinstance(display_scale, (int, float)) or isinstance(display_scale, bool)
-                            or not 0 < display_scale <= 4):
-                        continue
-                    sprite = prop_image.crop((frame["x"], frame["y"], frame["x"] + frame["w"], frame["y"] + frame["h"]))
-                    if display_scale != 1:
-                        sprite = sprite.resize(
-                            (round(frame["w"] * display_scale), round(frame["h"] * display_scale)),
-                            Image.Resampling.NEAREST,
-                        )
-                    preview.alpha_composite(sprite, (round(obj["x"] - anchor_x * sprite.width),
-                                                    round(obj["y"] - anchor_y * sprite.height)))
-        _write_png(output, preview)
-    finally:
-        if prop_image is not None:
-            prop_image.close()
-
-
 def build_candidate(source_path: Path = AUTHORING_MAP, *, candidate_root: Path | None = None) -> BuildResult:
     source_path = Path(source_path).expanduser().resolve(strict=True)
     source_sha = stable_source_sha256(source_path)
     source = _read_json(source_path, "Tiled source map")
     layers = _validate_source(source)
-    blocked, _spec = _load_collision()
+    blocked, spec = _load_collision()
+    if tiled_authoring.is_tiled_first(source):
+        collision = [blocked[y * LOGICAL_SIZE[0]:(y + 1) * LOGICAL_SIZE[0]]
+                     for y in range(LOGICAL_SIZE[1])]
+        try:
+            tiled_authoring.compile_authoring(source, spec, collision)
+        except tiled_authoring.TiledAuthoringError as exc:
+            raise TilemapError(str(exc)) from exc
     root = (Path(candidate_root).expanduser().resolve(strict=False) if candidate_root else
             WORLD_ROOT / "visual_candidates" / source_sha[:16])
     root = root.resolve(strict=False)

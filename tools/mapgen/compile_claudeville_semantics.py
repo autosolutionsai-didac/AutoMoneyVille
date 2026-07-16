@@ -13,10 +13,12 @@ try:
     from tools.mapgen import claudeville_home_semantics as home_semantics
     from tools.mapgen import claudeville_semantic_graph as semantic_graph
     from tools.mapgen import claudeville_semantic_io as semantic_io
+    from tools.mapgen import claudeville_tiled_authoring as tiled_authoring
 except ModuleNotFoundError:  # Direct script execution.
     import claudeville_home_semantics as home_semantics  # type: ignore[no-redef]
     import claudeville_semantic_graph as semantic_graph  # type: ignore[no-redef]
     import claudeville_semantic_io as semantic_io  # type: ignore[no-redef]
+    import claudeville_tiled_authoring as tiled_authoring  # type: ignore[no-redef]
 
 SemanticCompileError = semantic_io.SemanticCompileError
 _atomic_json = semantic_io.atomic_json
@@ -109,10 +111,20 @@ def compile_semantics(
     layout: ModuleType | None = None,
 ) -> Compilation:
     """Return validated semantic payloads without writing any project files."""
+    tmj, spec = _read_json(tmj_path), _read_json(spec_path)
+    if tiled_authoring.is_tiled_first(tmj):
+        try:
+            collision = semantic_graph.read_collision(collision_path)
+            result = tiled_authoring.compile_authoring(tmj, spec, collision)
+        except (semantic_graph.SemanticGraphError, tiled_authoring.TiledAuthoringError) as exc:
+            raise SemanticCompileError(str(exc)) from exc
+        return Compilation(
+            result.town_spec, result.collision_overrides, result.collision,
+            result.object_stances, result.stats,
+        )
     layout = purpose_layouts if layout is None else layout
     if layout is None:
         raise SemanticCompileError("claudeville_purpose_layouts.py is required")
-    tmj, spec = _read_json(tmj_path), _read_json(spec_path)
     overrides, old_map = _read_json(overrides_path), _read_json(old_map_path)
     layers = _layers(tmj)
     try:

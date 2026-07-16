@@ -422,6 +422,8 @@ def _rebuild_purpose_props(map_data: dict, layers: dict[str, dict]) -> tuple[int
 def compose(source: Path = SOURCE_MAP, output: Path | None = None) -> dict:
     output = Path(output or source).expanduser().resolve(strict=False)
     map_data = _read_json(Path(source).expanduser().resolve(strict=True))
+    if _properties(map_data.get("properties")).get("authoring_profile") == "claudeville-modern-interiors-v3":
+        raise CompositionError("Tiled-first candidates cannot use the legacy procedural composer")
     if (map_data.get("width"), map_data.get("height"), map_data.get("tilewidth")) != (176, 96, 16):
         raise CompositionError("Claudeville authoring map must remain 176x96 at native 16px")
     layers = _layers(map_data)
@@ -478,8 +480,7 @@ def compose(source: Path = SOURCE_MAP, output: Path | None = None) -> dict:
     removed, added = _rebuild_purpose_props(map_data, layers)
     stats.update({"removed_legacy_props": removed, "purpose_props": added})
     stats.update(exterior_cleanup.apply_exterior_cleanup(
-        map_data, _read_json(AUTHORING_ROOT / "props.json").get("frames", {})
-    ))
+        map_data, _read_json(AUTHORING_ROOT / "props.json").get("frames", {})))
     names = (*purpose.PUBLIC_BUILDING_BOUNDS, *(home.name for home in HOMES))
     if any(stats.get(name, 0) < 1 for name in names):
         raise CompositionError(f"one or more interiors were not populated: {stats}")
