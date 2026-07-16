@@ -221,7 +221,7 @@ SOUTH_PURPOSE_PROPS: dict[str, tuple[PurposeProp, ...]] = {
     ),
     "Post Office": (
         _p(
-            "prop.office.counter_cream_left", 150, 52, "post.service", "service counter"
+            "prop.office.counter_cream_left", 151, 52, "post.service", "service counter"
         ),
         *(
             _p(
@@ -231,11 +231,11 @@ SOUTH_PURPOSE_PROPS: dict[str, tuple[PurposeProp, ...]] = {
                 "post.service",
                 "service counter",
             )
-            for x in range(151, 157)
+            for x in range(152, 156)
         ),
         _p(
             "prop.office.counter_cream_right",
-            157,
+            156,
             52,
             "post.service",
             "service counter",
@@ -252,24 +252,32 @@ SOUTH_PURPOSE_PROPS: dict[str, tuple[PurposeProp, ...]] = {
             for x in (153, 156)
         ),
         *(
+            _p(key, x, 51, "post.service", "postal clerk chair", False)
+            for key, x in (
+                ("prop.office.chair_blue", 153),
+                ("prop.office.chair_orange", 156),
+            )
+        ),
+        *(
             _p(key, x, 57, "post.waiting", "waiting chair", False)
             for key, x in (
                 ("prop.office.chair_blue_side", 151),
                 ("prop.office.chair_orange_side", 154),
-                ("prop.office.chair_blue_side", 157),
             )
         ),
         _p(
-            "prop.office.notice_board", 151, 44, "post.service", "service notice", False
+            "prop.office.notice_board", 151, 46, "post.service", "service notice", False
         ),
-        _p("prop.office.filing_cabinet", 162, 54, "post.sorting", "postal records"),
-        _p("prop.office.printer_station", 166, 56, "post.sorting", "label printer"),
-        _p("prop.office.copier", 168, 55, "post.sorting", "document copier"),
-        _p("prop.office.table_light", 164, 59, "post.sorting", "mail sorting table"),
+        _p("prop.office.table_light", 157, 59, "post.waiting", "parcel preparation table"),
+        _p("prop.office.paper_stack", 157, 58, "post.waiting", "packing forms", False),
+        _p("prop.office.filing_cabinet", 169, 53, "post.sorting", "postal records"),
+        _p("prop.office.printer_station", 167, 56, "post.sorting", "label printer"),
+        _p("prop.office.copier", 169, 55, "post.sorting", "document copier"),
+        _p("prop.office.table_light", 165, 59, "post.sorting", "mail sorting table"),
         _p("prop.office.table_light", 168, 59, "post.sorting", "mail sorting table"),
         _p(
             "prop.office.paper_stack",
-            164,
+            165,
             58,
             "post.sorting",
             "sorted mail",
@@ -283,7 +291,7 @@ SOUTH_PURPOSE_PROPS: dict[str, tuple[PurposeProp, ...]] = {
             "sorted mail",
             False,
         ),
-        _p("prop.office.waste_bin", 170, 61, "post.sorting", "recycling bin", False),
+        _p("prop.office.waste_bin", 169, 61, "post.sorting", "recycling bin", False),
     ),
     "Town Hall": (
         _p(
@@ -314,7 +322,7 @@ SOUTH_PURPOSE_PROPS: dict[str, tuple[PurposeProp, ...]] = {
             _p(
                 "prop.office.monitor_blue",
                 x,
-                77,
+                76,
                 "hall.public_service",
                 "service terminal",
                 False,
@@ -322,12 +330,18 @@ SOUTH_PURPOSE_PROPS: dict[str, tuple[PurposeProp, ...]] = {
             for x in (91, 93)
         ),
         *(
+            _p(key, x, 77, "hall.public_service", "service chair", False)
+            for key, x in (
+                ("prop.office.chair_blue", 91),
+                ("prop.office.chair_orange", 93),
+            )
+        ),
+        *(
             _p(key, x, 82, "hall.public_service", "waiting chair", False)
             for key, x in (
-                ("prop.office.armchair_ice", 89),
-                ("prop.office.armchair_mustard", 91),
-                ("prop.office.armchair_ice", 94),
-                ("prop.office.armchair_mustard", 96),
+                ("prop.office.chair_blue_side", 89),
+                ("prop.office.chair_orange_side", 92),
+                ("prop.office.chair_blue_side", 95),
             )
         ),
         *(
@@ -347,29 +361,14 @@ SOUTH_PURPOSE_PROPS: dict[str, tuple[PurposeProp, ...]] = {
         ),
         _p(
             "prop.office.filing_cabinet",
-            105,
-            77,
+            106,
+            78,
             "hall.administration",
             "civic records",
         ),
         _p(
-            "prop.office.display_cabinet",
-            102,
-            77,
-            "hall.administration",
-            "civic display",
-        ),
-        _p(
-            "prop.office.notice_board",
-            100,
-            76,
-            "hall.administration",
-            "administration notice",
-            False,
-        ),
-        _p(
             "prop.office.whiteboard",
-            104,
+            103,
             76,
             "hall.administration",
             "planning board",
@@ -379,15 +378,15 @@ SOUTH_PURPOSE_PROPS: dict[str, tuple[PurposeProp, ...]] = {
             _p(key, x, y, "hall.council", "council chair", False)
             for key, x, y in (
                 ("prop.office.chair_blue", 94, 85),
-                ("prop.office.chair_orange", 96, 85),
+                ("prop.office.chair_orange", 97, 85),
                 ("prop.office.chair_blue", 100, 85),
                 ("prop.office.chair_orange", 94, 90),
-                ("prop.office.chair_blue", 99, 90),
-                ("prop.office.chair_orange", 101, 90),
+                ("prop.office.chair_blue", 97, 90),
+                ("prop.office.chair_orange", 100, 90),
             )
         ),
-        _p("prop.office.table_walnut_long", 95, 88, "hall.council", "council table"),
-        _p("prop.office.table_walnut_long", 99, 88, "hall.council", "council table"),
-        _p("prop.office.wall_chart", 99, 83, "hall.council", "agenda board", False),
+        _p("prop.office.table_walnut_long", 96, 88, "hall.council", "council table"),
+        _p("prop.office.table_walnut_long", 98, 88, "hall.council", "council table"),
+        _p("prop.office.wall_chart", 99, 84, "hall.council", "agenda board", False),
     ),
 }

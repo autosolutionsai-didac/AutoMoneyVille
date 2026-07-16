@@ -58,6 +58,7 @@ PUBLIC_BUILDING_BOUNDS: dict[str, Rect] = {
 TERRACE_BOUNDS: dict[str, Rect] = {"Claudeville Cafe": (92, 57, 109, 64)}
 ZONE_RECTS: dict[str, Rect] = {
     "bank.archive": (16, 12, 20, 20),
+    "bank.operations": (20, 12, 29, 20),
     "bank.teller": (19, 19, 28, 25),
     "bank.advisory": (10, 21, 18, 31),
     "bank.waiting": (19, 25, 29, 31),

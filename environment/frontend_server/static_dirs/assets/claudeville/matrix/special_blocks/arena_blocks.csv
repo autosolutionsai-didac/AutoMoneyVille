@@ -5,71 +5,72 @@
 32304, Claudeville, Bank, bank.advisory
 32305, Claudeville, Bank, bank.archive
 32306, Claudeville, Bank, bank.circulation
-32307, Claudeville, Bank, bank.teller
-32308, Claudeville, Bank, bank.waiting
-32309, Claudeville, Central Plaza, plaza
-32310, Claudeville, Claudeville Cafe, cafe.dining
-32311, Claudeville, Claudeville Cafe, cafe.service
-32312, Claudeville, Claudeville Cafe, cafe.terrace
-32313, Claudeville, Community Center, community.event_hall
-32314, Claudeville, Community Center, community.lounge
-32315, Claudeville, Community Center, community.reception
-32316, Claudeville, Community Center, community_center.circulation
-32317, Claudeville, Home 1, home_1.bathroom
-32318, Claudeville, Home 1, home_1.bedroom
-32319, Claudeville, Home 1, home_1.garden
-32320, Claudeville, Home 1, home_1.kitchen
-32321, Claudeville, Home 1, home_1.living_room
-32322, Claudeville, Home 10, home_10.bathroom
-32323, Claudeville, Home 10, home_10.bedroom
-32324, Claudeville, Home 10, home_10.garden
-32325, Claudeville, Home 10, home_10.kitchen
-32326, Claudeville, Home 10, home_10.living_room
-32327, Claudeville, Home 2, home_2.bathroom
-32328, Claudeville, Home 2, home_2.main_room
-32329, Claudeville, Home 3, home_3.bathroom
-32330, Claudeville, Home 3, home_3.main_room
-32331, Claudeville, Home 4, home_4.bathroom
-32332, Claudeville, Home 4, home_4.main_room
-32333, Claudeville, Home 5, home_5.bedroom
-32334, Claudeville, Home 5, home_5.garden
-32335, Claudeville, Home 5, home_5.kitchen
-32336, Claudeville, Home 5, home_5.living_room
-32337, Claudeville, Home 6, home_6.bathroom
-32338, Claudeville, Home 6, home_6.bedroom
-32339, Claudeville, Home 6, home_6.garden
-32340, Claudeville, Home 6, home_6.kitchen
-32341, Claudeville, Home 6, home_6.living_room
-32342, Claudeville, Home 7, home_7.bathroom
-32343, Claudeville, Home 7, home_7.bedroom
-32344, Claudeville, Home 7, home_7.garden
-32345, Claudeville, Home 7, home_7.kitchen
-32346, Claudeville, Home 7, home_7.living_room
-32347, Claudeville, Home 8, home_8.bedroom
-32348, Claudeville, Home 8, home_8.garden
-32349, Claudeville, Home 8, home_8.kitchen
-32350, Claudeville, Home 8, home_8.living_room
-32351, Claudeville, Home 9, home_9.bathroom
-32352, Claudeville, Home 9, home_9.bedroom
-32353, Claudeville, Home 9, home_9.garden
-32354, Claudeville, Home 9, home_9.kitchen
-32355, Claudeville, Home 9, home_9.living_room
-32356, Claudeville, Library, library.circulation
-32357, Claudeville, Library, library.reading
-32358, Claudeville, Library, library.stacks
-32359, Claudeville, Market, market.checkout
-32360, Claudeville, Market, market.retail
-32361, Claudeville, Post Office, post.service
-32362, Claudeville, Post Office, post.sorting
-32363, Claudeville, Post Office, post.waiting
-32364, Claudeville, Post Office, post_office.circulation
-32365, Claudeville, Town Hall, hall.administration
-32366, Claudeville, Town Hall, hall.council
-32367, Claudeville, Town Hall, hall.public_service
-32368, Claudeville, Town Hall, town_hall.circulation
-32369, Claudeville, University, university.cafeteria
-32370, Claudeville, University, university.lecture
-32371, Claudeville, University, university.study_lab
-32372, Claudeville, Workshop, workshop.circulation
-32373, Claudeville, Workshop, workshop.intake
-32374, Claudeville, Workshop, workshop.machine_bay
+32307, Claudeville, Bank, bank.operations
+32308, Claudeville, Bank, bank.teller
+32309, Claudeville, Bank, bank.waiting
+32310, Claudeville, Central Plaza, plaza
+32311, Claudeville, Claudeville Cafe, cafe.dining
+32312, Claudeville, Claudeville Cafe, cafe.service
+32313, Claudeville, Claudeville Cafe, cafe.terrace
+32314, Claudeville, Community Center, community.event_hall
+32315, Claudeville, Community Center, community.lounge
+32316, Claudeville, Community Center, community.reception
+32317, Claudeville, Community Center, community_center.circulation
+32318, Claudeville, Home 1, home_1.bathroom
+32319, Claudeville, Home 1, home_1.bedroom
+32320, Claudeville, Home 1, home_1.garden
+32321, Claudeville, Home 1, home_1.kitchen
+32322, Claudeville, Home 1, home_1.living_room
+32323, Claudeville, Home 10, home_10.bathroom
+32324, Claudeville, Home 10, home_10.bedroom
+32325, Claudeville, Home 10, home_10.garden
+32326, Claudeville, Home 10, home_10.kitchen
+32327, Claudeville, Home 10, home_10.living_room
+32328, Claudeville, Home 2, home_2.bathroom
+32329, Claudeville, Home 2, home_2.main_room
+32330, Claudeville, Home 3, home_3.bathroom
+32331, Claudeville, Home 3, home_3.main_room
+32332, Claudeville, Home 4, home_4.bathroom
+32333, Claudeville, Home 4, home_4.main_room
+32334, Claudeville, Home 5, home_5.bedroom
+32335, Claudeville, Home 5, home_5.garden
+32336, Claudeville, Home 5, home_5.kitchen
+32337, Claudeville, Home 5, home_5.living_room
+32338, Claudeville, Home 6, home_6.bathroom
+32339, Claudeville, Home 6, home_6.bedroom
+32340, Claudeville, Home 6, home_6.garden
+32341, Claudeville, Home 6, home_6.kitchen
+32342, Claudeville, Home 6, home_6.living_room
+32343, Claudeville, Home 7, home_7.bathroom
+32344, Claudeville, Home 7, home_7.bedroom
+32345, Claudeville, Home 7, home_7.garden
+32346, Claudeville, Home 7, home_7.kitchen
+32347, Claudeville, Home 7, home_7.living_room
+32348, Claudeville, Home 8, home_8.bedroom
+32349, Claudeville, Home 8, home_8.garden
+32350, Claudeville, Home 8, home_8.kitchen
+32351, Claudeville, Home 8, home_8.living_room
+32352, Claudeville, Home 9, home_9.bathroom
+32353, Claudeville, Home 9, home_9.bedroom
+32354, Claudeville, Home 9, home_9.garden
+32355, Claudeville, Home 9, home_9.kitchen
+32356, Claudeville, Home 9, home_9.living_room
+32357, Claudeville, Library, library.circulation
+32358, Claudeville, Library, library.reading
+32359, Claudeville, Library, library.stacks
+32360, Claudeville, Market, market.checkout
+32361, Claudeville, Market, market.retail
+32362, Claudeville, Post Office, post.service
+32363, Claudeville, Post Office, post.sorting
+32364, Claudeville, Post Office, post.waiting
+32365, Claudeville, Post Office, post_office.circulation
+32366, Claudeville, Town Hall, hall.administration
+32367, Claudeville, Town Hall, hall.council
+32368, Claudeville, Town Hall, hall.public_service
+32369, Claudeville, Town Hall, town_hall.circulation
+32370, Claudeville, University, university.cafeteria
+32371, Claudeville, University, university.lecture
+32372, Claudeville, University, university.study_lab
+32373, Claudeville, Workshop, workshop.circulation
+32374, Claudeville, Workshop, workshop.intake
+32375, Claudeville, Workshop, workshop.machine_bay

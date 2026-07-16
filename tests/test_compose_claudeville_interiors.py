@@ -196,6 +196,25 @@ class ClaudevilleInteriorCompositionTests(unittest.TestCase):
             output = Path(temporary) / "north-facing.tmj"
             composer.compose(composer.SOURCE_MAP, output)
             layers = layer_lookup(load_map(output))
+        town_hall_doors = [
+            obj
+            for obj in layers["Depth Props"]["objects"]
+            if obj.get("name") == "Town Hall open front door"
+        ]
+        self.assertEqual(
+            [(obj["x"], obj["y"]) for obj in town_hall_doors],
+            [(1552, 1248)],
+        )
+        door_properties = {
+            item["name"]: item["value"] for item in town_hall_doors[0]["properties"]
+        }
+        self.assertEqual(door_properties["sector"], "Town Hall")
+        self.assertEqual(door_properties["asset_key"], "prop.facade.door_open")
+        hall_x, hall_y = purpose.ENTRANCES["Town Hall"]
+        self.assertEqual(
+            (town_hall_doors[0]["x"] // 16, town_hall_doors[0]["y"] // 16),
+            (2 * hall_x + 1, 2 * hall_y + 4),
+        )
         entrances = {**purpose.ENTRANCES, **HOME_ENTRANCES}
         for sector, point in entry_paths.SOUTH_FRONT_ENTRANCES.items():
             visual_x = 2 * point[0]

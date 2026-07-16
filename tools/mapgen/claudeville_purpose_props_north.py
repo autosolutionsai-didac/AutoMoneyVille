@@ -40,12 +40,22 @@ NORTH_PURPOSE_PROPS: dict[str, tuple[PurposeProp, ...]] = {
                 ("prop.office.chair_blue", 25),
             )
         ),
-        _p("prop.office.computer_desk", 12, 23, "bank.advisory", "advisory desk"),
-        _p(
-            "prop.office.manager_chair", 15, 24, "bank.advisory", "advisor chair", False
+        *(
+            _p("prop.office.computer_desk", x, 15, "bank.operations", "operations desk")
+            for x in (22, 26)
         ),
-        _p("prop.office.computer_desk", 12, 28, "bank.advisory", "advisory desk"),
-        _p("prop.office.armchair_dark", 15, 29, "bank.advisory", "client chair", False),
+        *(
+            _p("prop.office.manager_chair", x, 17, "bank.operations", "staff chair", False)
+            for x in (22, 26)
+        ),
+        _p("prop.office.filing_cabinet", 24, 17, "bank.operations", "operations records"),
+        _p("prop.office.notice_board", 27, 14, "bank.operations", "operations board", False),
+        _p("prop.office.computer_desk", 12, 23, "bank.advisory", "advisory desk"),
+        _p("prop.office.manager_chair", 12, 26, "bank.advisory", "advisor chair", False),
+        _p("prop.office.chair_blue_side", 15, 24, "bank.advisory", "client chair", False),
+        _p("prop.office.computer_desk", 12, 27, "bank.advisory", "advisory desk"),
+        _p("prop.office.manager_chair", 12, 30, "bank.advisory", "advisor chair", False),
+        _p("prop.office.chair_orange_side", 15, 28, "bank.advisory", "client chair", False),
         *(
             _p(key, x, 27, "bank.waiting", "waiting chair", False)
             for key, x in (
@@ -55,7 +65,6 @@ NORTH_PURPOSE_PROPS: dict[str, tuple[PurposeProp, ...]] = {
             )
         ),
         _p("prop.office.notice_board", 27, 28, "bank.waiting", "rate notice", False),
-        _p("prop.office.filing_cabinet", 18, 17, "bank.archive", "secure records"),
     ),
     "University": (
         _p(

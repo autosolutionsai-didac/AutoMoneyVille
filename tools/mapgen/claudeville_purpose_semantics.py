@@ -39,8 +39,15 @@ PURPOSE_STAMPS: dict[str, tuple[AtlasStamp, ...]] = {
         ),
         AtlasStamp(
             "office_furniture",
-            (4, 23, 2, 3),
+            (4, 23, 2, 2),
             (18, 14),
+            "Interior Furniture L1",
+            "preserve-collision",
+        ),
+        AtlasStamp(
+            "office_furniture",
+            (4, 25, 1, 1),
+            (18, 16),
             "Interior Furniture L1",
             "preserve-collision",
         ),
@@ -149,8 +156,8 @@ SEMANTIC_OBJECTS: dict[str, tuple[SemanticObject, ...]] = {
         SemanticObject(
             "bank.teller", "teller counter", ((10, 11), (11, 11), (12, 11), (13, 11))
         ),
-        SemanticObject("bank.advisory", "advisory desk", ((6, 11), (6, 14))),
-        SemanticObject("bank.archive", "secure records", ((9, 8),)),
+        SemanticObject("bank.operations", "operations desk", ((11, 7), (13, 7))),
+        SemanticObject("bank.advisory", "advisory desk", ((6, 11), (6, 13))),
         SemanticObject("bank.archive", "archive cabinets", ((8, 7), (9, 7))),
         SemanticObject(
             "bank.waiting", "waiting seating", ((10, 13), (11, 13), (12, 13))
@@ -234,10 +241,11 @@ SEMANTIC_OBJECTS: dict[str, tuple[SemanticObject, ...]] = {
             "post.service", "postal counter", ((75, 26), (76, 26), (77, 26), (78, 26))
         ),
         SemanticObject(
-            "post.waiting", "waiting seating", ((75, 28), (77, 28), (78, 28))
+            "post.waiting", "waiting seating", ((75, 28), (77, 28))
         ),
+        SemanticObject("post.waiting", "parcel preparation table", ((78, 29),)),
         SemanticObject(
-            "post.sorting", "sorting station", ((81, 27), (83, 28), (84, 27))
+            "post.sorting", "sorting station", ((84, 26), (83, 28), (84, 27))
         ),
         SemanticObject(
             "post.sorting", "parcel sorting rack", ((81, 23), (82, 23), (83, 23), (84, 23))
@@ -251,6 +259,6 @@ SEMANTIC_OBJECTS: dict[str, tuple[SemanticObject, ...]] = {
         SemanticObject(
             "hall.administration", "administration desk", ((50, 39), (52, 39))
         ),
-        SemanticObject("hall.council", "council table", ((47, 44), (49, 44))),
+        SemanticObject("hall.council", "council table", ((48, 44), (49, 44))),
     ),
 }

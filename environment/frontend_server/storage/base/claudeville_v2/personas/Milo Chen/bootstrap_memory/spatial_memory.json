@@ -5,10 +5,12 @@
         "advisory desk"
       ],
       "bank.archive": [
-        "archive cabinets",
-        "secure records"
+        "archive cabinets"
       ],
       "bank.circulation": [],
+      "bank.operations": [
+        "operations desk"
+      ],
       "bank.teller": [
         "teller counter"
       ],
@@ -69,6 +71,7 @@
         "sorting station"
       ],
       "post.waiting": [
+        "parcel preparation table",
         "waiting seating"
       ],
       "post_office.circulation": []

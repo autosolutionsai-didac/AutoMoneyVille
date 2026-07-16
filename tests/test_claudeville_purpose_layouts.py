@@ -167,7 +167,8 @@ class PurposeLayoutTests(unittest.TestCase):
         expected_stamps = {
             "Bank": {
                 ("office_furniture", (0, 23, 2, 3), (16, 14)),
-                ("office_furniture", (4, 23, 2, 3), (18, 14)),
+                ("office_furniture", (4, 23, 2, 2), (18, 14)),
+                ("office_furniture", (4, 25, 1, 1), (18, 16)),
             },
             "Post Office": {
                 ("exteriors_post", (0, 13, 7, 4), (162, 45)),
@@ -211,8 +212,8 @@ class PurposeLayoutTests(unittest.TestCase):
                 if prop.semantic_type == "council table"
             },
             {
-                ("prop.office.table_walnut_long", 95, 88),
-                ("prop.office.table_walnut_long", 99, 88),
+                ("prop.office.table_walnut_long", 96, 88),
+                ("prop.office.table_walnut_long", 98, 88),
             },
         )
 
@@ -229,10 +230,42 @@ class PurposeLayoutTests(unittest.TestCase):
         )
         self.assertEqual(
             semantic_by_type[("Town Hall", "council table")],
-            ((47, 44), (49, 44)),
+            ((48, 44), (49, 44)),
         )
 
     def test_civic_props_form_clear_functional_groups(self):
+        bank = layouts.PURPOSE_PROPS["Bank"]
+        self.assertEqual(
+            {
+                (prop.semantic_type, prop.visual_x, prop.visual_y, prop.blocks)
+                for prop in bank
+                if prop.zone == "bank.operations"
+            },
+            {
+                ("operations board", 27, 14, False),
+                ("operations desk", 22, 15, True),
+                ("operations desk", 26, 15, True),
+                ("staff chair", 22, 17, False),
+                ("staff chair", 26, 17, False),
+                ("operations records", 24, 17, True),
+            },
+        )
+        self.assertEqual(
+            {
+                (prop.semantic_type, prop.visual_x, prop.visual_y)
+                for prop in bank
+                if prop.zone == "bank.advisory"
+            },
+            {
+                ("advisory desk", 12, 23),
+                ("client chair", 15, 24),
+                ("advisor chair", 12, 26),
+                ("advisory desk", 12, 27),
+                ("client chair", 15, 28),
+                ("advisor chair", 12, 30),
+            },
+        )
+
         academy = layouts.PURPOSE_PROPS["Agent Academy"]
         self.assertEqual(
             {
@@ -277,14 +310,49 @@ class PurposeLayoutTests(unittest.TestCase):
                 if prop.semantic_type in {"mail sorting table", "sorted mail"}
             },
             {
-                ("prop.office.table_light", 164, 59, True),
+                ("prop.office.table_light", 165, 59, True),
                 ("prop.office.table_light", 168, 59, True),
-                ("prop.office.paper_stack", 164, 58, False),
+                ("prop.office.paper_stack", 165, 58, False),
                 ("prop.office.paper_stack", 168, 58, False),
+            },
+        )
+        self.assertEqual(
+            {
+                (prop.semantic_type, prop.visual_x, prop.visual_y, prop.blocks)
+                for prop in post
+                if prop.zone == "post.waiting"
+            },
+            {
+                ("waiting chair", 151, 57, False),
+                ("waiting chair", 154, 57, False),
+                ("packing forms", 157, 58, False),
+                ("parcel preparation table", 157, 59, True),
+            },
+        )
+
+        self.assertEqual(
+            {
+                (prop.semantic_type, prop.visual_x, prop.visual_y)
+                for prop in layouts.PURPOSE_PROPS["Town Hall"]
+                if prop.semantic_type in {"waiting chair", "admin chair", "council chair"}
+            },
+            {
+                ("waiting chair", 89, 82),
+                ("waiting chair", 92, 82),
+                ("waiting chair", 95, 82),
+                ("admin chair", 100, 82),
+                ("admin chair", 104, 82),
+                ("council chair", 94, 85),
+                ("council chair", 97, 85),
+                ("council chair", 100, 85),
+                ("council chair", 94, 90),
+                ("council chair", 97, 90),
+                ("council chair", 100, 90),
             },
         )
 
         self.assertEqual(layouts.ZONE_RECTS["academy.lounge"], (118, 24, 126, 32))
+        self.assertEqual(layouts.ZONE_RECTS["bank.operations"], (20, 12, 29, 20))
         self.assertEqual(layouts.ZONE_RECTS["hall.council"], (92, 83, 103, 91))
 
     def test_home_kitchens_stay_inside_their_distinct_home_shells(self):

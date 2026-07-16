@@ -53,7 +53,6 @@ TARGET_LAYER = {"Interior Furniture L2 ": "Interior Furniture L2"}
 ATLAS_FIRSTGIDS = {"terrain": 1, "town": 5117, "office": 37398, "interiors": 38214}
 PURPOSE_OBJECT_ID_BASE = 10000
 PURPOSE_ID_PREFIX = "claudeville-purpose/"
-
 class CompositionError(ValueError): ...
 
 def _read_json(path: Path) -> dict:
@@ -375,11 +374,14 @@ def _copy_atlas_stamp(
 
 def _rebuild_purpose_props(map_data: dict, layers: dict[str, dict]) -> tuple[int, int]:
     bounds = (*purpose.PUBLIC_BUILDING_BOUNDS.values(), *purpose.TERRACE_BOUNDS.values())
-    objects = layers["Depth Props"]["objects"]
-    retained = []
+    objects, retained = layers["Depth Props"]["objects"], []
     for obj in objects:
         values = _properties(obj.get("properties"))
         x, y = obj.get("x", -16) / 16, obj.get("y", -16) / 16
+        if obj.get("name") == "Town Hall open front door":
+            entrance = purpose.ENTRANCES["Town Hall"]
+            retained.append(obj | {"x": (2 * entrance[0] + 1) * 16, "y": (2 * entrance[1] + 4) * 16})
+            continue
         if str(values.get("purpose_id", "")).startswith(PURPOSE_ID_PREFIX) or any(
             _inside(rect, x, y) for rect in bounds
         ):
@@ -416,7 +418,6 @@ def _rebuild_purpose_props(map_data: dict, layers: dict[str, dict]) -> tuple[int
     layers["Depth Props"]["objects"] = retained
     map_data["nextobjectid"] = max(obj["id"] for obj in retained) + 1
     return len(objects) - len(retained) + len(declared), len(declared)
-
 
 def compose(source: Path = SOURCE_MAP, output: Path | None = None) -> dict:
     output = Path(output or source).expanduser().resolve(strict=False)
@@ -486,7 +487,6 @@ def compose(source: Path = SOURCE_MAP, output: Path | None = None) -> dict:
         raise CompositionError("Free Modern Interiors must never enter the runtime map")
     _write_json(output, map_data)
     return stats
-
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
