@@ -28,7 +28,7 @@
       "source": "fallback",
       "sheet": {"width": 96, "height": 128},
       "frame": {"width": 32, "height": 32},
-      "scale": 1.25,
+      "scale": 1,
       "origin": {"x": 0.5, "y": 1},
       "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
       "animations": {
@@ -45,7 +45,7 @@
       "source": "fallback",
       "sheet": {"width": 96, "height": 128},
       "frame": {"width": 32, "height": 32},
-      "scale": 1.25,
+      "scale": 1,
       "origin": {"x": 0.5, "y": 1},
       "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
       "animations": {
@@ -62,7 +62,7 @@
       "source": "fallback",
       "sheet": {"width": 96, "height": 128},
       "frame": {"width": 32, "height": 32},
-      "scale": 1.25,
+      "scale": 1,
       "origin": {"x": 0.5, "y": 1},
       "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
       "animations": {
@@ -79,7 +79,7 @@
       "source": "fallback",
       "sheet": {"width": 96, "height": 128},
       "frame": {"width": 32, "height": 32},
-      "scale": 1.25,
+      "scale": 1,
       "origin": {"x": 0.5, "y": 1},
       "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
       "animations": {
@@ -96,7 +96,7 @@
       "source": "fallback",
       "sheet": {"width": 96, "height": 128},
       "frame": {"width": 32, "height": 32},
-      "scale": 1.25,
+      "scale": 1,
       "origin": {"x": 0.5, "y": 1},
       "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
       "animations": {
@@ -113,7 +113,7 @@
       "source": "fallback",
       "sheet": {"width": 96, "height": 128},
       "frame": {"width": 32, "height": 32},
-      "scale": 1.25,
+      "scale": 1,
       "origin": {"x": 0.5, "y": 1},
       "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
       "animations": {
@@ -130,7 +130,7 @@
       "source": "fallback",
       "sheet": {"width": 96, "height": 128},
       "frame": {"width": 32, "height": 32},
-      "scale": 1.25,
+      "scale": 1,
       "origin": {"x": 0.5, "y": 1},
       "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
       "animations": {
@@ -147,7 +147,7 @@
       "source": "fallback",
       "sheet": {"width": 96, "height": 128},
       "frame": {"width": 32, "height": 32},
-      "scale": 1.25,
+      "scale": 1,
       "origin": {"x": 0.5, "y": 1},
       "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
       "animations": {
@@ -164,7 +164,7 @@
       "source": "fallback",
       "sheet": {"width": 96, "height": 128},
       "frame": {"width": 32, "height": 32},
-      "scale": 1.25,
+      "scale": 1,
       "origin": {"x": 0.5, "y": 1},
       "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
       "animations": {
@@ -181,7 +181,7 @@
       "source": "fallback",
       "sheet": {"width": 96, "height": 128},
       "frame": {"width": 32, "height": 32},
-      "scale": 1.25,
+      "scale": 1,
       "origin": {"x": 0.5, "y": 1},
       "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
       "animations": {

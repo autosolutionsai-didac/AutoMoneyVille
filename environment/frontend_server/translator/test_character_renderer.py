@@ -56,10 +56,13 @@ const scene = {
 adapter.createAnimations(scene, ["Nora Vale"]);
 const resident = adapter.createSprite(scene, "Nora Vale", 10, 20);
 assert.deepStrictEqual(resident.origin, [0.5, 1]);
-assert.strictEqual(resident.scale, 1.25);
+assert.strictEqual(resident.scale, 1);
 assert.deepStrictEqual(resident.frameDimensions, {width: 32, height: 32});
 assert.deepStrictEqual(resident.logicalFootAnchor, {x: 0.5, y: 1});
 assert.deepStrictEqual(resident.logicalFootOffset, {x: 0, y: 0});
+assert.deepStrictEqual(adapter.displayLayout(resident), {
+  left: -6, top: -12, width: 32, height: 32, foot: {x: 10, y: 20},
+});
 assert.deepStrictEqual(adapter.displayWorldFoot(resident), {x: 10, y: 20});
 assert.strictEqual(adapter.depthForSprite(resident, null), 2020);
 assert.strictEqual(createdAnimations.length, 4);
@@ -71,6 +74,7 @@ assert.strictEqual(resident.frame, 10);
 const fallback = adapter.createSprite(scene, "Missing Person", 0, 0);
 assert.strictEqual(fallback.key, "atlas");
 assert.deepStrictEqual(fallback.origin, [0.5, 1]);
+assert.strictEqual(fallback.scale, 1);
 adapter.setIdle(scene, fallback, "Missing Person", "down");
 assert.strictEqual(fallback.frame, "down");
 
@@ -302,6 +306,12 @@ process.stdout.write(JSON.stringify({ok: true}));
             self.assertNotIn("WORLD_DEPTH_BASE", script)
             self.assertNotIn("body.y + 60", script)
         self.assertIn("spriteLayout.foot.x, spriteLayout.foot.y", home_controls)
+        self.assertIn(
+            "spriteLayout.foot.x, spriteLayout.foot.y, 18, 6", home_controls
+        )
+        self.assertIn(
+            "spriteLayout.foot.x, spriteLayout.foot.y, 18, 6", demo_script
+        )
         self.assertIn("followShadow.y = spriteLayout.foot.y", home_movement)
         self.assertIn("personaShadows[persona_name]", demo_script)
         self.assertIn("currShadow.y = spriteLayout.foot.y", demo_script)

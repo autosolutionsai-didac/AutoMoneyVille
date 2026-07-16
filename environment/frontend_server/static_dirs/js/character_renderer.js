@@ -278,7 +278,7 @@
       : scene.physics.add.sprite(x, y, "atlas", "down");
     applyNearest(scene, hasTexture ? resident.texture_key : "atlas");
     const origin = resident ? resident.origin : {x: 0.5, y: 1};
-    const scale = resident ? resident.scale : 1.25;
+    const scale = resident ? resident.scale : 1;
     const footOffset = resident ? resident.foot_offset : {x: 0, y: 0};
     sprite.setOrigin(origin.x, origin.y);
     sprite.setScale(scale);
