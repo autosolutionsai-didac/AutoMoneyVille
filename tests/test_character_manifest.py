@@ -188,6 +188,82 @@ class CharacterManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(character_manifest.ManifestError, "top-level"):
             character_manifest.validate_character_manifest(free, STATIC_ROOT)
 
+    def test_paid_gate_recomputes_candidate_component_and_composite_provenance(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = self._source_fixture(root)
+            static = root / "static"
+            manifest = character_manifest.curate_residents(
+                source, static, static / "assets/characters/manifest.json"
+            )
+            candidate = source / "characters/Marcus.png"
+            with Image.open(candidate) as opened:
+                changed = opened.convert("RGBA")
+            changed.putpixel((0, 0), (255, 1, 2, 255))
+            changed.save(candidate)
+            with self.assertRaisesRegex(
+                character_manifest.ManifestError, "candidate hashes"
+            ):
+                character_manifest.require_full_pack(manifest, static, source)
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = self._source_fixture(root)
+            static = root / "static"
+            manifest = character_manifest.curate_residents(
+                source, static, static / "assets/characters/manifest.json"
+            )
+            nora = next(item for item in manifest["residents"] if item["name"] == "Nora Vale")
+            portrait = static / nora["portrait_url"]
+            with Image.open(portrait) as opened:
+                changed = opened.convert("RGBA")
+            changed.putpixel((0, 0), (6, 5, 4, 255))
+            changed.save(portrait)
+            nora["portrait_sha256"] = hashlib.sha256(portrait.read_bytes()).hexdigest()
+            with self.assertRaisesRegex(
+                character_manifest.ManifestError, "portrait does not match"
+            ):
+                character_manifest.require_full_pack(manifest, static, source)
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = self._source_fixture(root)
+            static = root / "static"
+            manifest = character_manifest.curate_residents(
+                source, static, static / "assets/characters/manifest.json"
+            )
+            component = (
+                source / "moderninteriors-win/2_Characters/Character_Generator/"
+                "Bodies/16x16/Body_03.png"
+            )
+            with Image.open(component) as opened:
+                changed = opened.convert("RGBA")
+            changed.putpixel((0, 0), (3, 4, 5, 255))
+            changed.save(component)
+            with self.assertRaisesRegex(
+                character_manifest.ManifestError, "component provenance"
+            ):
+                character_manifest.require_full_pack(manifest, static, source)
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = self._source_fixture(root)
+            static = root / "static"
+            manifest = character_manifest.curate_residents(
+                source, static, static / "assets/characters/manifest.json"
+            )
+            lena = next(item for item in manifest["residents"] if item["name"] == "Lena Ortiz")
+            sprite = static / lena["sprite_url"]
+            with Image.open(sprite) as opened:
+                changed = opened.convert("RGBA")
+            changed.putpixel((0, 0), (9, 8, 7, 255))
+            changed.save(sprite)
+            lena["runtime_sha256"] = hashlib.sha256(sprite.read_bytes()).hexdigest()
+            with self.assertRaisesRegex(
+                character_manifest.ManifestError, "does not match declared components"
+            ):
+                character_manifest.require_full_pack(manifest, static, source)
+
     def test_curation_audits_all_sixteen_and_emits_only_final_ten(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

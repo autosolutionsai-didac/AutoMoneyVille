@@ -45,9 +45,13 @@ const scene = {
     generateFrameNames: (key, value) => ({key, prefix: value.prefix}),
   },
   physics: {add: {sprite(x, y, key, frame) {
-    const sprite = {x, y, key, frame, anims: {play(value) {sprite.played = value;}, stop() {}},
+    const sprite = {x, y, key, frame,
+      body: {updateFromGameObject() {sprite.bodySynced = true;}},
+      anims: {play(value) {sprite.played = value;}, stop() {}},
       setOrigin(a, b) {this.origin = [a, b]; return this;},
       setScale(value) {this.scale = value; return this;},
+      setSize(a, b) {this.bodySize = [a, b]; return this;},
+      setOffset(a, b) {this.bodyOffset = [a, b]; return this;},
       setFrame(value) {this.frame = value; return this;},
       setTexture(key2, frame2) {this.key = key2; this.frame = frame2; return this;}};
     sprites.push(sprite); return sprite;
@@ -60,6 +64,9 @@ assert.strictEqual(resident.scale, 1);
 assert.deepStrictEqual(resident.frameDimensions, {width: 16, height: 32});
 assert.deepStrictEqual(resident.logicalFootAnchor, {x: 0.5, y: 1});
 assert.deepStrictEqual(resident.logicalFootOffset, {x: 0, y: 0});
+assert.deepStrictEqual(resident.bodySize, [1, 1]);
+assert.deepStrictEqual(resident.bodyOffset, [8, 32]);
+assert.strictEqual(resident.bodySynced, true);
 assert.deepStrictEqual(adapter.displayLayout(resident), {
   left: 2, top: -12, width: 16, height: 32, foot: {x: 10, y: 20},
 });
@@ -75,6 +82,8 @@ const fallback = adapter.createSprite(scene, "Missing Person", 0, 0);
 assert.strictEqual(fallback.key, "atlas");
 assert.deepStrictEqual(fallback.origin, [0.5, 1]);
 assert.strictEqual(fallback.scale, 1);
+assert.deepStrictEqual(fallback.bodySize, [1, 1]);
+assert.deepStrictEqual(fallback.bodyOffset, [16, 32]);
 adapter.setIdle(scene, fallback, "Missing Person", "down");
 assert.strictEqual(fallback.frame, "down");
 
@@ -310,6 +319,8 @@ process.stdout.write(JSON.stringify({ok: true}));
             self.assertIn("ClaudevilleCharacters.depthForSprite", script)
             self.assertNotIn("WORLD_DEPTH_BASE", script)
             self.assertNotIn("body.y + 60", script)
+        for script in (home_controls, demo_script):
+            self.assertNotIn(").setSize(30, 40)", script)
         self.assertIn("spriteLayout.foot.x, spriteLayout.foot.y", home_controls)
         self.assertIn(
             "spriteLayout.foot.x, spriteLayout.foot.y, 18, 6", home_controls

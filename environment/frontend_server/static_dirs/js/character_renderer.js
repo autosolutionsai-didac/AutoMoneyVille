@@ -290,6 +290,17 @@
     sprite.frameDimensions = resident
       ? {width: resident.frame.width, height: resident.frame.height}
       : {width: 32, height: 32};
+    if (typeof sprite.setSize === "function" && typeof sprite.setOffset === "function") {
+      // Movement packets store the logical foot in body.x/body.y. A one-pixel
+      // proxy at the frame origin keeps that coordinate independent of art size.
+      sprite.setSize(1, 1).setOffset(
+        sprite.frameDimensions.width * origin.x,
+        sprite.frameDimensions.height * origin.y
+      );
+      if (sprite.body && typeof sprite.body.updateFromGameObject === "function") {
+        sprite.body.updateFromGameObject();
+      }
+    }
     return sprite;
   }
 

@@ -11,6 +11,11 @@ from typing import Union
 
 from PIL import Image, ImageDraw, ImageFont, UnidentifiedImageError
 
+if __package__:
+    from tools.mapgen import character_provenance as provenance
+else:  # Support direct `python tools/mapgen/character_manifest.py` validation.
+    import character_provenance as provenance
+
 PathLike = Union[str, Path]
 CONTACT_SHEET_LABEL = "CLAUDEVILLE RESIDENT REVIEW - NATIVE 16x32"
 CONTACT_SHEET_SIZE = (1000, 500)
@@ -251,32 +256,11 @@ def _full_pack_error(detail: str) -> ManifestError:
     )
 
 
-def _validate_paid_source(source_root: PathLike) -> Path:
+def _paid_source(source_root: PathLike) -> Path:
     try:
-        root = Path(source_root).expanduser().resolve(strict=True)
-    except (FileNotFoundError, OSError) as exc:
-        raise _full_pack_error("source root is missing or inaccessible") from exc
-    evidence = {}
-    for key, relative in PAID_EVIDENCE.items():
-        candidate = (root / relative).resolve(strict=False)
-        if root not in candidate.parents or not candidate.is_file():
-            raise _full_pack_error(f"missing {key}: {relative}")
-        evidence[key] = candidate
-    try:
-        license_text = evidence["license"].read_text(encoding="utf-8").lower()
-        readme = evidence["readme"].read_text(encoding="utf-8").lower().replace("_", " ")
-        third_party = evidence["third_party"].read_text(encoding="utf-8").lower()
-    except (OSError, UnicodeError) as exc:
-        raise _full_pack_error("license or provenance text is unreadable") from exc
-    if "full version license" not in license_text or "limezu.itch.io" not in license_text:
-        raise _full_pack_error("license does not identify the credited full version")
-    if "modern interiors" not in readme or "0a3r" not in third_party:
-        raise _full_pack_error("pack or generator provenance is incomplete")
-    if _png_size(evidence["premade"], "paid premade") not in {SHEET_SIZE, (896, 656)}:
-        raise _full_pack_error("paid 16x16 character source has an invalid layout")
-    if min(_png_size(evidence["guide"], "animation guide")) < 32:
-        raise _full_pack_error("animation guide is invalid")
-    return root
+        return provenance.validate_paid_source(source_root, PAID_EVIDENCE, SHEET_SIZE, _png_size)
+    except (ManifestError, provenance.ProvenanceError) as exc:
+        raise _full_pack_error(str(exc)) from exc
 
 
 def require_full_pack(manifest: dict, static_root=None, paid_source_root=None) -> dict:
@@ -287,7 +271,15 @@ def require_full_pack(manifest: dict, static_root=None, paid_source_root=None) -
         validated = validate_character_manifest(manifest, static_root)
     except ManifestError as exc:
         raise _full_pack_error(str(exc)) from exc
-    _validate_paid_source(paid_source_root)
+    source = _paid_source(paid_source_root)
+    try:
+        provenance.validate_paid_provenance(
+            validated, Path(static_root).expanduser().resolve(strict=False), source,
+            SUPPLIED_CANDIDATES, SOURCE_SPECS, USER_KIND, SHEET_SIZE, _contained,
+            _digest, _png_size, _component_path, _compose, _portrait,
+        )
+    except (ManifestError, provenance.ProvenanceError) as exc:
+        raise _full_pack_error(str(exc)) from exc
     return validated
 
 
@@ -340,7 +332,7 @@ def _entry(name: str, sprite: Path, portrait: Path, provenance: dict) -> dict:
 
 def curate_residents(source_root: PathLike, static_root: PathLike, manifest_path: PathLike) -> dict:
     """Audit all supplied designs, compose fidelity gaps, and emit only ten sheets."""
-    source = _validate_paid_source(source_root)
+    source = _paid_source(source_root)
     static = Path(static_root).expanduser().resolve(strict=False)
     candidates = {}
     for filename in SUPPLIED_CANDIDATES:

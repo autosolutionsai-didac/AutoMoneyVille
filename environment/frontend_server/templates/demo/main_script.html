@@ -166,11 +166,11 @@
 	  ClaudevilleCharacters.createAnimations(this, Object.keys(spawn_tile_loc));
 	  for (let i=0; i<Object.keys(spawn_tile_loc).length; i++) {
 	    let persona_name = Object.keys(spawn_tile_loc)[i];
-	    let start_pos = [spawn_tile_loc[persona_name][0] * tile_width + tile_width / 2,
-	                     spawn_tile_loc[persona_name][1] * tile_width + tile_width];
+	    let start_pos = [spawn_tile_loc[persona_name][0] * tile_width,
+	                     spawn_tile_loc[persona_name][1] * tile_width];
 		    let new_sprite = ClaudevilleCharacters.createSprite(
 	      this, persona_name, start_pos[0], start_pos[1]
-		    ).setSize(30, 40).setOffset(0, 0);
+		    );
 
 	    // Here, we are creating the persona and its pronunciatio sprites.
 	    personas[persona_name] = new_sprite;
