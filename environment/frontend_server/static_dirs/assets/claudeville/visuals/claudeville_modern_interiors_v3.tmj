@@ -108864,13 +108864,13 @@
         20215,
         20216,
         0,
-        0,
-        0,
         20228,
         20229,
         20230,
         20231,
         20232,
+        0,
+        0,
         0,
         0,
         0,
@@ -109040,13 +109040,13 @@
         20233,
         20234,
         0,
-        0,
-        0,
         20247,
         20248,
         20249,
         20250,
         20251,
+        0,
+        0,
         0,
         0,
         0,
@@ -109142,17 +109142,17 @@
         0,
         0,
         0,
-        41586,
-        41587,
-        0,
-        41585,
-        41586,
-        41587,
         0,
         0,
-        41585,
-        41586,
-        41587,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
         0,
         0,
         0,
@@ -109216,13 +109216,13 @@
         20252,
         20253,
         0,
-        0,
-        0,
         20264,
         20265,
         20266,
         20267,
         20268,
+        0,
+        0,
         0,
         0,
         0,
@@ -109318,17 +109318,17 @@
         0,
         0,
         0,
-        41602,
-        41603,
-        0,
-        41601,
-        41602,
-        41603,
         0,
         0,
-        41601,
-        41602,
-        41603,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
         0,
         0,
         0,
@@ -109392,13 +109392,13 @@
         20269,
         20270,
         0,
-        0,
-        0,
         20281,
         20282,
         20283,
         20284,
         20285,
+        0,
+        0,
         0,
         0,
         0,
@@ -109493,18 +109493,18 @@
         0,
         0,
         0,
-        41617,
-        41618,
-        41619,
-        0,
-        41617,
-        41618,
-        41619,
         0,
         0,
-        41617,
-        41618,
-        41619,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
         0,
         0,
         0,
@@ -109568,13 +109568,13 @@
         20286,
         20287,
         0,
-        0,
-        0,
         20300,
         20301,
         20302,
         20303,
         20304,
+        0,
+        0,
         0,
         0,
         0,
@@ -109744,13 +109744,13 @@
         20305,
         20306,
         0,
-        0,
-        0,
         20319,
         20320,
         20321,
         20322,
         20323,
+        0,
+        0,
         0,
         0,
         0,
@@ -110021,22 +110021,22 @@
         0,
         0,
         0,
-        41697,
-        41698,
         0,
         0,
-        41701,
-        41690,
-        41691,
         0,
         0,
-        41697,
-        41698,
-        41691,
-        41691,
-        41701,
-        41690,
-        41691,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
         0,
         0,
         0,
@@ -110197,22 +110197,22 @@
         0,
         0,
         0,
-        41713,
-        42736,
         0,
         0,
-        42739,
-        42728,
-        42729,
         0,
         0,
-        41713,
-        42736,
-        41715,
-        41716,
-        42739,
-        42728,
-        42729,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
         0,
         0,
         0,
@@ -110373,22 +110373,22 @@
         0,
         0,
         0,
-        41729,
-        42752,
         0,
         0,
-        41733,
-        42744,
-        42745,
         0,
         0,
-        41729,
-        42752,
-        41731,
-        41732,
-        41733,
-        42744,
-        42745,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
         0,
         0,
         0,
@@ -111254,11 +111254,7 @@
         0,
         0,
         0,
-        43007,
-        43008,
         0,
-        43007,
-        43008,
         0,
         0,
         0,
@@ -111430,11 +111426,7 @@
         0,
         0,
         0,
-        43020,
-        43021,
         0,
-        43020,
-        43021,
         0,
         0,
         0,
@@ -111606,11 +111598,7 @@
         0,
         0,
         0,
-        43007,
-        43008,
         0,
-        43007,
-        43008,
         0,
         0,
         0,
@@ -111782,11 +111770,7 @@
         0,
         0,
         0,
-        43020,
-        43021,
         0,
-        43020,
-        43021,
         0,
         0,
         0,
@@ -111958,11 +111942,7 @@
         0,
         0,
         0,
-        43007,
-        43008,
         0,
-        43007,
-        43008,
         0,
         0,
         0,
@@ -112134,8 +112114,28 @@
         0,
         0,
         0,
-        43020,
-        43021,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
         0,
         0,
         0,
@@ -143839,22 +143839,22 @@
         0,
         0,
         0,
-        41697,
-        41698,
         0,
         0,
-        41701,
-        41690,
-        41691,
         0,
         0,
-        41697,
-        41698,
-        41691,
-        41691,
-        41701,
-        41690,
-        41691,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
         0,
         0,
         0,
@@ -159869,17 +159869,17 @@
         0,
         0,
         0,
-        41586,
-        41587,
-        0,
-        41585,
-        41586,
-        41587,
         0,
         0,
-        41585,
-        41586,
-        41587,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
         0,
         0,
         0,
@@ -176538,1833 +176538,6 @@
           ]
         },
         {
-          "id": 10066,
-          "name": "Public Address",
-          "type": "public address",
-          "x": 800,
-          "y": 768,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.community.loudspeaker"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.event_hall"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "public address"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/066"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10067,
-          "name": "Public Address",
-          "type": "public address",
-          "x": 960,
-          "y": 768,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.community.loudspeaker"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.event_hall"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "public address"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/067"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10068,
-          "name": "Community Stage",
-          "type": "community stage",
-          "x": 880,
-          "y": 784,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.community.stage_small"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.event_hall"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "community stage"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/068"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10069,
-          "name": "Event Chair",
-          "type": "event chair",
-          "x": 832,
-          "y": 800,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.chair_blue"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.event_hall"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "event chair"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/069"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10070,
-          "name": "Event Chair",
-          "type": "event chair",
-          "x": 928,
-          "y": 800,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.chair_orange"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.event_hall"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "event chair"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/070"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10071,
-          "name": "Event Table",
-          "type": "event table",
-          "x": 832,
-          "y": 848,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.table_walnut_long"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.event_hall"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "event table"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/071"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10072,
-          "name": "Event Table",
-          "type": "event table",
-          "x": 928,
-          "y": 848,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.table_walnut_long"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.event_hall"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "event table"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/072"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10073,
-          "name": "Event Chair",
-          "type": "event chair",
-          "x": 800,
-          "y": 864,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.chair_orange_side"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.event_hall"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "event chair"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/073"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10074,
-          "name": "Event Chair",
-          "type": "event chair",
-          "x": 864,
-          "y": 864,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.chair_blue_side"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.event_hall"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "event chair"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/074"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10075,
-          "name": "Event Chair",
-          "type": "event chair",
-          "x": 896,
-          "y": 864,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.chair_blue_side"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.event_hall"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "event chair"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/075"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10076,
-          "name": "Event Chair",
-          "type": "event chair",
-          "x": 960,
-          "y": 864,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.chair_orange_side"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.event_hall"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "event chair"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/076"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10077,
-          "name": "Lounge Table",
-          "type": "lounge table",
-          "x": 832,
-          "y": 912,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.side_table"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.lounge"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "lounge table"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/077"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10078,
-          "name": "Community Notice",
-          "type": "community notice",
-          "x": 944,
-          "y": 912,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.notice_board"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.reception"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "community notice"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/078"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10079,
-          "name": "Community Map",
-          "type": "community map",
-          "x": 992,
-          "y": 912,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.town_map"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.reception"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "community map"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/079"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10080,
-          "name": "Community Sofa",
-          "type": "community sofa",
-          "x": 784,
-          "y": 944,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.sofa_corner"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.lounge"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "community sofa"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/080"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10081,
-          "name": "Community Sofa",
-          "type": "community sofa",
-          "x": 832,
-          "y": 944,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.sofa_dark"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.lounge"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "community sofa"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/081"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10082,
-          "name": "Lounge Chair",
-          "type": "lounge chair",
-          "x": 864,
-          "y": 944,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.armchair_mustard"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.lounge"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "lounge chair"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/082"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10083,
-          "name": "Help Desk",
-          "type": "help desk",
-          "x": 944,
-          "y": 960,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.reception_corner"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.reception"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "help desk"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/083"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10084,
-          "name": "Help Desk",
-          "type": "help desk",
-          "x": 992,
-          "y": 960,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.reception_desk"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Community Center"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "community.reception"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "help desk"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/084"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10085,
-          "name": "Reading Chair",
-          "type": "reading chair",
-          "x": 1920,
-          "y": 896,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.chair_blue"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Library"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "library.reading"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "reading chair"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/085"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10086,
-          "name": "Reading Chair",
-          "type": "reading chair",
-          "x": 2000,
-          "y": 896,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.chair_orange"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Library"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "library.reading"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "reading chair"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/086"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10087,
-          "name": "Library Notice",
-          "type": "library notice",
-          "x": 1888,
-          "y": 912,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.notice_board"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Library"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "library.circulation"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "library notice"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/087"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10088,
-          "name": "Circulation Desk",
-          "type": "circulation desk",
-          "x": 1840,
-          "y": 944,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.reception_corner"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Library"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "library.circulation"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "circulation desk"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/088"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10089,
-          "name": "Checkout Scanner",
-          "type": "checkout scanner",
-          "x": 1872,
-          "y": 944,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.cash_register"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Library"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "library.circulation"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "checkout scanner"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/089"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10090,
-          "name": "Reading Table",
-          "type": "reading table",
-          "x": 1920,
-          "y": 944,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.table_walnut_long"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Library"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "library.reading"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "reading table"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/090"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10091,
-          "name": "Reading Table",
-          "type": "reading table",
-          "x": 2000,
-          "y": 944,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.table_walnut_long"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Library"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "library.reading"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "reading table"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/091"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10092,
-          "name": "Reading Chair",
-          "type": "reading chair",
-          "x": 1888,
-          "y": 960,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.chair_orange_side"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Library"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "library.reading"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "reading chair"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/092"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10093,
-          "name": "Reading Chair",
-          "type": "reading chair",
-          "x": 2032,
-          "y": 960,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.chair_blue_side"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Library"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "library.reading"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "reading chair"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/093"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10094,
-          "name": "Circulation Desk",
-          "type": "circulation desk",
-          "x": 1840,
-          "y": 976,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.reception_desk"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Library"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "library.circulation"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "circulation desk"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/094"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
           "id": 10126,
           "name": "Service Terminal",
           "type": "service terminal",
@@ -179994,384 +178167,6 @@
               "name": "purpose_id",
               "type": "string",
               "value": "claudeville-purpose/151"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10176,
-          "name": "Job Board",
-          "type": "job board",
-          "x": 160,
-          "y": 880,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.notice_board"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Workshop"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "workshop.intake"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "job board"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/176"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10177,
-          "name": "Intake Counter",
-          "type": "intake counter",
-          "x": 208,
-          "y": 912,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.counter_walnut_left"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Workshop"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "workshop.intake"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "intake counter"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/177"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10178,
-          "name": "Intake Counter",
-          "type": "intake counter",
-          "x": 240,
-          "y": 912,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.counter_walnut_middle"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Workshop"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "workshop.intake"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "intake counter"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/178"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10179,
-          "name": "Intake Counter",
-          "type": "intake counter",
-          "x": 272,
-          "y": 912,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.counter_walnut_right"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Workshop"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "workshop.intake"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "intake counter"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/179"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10180,
-          "name": "Design Desk",
-          "type": "design desk",
-          "x": 176,
-          "y": 976,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.computer_desk"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Workshop"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "workshop.intake"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "design desk"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/180"
-            },
-            {
-              "name": "depth_offset",
-              "type": "float",
-              "value": 0
-            }
-          ]
-        },
-        {
-          "id": 10181,
-          "name": "Job Records",
-          "type": "job records",
-          "x": 224,
-          "y": 976,
-          "width": 0,
-          "height": 0,
-          "rotation": 0,
-          "visible": true,
-          "properties": [
-            {
-              "name": "asset_key",
-              "type": "string",
-              "value": "prop.office.filing_cabinet"
-            },
-            {
-              "name": "anchor_x",
-              "type": "float",
-              "value": 0.5
-            },
-            {
-              "name": "anchor_y",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "display_scale",
-              "type": "float",
-              "value": 1
-            },
-            {
-              "name": "sector",
-              "type": "string",
-              "value": "Workshop"
-            },
-            {
-              "name": "zone",
-              "type": "string",
-              "value": "workshop.intake"
-            },
-            {
-              "name": "semantic_type",
-              "type": "string",
-              "value": "job records"
-            },
-            {
-              "name": "blocks",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "purpose_id",
-              "type": "string",
-              "value": "claudeville-purpose/181"
             },
             {
               "name": "depth_offset",
@@ -194385,6 +192180,3335 @@
               "name": "zone",
               "type": "string",
               "value": "post.waiting"
+            }
+          ]
+        },
+        {
+          "id": 13548,
+          "name": "middle-001-job-intake",
+          "type": "",
+          "x": 208,
+          "y": 912,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.counter_walnut_left"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "intake-line"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Workshop"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "job-intake"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "workshop.intake"
+            }
+          ]
+        },
+        {
+          "id": 13549,
+          "name": "middle-002-job-intake",
+          "type": "",
+          "x": 240,
+          "y": 912,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.counter_walnut_middle"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "intake-line"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Workshop"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "job-intake"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "workshop.intake"
+            }
+          ]
+        },
+        {
+          "id": 13550,
+          "name": "middle-003-job-intake",
+          "type": "",
+          "x": 272,
+          "y": 912,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.counter_walnut_right"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "intake-line"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Workshop"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "job-intake"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "workshop.intake"
+            }
+          ]
+        },
+        {
+          "id": 13551,
+          "name": "middle-004-design-desk",
+          "type": "",
+          "x": 176,
+          "y": 976,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.computer_desk"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "estimating"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Workshop"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "design-desk"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "workshop.intake"
+            }
+          ]
+        },
+        {
+          "id": 13552,
+          "name": "middle-005-job-records",
+          "type": "",
+          "x": 224,
+          "y": 976,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.filing_cabinet"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "estimating"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Workshop"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "job-records"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "workshop.intake"
+            }
+          ]
+        },
+        {
+          "id": 13553,
+          "name": "middle-006-print-jobs",
+          "type": "",
+          "x": 256,
+          "y": 976,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.printer_station"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "estimating"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Workshop"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "print-jobs"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "workshop.intake"
+            }
+          ]
+        },
+        {
+          "id": 13554,
+          "name": "middle-007-job-board",
+          "type": "",
+          "x": 160,
+          "y": 880,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.notice_board"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "intake-line"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Workshop"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "job-board"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "workshop.intake"
+            }
+          ]
+        },
+        {
+          "id": 13555,
+          "name": "middle-008-paperwork",
+          "type": "",
+          "x": 240,
+          "y": 880,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.paper_stack"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "intake-line"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Workshop"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "paperwork"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "workshop.intake"
+            }
+          ]
+        },
+        {
+          "id": 13556,
+          "name": "middle-009-client-phone",
+          "type": "",
+          "x": 272,
+          "y": 880,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.phone"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "intake-line"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Workshop"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "client-phone"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "workshop.intake"
+            }
+          ]
+        },
+        {
+          "id": 13557,
+          "name": "middle-010-entrance",
+          "type": "",
+          "x": 288,
+          "y": 1008,
+          "width": 48,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.facade.door_open"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "threshold"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Workshop"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "entrance"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "workshop.circulation"
+            }
+          ]
+        },
+        {
+          "id": 13558,
+          "name": "middle-011-presentation-area",
+          "type": "",
+          "x": 880,
+          "y": 784,
+          "width": 128,
+          "height": 96,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.community.stage_small"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "stage"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "presentation-area"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.event_hall"
+            }
+          ]
+        },
+        {
+          "id": 13559,
+          "name": "middle-012-stage-speaker",
+          "type": "",
+          "x": 800,
+          "y": 784,
+          "width": 16,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.music_sport.0043"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "stage"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "stage-speaker"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.event_hall"
+            }
+          ],
+          "gid": 57874
+        },
+        {
+          "id": 13560,
+          "name": "middle-013-stage-speaker",
+          "type": "",
+          "x": 960,
+          "y": 784,
+          "width": 16,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.music_sport.0043"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "stage"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "stage-speaker"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.event_hall"
+            }
+          ],
+          "gid": 57874
+        },
+        {
+          "id": 13561,
+          "name": "middle-014-stage-microphone",
+          "type": "",
+          "x": 880,
+          "y": 800,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.music_sport.0062"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "stage"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "stage-microphone"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.event_hall"
+            }
+          ],
+          "gid": 57893
+        },
+        {
+          "id": 13562,
+          "name": "middle-015-stage-keyboard",
+          "type": "",
+          "x": 832,
+          "y": 784,
+          "width": 32,
+          "height": 16,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.music_sport.0066"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "stage"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "stage-keyboard"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.event_hall"
+            }
+          ],
+          "gid": 57897
+        },
+        {
+          "id": 13563,
+          "name": "middle-016-event-table",
+          "type": "",
+          "x": 832,
+          "y": 848,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.art.0023"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-activity-table"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "event-table"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.event_hall"
+            }
+          ],
+          "gid": 58103
+        },
+        {
+          "id": 13564,
+          "name": "middle-017-event-table",
+          "type": "",
+          "x": 928,
+          "y": 848,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.art.0024"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-activity-table"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "event-table"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.event_hall"
+            }
+          ],
+          "gid": 58104
+        },
+        {
+          "id": 13565,
+          "name": "middle-018-event-chair",
+          "type": "",
+          "x": 832,
+          "y": 816,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0002"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-activity-table"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "event-chair"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.event_hall"
+            }
+          ],
+          "gid": 57758
+        },
+        {
+          "id": 13566,
+          "name": "middle-019-event-chair",
+          "type": "",
+          "x": 928,
+          "y": 816,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0002"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-activity-table"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "event-chair"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.event_hall"
+            }
+          ],
+          "gid": 57758
+        },
+        {
+          "id": 13567,
+          "name": "middle-020-event-chair",
+          "type": "",
+          "x": 832,
+          "y": 880,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0001"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-activity-table"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "event-chair"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.event_hall"
+            }
+          ],
+          "gid": 57757
+        },
+        {
+          "id": 13568,
+          "name": "middle-021-event-chair",
+          "type": "",
+          "x": 928,
+          "y": 880,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0001"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-activity-table"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "event-chair"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.event_hall"
+            }
+          ],
+          "gid": 57757
+        },
+        {
+          "id": 13569,
+          "name": "middle-022-lounge-seating",
+          "type": "",
+          "x": 784,
+          "y": 944,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.living.0003"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-lounge"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "lounge-seating"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.lounge"
+            }
+          ],
+          "gid": 56927
+        },
+        {
+          "id": 13570,
+          "name": "middle-023-lounge-seating",
+          "type": "",
+          "x": 848,
+          "y": 944,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.living.0003"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-lounge"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "lounge-seating"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.lounge"
+            }
+          ],
+          "gid": 56927
+        },
+        {
+          "id": 13571,
+          "name": "middle-024-lounge-seating",
+          "type": "",
+          "x": 880,
+          "y": 944,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.living.0005"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-lounge"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "lounge-seating"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.lounge"
+            }
+          ],
+          "gid": 56929
+        },
+        {
+          "id": 13572,
+          "name": "middle-025-lounge-table",
+          "type": "",
+          "x": 816,
+          "y": 944,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.living.0065"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-lounge"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "lounge-table"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.lounge"
+            }
+          ],
+          "gid": 56989
+        },
+        {
+          "id": 13573,
+          "name": "middle-026-planter",
+          "type": "",
+          "x": 752,
+          "y": 944,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.living.0016"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-lounge"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "planter"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.lounge"
+            }
+          ],
+          "gid": 56940
+        },
+        {
+          "id": 13574,
+          "name": "middle-027-help-desk",
+          "type": "",
+          "x": 944,
+          "y": 976,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.counter_walnut_left"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "help-point"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "help-desk"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.reception"
+            }
+          ]
+        },
+        {
+          "id": 13575,
+          "name": "middle-028-help-desk",
+          "type": "",
+          "x": 976,
+          "y": 976,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.counter_walnut_middle"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "help-point"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "help-desk"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.reception"
+            }
+          ]
+        },
+        {
+          "id": 13576,
+          "name": "middle-029-help-desk",
+          "type": "",
+          "x": 1008,
+          "y": 976,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.counter_walnut_right"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "help-point"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "help-desk"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.reception"
+            }
+          ]
+        },
+        {
+          "id": 13577,
+          "name": "middle-030-service-terminal",
+          "type": "",
+          "x": 976,
+          "y": 944,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.cash_register"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "help-point"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "service-terminal"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.reception"
+            }
+          ]
+        },
+        {
+          "id": 13578,
+          "name": "middle-031-community-notice",
+          "type": "",
+          "x": 944,
+          "y": 912,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.notice_board"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "help-point"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "community-notice"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.reception"
+            }
+          ]
+        },
+        {
+          "id": 13579,
+          "name": "middle-032-town-map",
+          "type": "",
+          "x": 992,
+          "y": 912,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.office.town_map"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "help-point"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "town-map"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community.reception"
+            }
+          ]
+        },
+        {
+          "id": 13580,
+          "name": "middle-033-entrance",
+          "type": "",
+          "x": 832,
+          "y": 1008,
+          "width": 48,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.facade.door_open"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "threshold"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Community Center"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "entrance"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "community_center.circulation"
+            }
+          ]
+        },
+        {
+          "id": 13581,
+          "name": "middle-034-bookshelf",
+          "type": "",
+          "x": 1856,
+          "y": 720,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0069"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-north-stacks"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "bookshelf"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.stacks"
+            }
+          ],
+          "gid": 57825
+        },
+        {
+          "id": 13582,
+          "name": "middle-035-bookshelf",
+          "type": "",
+          "x": 1904,
+          "y": 720,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0071"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-north-stacks"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "bookshelf"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.stacks"
+            }
+          ],
+          "gid": 57827
+        },
+        {
+          "id": 13583,
+          "name": "middle-036-bookshelf",
+          "type": "",
+          "x": 1824,
+          "y": 784,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0055"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-lower-stacks"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "bookshelf"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.stacks"
+            }
+          ],
+          "gid": 57811
+        },
+        {
+          "id": 13584,
+          "name": "middle-037-bookshelf",
+          "type": "",
+          "x": 1888,
+          "y": 784,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0057"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-lower-stacks"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "bookshelf"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.stacks"
+            }
+          ],
+          "gid": 57813
+        },
+        {
+          "id": 13585,
+          "name": "middle-038-east-bookshelf",
+          "type": "",
+          "x": 1952,
+          "y": 720,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0043"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-north-stacks"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "east-bookshelf"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.stacks"
+            }
+          ],
+          "gid": 57799
+        },
+        {
+          "id": 13586,
+          "name": "middle-039-east-bookshelf",
+          "type": "",
+          "x": 2000,
+          "y": 720,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0045"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-north-stacks"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "east-bookshelf"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.stacks"
+            }
+          ],
+          "gid": 57801
+        },
+        {
+          "id": 13587,
+          "name": "middle-040-east-bookshelf",
+          "type": "",
+          "x": 1952,
+          "y": 784,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0060"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-lower-stacks"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "east-bookshelf"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.stacks"
+            }
+          ],
+          "gid": 57816
+        },
+        {
+          "id": 13588,
+          "name": "middle-041-east-bookshelf",
+          "type": "",
+          "x": 2000,
+          "y": 784,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0062"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-lower-stacks"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "east-bookshelf"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.stacks"
+            }
+          ],
+          "gid": 57818
+        },
+        {
+          "id": 13589,
+          "name": "middle-042-east-bookshelf",
+          "type": "",
+          "x": 2048,
+          "y": 784,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0064"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-lower-stacks"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "east-bookshelf"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.stacks"
+            }
+          ],
+          "gid": 57820
+        },
+        {
+          "id": 13590,
+          "name": "middle-043-reading-table",
+          "type": "",
+          "x": 1920,
+          "y": 944,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0025"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-study"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "reading-table"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 57781
+        },
+        {
+          "id": 13591,
+          "name": "middle-044-reading-table",
+          "type": "",
+          "x": 2000,
+          "y": 944,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0025"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-study"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "reading-table"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 57781
+        },
+        {
+          "id": 13592,
+          "name": "middle-045-reading-chair",
+          "type": "",
+          "x": 1920,
+          "y": 912,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0002"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-study"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "reading-chair"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 57758
+        },
+        {
+          "id": 13593,
+          "name": "middle-046-reading-chair",
+          "type": "",
+          "x": 2000,
+          "y": 912,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0002"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-study"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "reading-chair"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 57758
+        },
+        {
+          "id": 13594,
+          "name": "middle-047-reading-chair",
+          "type": "",
+          "x": 1920,
+          "y": 960,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0001"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-study"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "reading-chair"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 57757
+        },
+        {
+          "id": 13595,
+          "name": "middle-048-reading-chair",
+          "type": "",
+          "x": 2000,
+          "y": 960,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0001"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-study"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "reading-chair"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 57757
+        },
+        {
+          "id": 13596,
+          "name": "middle-049-circulation-desk",
+          "type": "",
+          "x": 1840,
+          "y": 944,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0049"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "checkout"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "circulation-desk"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.circulation"
+            }
+          ],
+          "gid": 57805
+        },
+        {
+          "id": 13597,
+          "name": "middle-050-circulation-desk",
+          "type": "",
+          "x": 1840,
+          "y": 976,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0052"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "checkout"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "circulation-desk"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.circulation"
+            }
+          ],
+          "gid": 57808
+        },
+        {
+          "id": 13598,
+          "name": "middle-051-checkout-terminal",
+          "type": "",
+          "x": 1872,
+          "y": 928,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0054"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "checkout"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "checkout-terminal"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.circulation"
+            }
+          ],
+          "gid": 57810
+        },
+        {
+          "id": 13599,
+          "name": "middle-052-library-schedule",
+          "type": "",
+          "x": 1888,
+          "y": 880,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0032"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "reading-support"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "library-schedule"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 57788
+        },
+        {
+          "id": 13600,
+          "name": "middle-053-learning-globe",
+          "type": "",
+          "x": 2064,
+          "y": 880,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0034"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "reading-support"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "learning-globe"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 57790
+        },
+        {
+          "id": 13601,
+          "name": "middle-054-periodical-shelf",
+          "type": "",
+          "x": 1824,
+          "y": 880,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0043"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-periodicals"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "periodical-shelf"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 57799
+        },
+        {
+          "id": 13602,
+          "name": "middle-055-periodical-shelf",
+          "type": "",
+          "x": 2064,
+          "y": 944,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.classroom_library.0045"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-periodicals"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "periodical-shelf"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 57801
+        },
+        {
+          "id": 13603,
+          "name": "middle-056-lounge-seating",
+          "type": "",
+          "x": 1968,
+          "y": 880,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.living.0003"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "central-reading-lounge"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "lounge-seating"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 56927
+        },
+        {
+          "id": 13604,
+          "name": "middle-057-lounge-seating",
+          "type": "",
+          "x": 1920,
+          "y": 912,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.living.0004"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "central-reading-lounge"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "lounge-seating"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 56928
+        },
+        {
+          "id": 13605,
+          "name": "middle-058-lounge-seating",
+          "type": "",
+          "x": 2016,
+          "y": 912,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.living.0004"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "central-reading-lounge"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "lounge-seating"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 56928
+        },
+        {
+          "id": 13606,
+          "name": "middle-059-lounge-table",
+          "type": "",
+          "x": 1968,
+          "y": 912,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.living.0051"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "central-reading-lounge"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "lounge-table"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 56975
+        },
+        {
+          "id": 13607,
+          "name": "middle-060-plant",
+          "type": "",
+          "x": 1824,
+          "y": 976,
+          "width": 16,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.living.0016"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "west-periodicals"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "plant"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 56940
+        },
+        {
+          "id": 13608,
+          "name": "middle-061-plant",
+          "type": "",
+          "x": 2064,
+          "y": 976,
+          "width": 32,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.interiors_v3.living.0013"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "east-periodicals"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "plant"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.reading"
+            }
+          ],
+          "gid": 56937
+        },
+        {
+          "id": 13609,
+          "name": "middle-062-entrance",
+          "type": "",
+          "x": 1904,
+          "y": 1024,
+          "width": 48,
+          "height": 48,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor_x",
+              "type": "float",
+              "value": 0.5
+            },
+            {
+              "name": "anchor_y",
+              "type": "float",
+              "value": 1.0
+            },
+            {
+              "name": "asset_key",
+              "type": "string",
+              "value": "prop.facade.door_open"
+            },
+            {
+              "name": "display_scale",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "purpose_cluster",
+              "type": "string",
+              "value": "threshold"
+            },
+            {
+              "name": "sector",
+              "type": "string",
+              "value": "Library"
+            },
+            {
+              "name": "semantic_type",
+              "type": "string",
+              "value": "entrance"
+            },
+            {
+              "name": "zone",
+              "type": "string",
+              "value": "library.circulation"
             }
           ]
         }
@@ -226899,7 +228023,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10071
+                  "value": 13563
                 },
                 {
                   "name": "blocker_policy",
@@ -226967,7 +228091,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10072
+                  "value": 13564
                 },
                 {
                   "name": "blocker_policy",
@@ -227035,7 +228159,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10066
+                  "value": 13558
                 },
                 {
                   "name": "blocker_policy",
@@ -227103,7 +228227,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10068
+                  "value": 13558
                 },
                 {
                   "name": "blocker_policy",
@@ -227171,7 +228295,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10067
+                  "value": 13558
                 },
                 {
                   "name": "blocker_policy",
@@ -227239,7 +228363,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10080
+                  "value": 13569
                 },
                 {
                   "name": "blocker_policy",
@@ -227307,7 +228431,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10081
+                  "value": 13570
                 },
                 {
                   "name": "blocker_policy",
@@ -227375,7 +228499,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10082
+                  "value": 13571
                 },
                 {
                   "name": "blocker_policy",
@@ -227443,7 +228567,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10083
+                  "value": 13574
                 },
                 {
                   "name": "blocker_policy",
@@ -227511,7 +228635,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10084
+                  "value": 13576
                 },
                 {
                   "name": "blocker_policy",
@@ -234077,7 +235201,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10088
+                  "value": 13596
                 },
                 {
                   "name": "blocker_policy",
@@ -234145,7 +235269,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10088
+                  "value": 13597
                 },
                 {
                   "name": "blocker_policy",
@@ -234213,7 +235337,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10090
+                  "value": 13590
                 },
                 {
                   "name": "blocker_policy",
@@ -234281,7 +235405,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10091
+                  "value": 13591
                 },
                 {
                   "name": "blocker_policy",
@@ -234344,7 +235468,12 @@
                 {
                   "name": "art_layer",
                   "type": "string",
-                  "value": "Interior Furniture L1"
+                  "value": "Depth Props"
+                },
+                {
+                  "name": "art_object_id",
+                  "type": "int",
+                  "value": 13581
                 },
                 {
                   "name": "blocker_policy",
@@ -234407,7 +235536,12 @@
                 {
                   "name": "art_layer",
                   "type": "string",
-                  "value": "Interior Furniture L1"
+                  "value": "Depth Props"
+                },
+                {
+                  "name": "art_object_id",
+                  "type": "int",
+                  "value": 13582
                 },
                 {
                   "name": "blocker_policy",
@@ -234470,7 +235604,12 @@
                 {
                   "name": "art_layer",
                   "type": "string",
-                  "value": "Interior Furniture L1"
+                  "value": "Depth Props"
+                },
+                {
+                  "name": "art_object_id",
+                  "type": "int",
+                  "value": 13583
                 },
                 {
                   "name": "blocker_policy",
@@ -234533,7 +235672,12 @@
                 {
                   "name": "art_layer",
                   "type": "string",
-                  "value": "Interior Furniture L1"
+                  "value": "Depth Props"
+                },
+                {
+                  "name": "art_object_id",
+                  "type": "int",
+                  "value": 13584
                 },
                 {
                   "name": "blocker_policy",
@@ -234596,7 +235740,12 @@
                 {
                   "name": "art_layer",
                   "type": "string",
-                  "value": "Interior Furniture L1"
+                  "value": "Depth Props"
+                },
+                {
+                  "name": "art_object_id",
+                  "type": "int",
+                  "value": 13585
                 },
                 {
                   "name": "blocker_policy",
@@ -234659,7 +235808,12 @@
                 {
                   "name": "art_layer",
                   "type": "string",
-                  "value": "Interior Furniture L1"
+                  "value": "Depth Props"
+                },
+                {
+                  "name": "art_object_id",
+                  "type": "int",
+                  "value": 13586
                 },
                 {
                   "name": "blocker_policy",
@@ -234722,7 +235876,12 @@
                 {
                   "name": "art_layer",
                   "type": "string",
-                  "value": "Interior Furniture L1"
+                  "value": "Depth Props"
+                },
+                {
+                  "name": "art_object_id",
+                  "type": "int",
+                  "value": 13587
                 },
                 {
                   "name": "blocker_policy",
@@ -234785,7 +235944,12 @@
                 {
                   "name": "art_layer",
                   "type": "string",
-                  "value": "Interior Furniture L1"
+                  "value": "Depth Props"
+                },
+                {
+                  "name": "art_object_id",
+                  "type": "int",
+                  "value": 13588
                 },
                 {
                   "name": "blocker_policy",
@@ -234848,7 +236012,12 @@
                 {
                   "name": "art_layer",
                   "type": "string",
-                  "value": "Interior Furniture L1"
+                  "value": "Depth Props"
+                },
+                {
+                  "name": "art_object_id",
+                  "type": "int",
+                  "value": 13589
                 },
                 {
                   "name": "blocker_policy",
@@ -234911,7 +236080,12 @@
                 {
                   "name": "art_layer",
                   "type": "string",
-                  "value": "Interior Furniture L1"
+                  "value": "Depth Props"
+                },
+                {
+                  "name": "art_object_id",
+                  "type": "int",
+                  "value": 13589
                 },
                 {
                   "name": "blocker_policy",
@@ -237699,7 +238873,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10177
+                  "value": 13548
                 },
                 {
                   "name": "blocker_policy",
@@ -237767,7 +238941,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10178
+                  "value": 13549
                 },
                 {
                   "name": "blocker_policy",
@@ -237835,7 +239009,7 @@
                 {
                   "name": "art_object_id",
                   "type": "int",
-                  "value": 10179
+                  "value": 13550
                 },
                 {
                   "name": "blocker_policy",
@@ -239535,7 +240709,7 @@
     }
   ],
   "nextlayerid": 20,
-  "nextobjectid": 13495,
+  "nextobjectid": 13610,
   "orientation": "orthogonal",
   "properties": [
     {
@@ -239577,6 +240751,11 @@
       "name": "north_district_revision",
       "type": "int",
       "value": 4
+    },
+    {
+      "name": "middle_district_revision",
+      "type": "int",
+      "value": 2
     }
   ],
   "renderorder": "right-down",

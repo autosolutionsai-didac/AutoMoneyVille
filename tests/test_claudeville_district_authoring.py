@@ -74,6 +74,48 @@ class DistrictAuthoringTests(unittest.TestCase):
             self.assertIn(values["art_object_id"], created_ids)
         self.assertEqual(len(north), 55)
 
+    def test_middle_workshop_uses_real_tiles_and_keeps_the_actor_lane_clear(self):
+        middle = districts.DISTRICTS["middle"]
+        furniture = next(
+            layer for layer in self.source["layers"]
+            if layer["name"] == "Interior Furniture L1"
+        )
+        left, top, right, bottom = middle.TARGET_BOUNDS["Workshop"]
+        occupied = sum(
+            bool(furniture["data"][y * self.source["width"] + x])
+            for y in range(top, bottom) for x in range(left, right)
+        )
+        self.assertEqual(occupied, 85)
+        self.assertTrue(all(
+            not furniture["data"][y * self.source["width"] + x]
+            for y in range(42, 48) for x in (18, 19)
+        ))
+
+    def test_middle_preserves_only_intentional_tile_backed_interactions(self):
+        created_ids = {
+            item["id"] for item in self.depth["objects"]
+            if item.get("name", "").startswith("middle-")
+        }
+        interactions = next(
+            layer for layer in self.authoring_group["layers"]
+            if layer["name"] == "Interactions"
+        )
+        tile_backed = set()
+        for item in interactions["objects"]:
+            values = authoring.properties(item.get("properties"))
+            if values.get("sector") not in districts.DISTRICTS["middle"].TARGETS:
+                continue
+            if values["art_layer"] == "Interior Furniture L1":
+                tile_backed.add((values["sector"], values["interaction_type"]))
+            else:
+                self.assertEqual(values["art_layer"], "Depth Props")
+                self.assertIn(values["art_object_id"], created_ids)
+        self.assertEqual(tile_backed, {
+            ("Workshop", "tool-storage"),
+            ("Workshop", "work-machine"),
+            ("Workshop", "workbench"),
+        })
+
     def test_runtime_atlas_contains_every_registered_district_prop(self):
         frames = json.loads(RUNTIME_PROPS.read_text(encoding="utf-8"))["frames"]
         requested = {

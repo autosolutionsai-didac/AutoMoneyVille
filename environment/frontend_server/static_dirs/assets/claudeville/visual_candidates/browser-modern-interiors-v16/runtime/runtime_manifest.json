@@ -3,7 +3,6 @@
   "credits": "credits.json",
   "props": {
     "asset_keys": [
-      "prop.community.loudspeaker",
       "prop.community.stage_small",
       "prop.facade.door_open",
       "prop.facade.residential_door_open",
@@ -13,6 +12,8 @@
       "prop.garden.flower_pink",
       "prop.garden.flower_white",
       "prop.garden.sunflower",
+      "prop.interiors_v3.art.0023",
+      "prop.interiors_v3.art.0024",
       "prop.interiors_v3.bathroom.0021",
       "prop.interiors_v3.bathroom.0035",
       "prop.interiors_v3.bathroom.0064",
@@ -34,12 +35,20 @@
       "prop.interiors_v3.classroom_library.0017",
       "prop.interiors_v3.classroom_library.0018",
       "prop.interiors_v3.classroom_library.0025",
+      "prop.interiors_v3.classroom_library.0032",
       "prop.interiors_v3.classroom_library.0034",
       "prop.interiors_v3.classroom_library.0036",
       "prop.interiors_v3.classroom_library.0043",
       "prop.interiors_v3.classroom_library.0045",
+      "prop.interiors_v3.classroom_library.0049",
+      "prop.interiors_v3.classroom_library.0052",
+      "prop.interiors_v3.classroom_library.0054",
       "prop.interiors_v3.classroom_library.0055",
+      "prop.interiors_v3.classroom_library.0057",
       "prop.interiors_v3.classroom_library.0058",
+      "prop.interiors_v3.classroom_library.0060",
+      "prop.interiors_v3.classroom_library.0062",
+      "prop.interiors_v3.classroom_library.0064",
       "prop.interiors_v3.classroom_library.0067",
       "prop.interiors_v3.classroom_library.0069",
       "prop.interiors_v3.classroom_library.0071",
@@ -84,6 +93,7 @@
       "prop.interiors_v3.kitchen.0208",
       "prop.interiors_v3.living.0003",
       "prop.interiors_v3.living.0004",
+      "prop.interiors_v3.living.0005",
       "prop.interiors_v3.living.0013",
       "prop.interiors_v3.living.0016",
       "prop.interiors_v3.living.0017",
@@ -95,6 +105,9 @@
       "prop.interiors_v3.living.0051",
       "prop.interiors_v3.living.0065",
       "prop.interiors_v3.living.0079",
+      "prop.interiors_v3.music_sport.0043",
+      "prop.interiors_v3.music_sport.0062",
+      "prop.interiors_v3.music_sport.0066",
       "prop.interiors_v3.shooting_range.0011",
       "prop.interiors_v3.shooting_range.0012",
       "prop.interiors_v3.shooting_range.0015",
@@ -132,10 +145,7 @@
       "prop.office.phone",
       "prop.office.printer",
       "prop.office.printer_station",
-      "prop.office.reception_corner",
-      "prop.office.reception_desk",
       "prop.office.side_table",
-      "prop.office.sofa_corner",
       "prop.office.sofa_dark",
       "prop.office.table_light",
       "prop.office.table_walnut",
@@ -161,7 +171,7 @@
     "key": "claudeville-v2-props"
   },
   "schema_version": 1,
-  "source_tmj_sha256": "d4ea7d95448034a4b7f1238ee34a8c180213672feecac0271fed525cfbfc80b4",
+  "source_tmj_sha256": "19feeb63ab7fedd3aaffa5bdd6bac7b6620cc8efe98ca0cdd9aea6a52fb71fde",
   "tile_asset_remap": {
     "tile.exteriors_city.0016.0016": {
       "atlas": "terrain",
@@ -1638,1150 +1648,1010 @@
       "runtime_gid": 305,
       "tile_id": 82
     },
-    "tile.interiors.full.r0238.c11": {
+    "tile.interiors.full.r0239.c07": {
       "atlas": "interiors",
       "runtime_gid": 306,
       "tile_id": 83
     },
-    "tile.interiors.full.r0238.c12": {
+    "tile.interiors.full.r0239.c09": {
       "atlas": "interiors",
       "runtime_gid": 307,
       "tile_id": 84
     },
-    "tile.interiors.full.r0238.c13": {
+    "tile.interiors.full.r0264.c08": {
       "atlas": "interiors",
       "runtime_gid": 308,
       "tile_id": 85
     },
-    "tile.interiors.full.r0239.c07": {
+    "tile.interiors.full.r0264.c09": {
       "atlas": "interiors",
       "runtime_gid": 309,
       "tile_id": 86
     },
-    "tile.interiors.full.r0239.c09": {
+    "tile.interiors.full.r0274.c00": {
       "atlas": "interiors",
       "runtime_gid": 310,
       "tile_id": 87
     },
-    "tile.interiors.full.r0239.c11": {
+    "tile.interiors.full.r0274.c01": {
       "atlas": "interiors",
       "runtime_gid": 311,
       "tile_id": 88
     },
-    "tile.interiors.full.r0239.c12": {
+    "tile.interiors.full.r0275.c00": {
       "atlas": "interiors",
       "runtime_gid": 312,
       "tile_id": 89
     },
-    "tile.interiors.full.r0239.c13": {
+    "tile.interiors.full.r0275.c01": {
       "atlas": "interiors",
       "runtime_gid": 313,
       "tile_id": 90
     },
-    "tile.interiors.full.r0240.c11": {
+    "tile.interiors.full.r0302.c03": {
       "atlas": "interiors",
       "runtime_gid": 314,
       "tile_id": 91
     },
-    "tile.interiors.full.r0240.c12": {
+    "tile.interiors.full.r0303.c03": {
       "atlas": "interiors",
       "runtime_gid": 315,
       "tile_id": 92
     },
-    "tile.interiors.full.r0240.c13": {
+    "tile.interiors.full.r0304.c03": {
       "atlas": "interiors",
       "runtime_gid": 316,
       "tile_id": 93
     },
-    "tile.interiors.full.r0245.c04": {
+    "tile.interiors.full.r0305.c03": {
       "atlas": "interiors",
       "runtime_gid": 317,
       "tile_id": 94
     },
-    "tile.interiors.full.r0245.c05": {
+    "tile.interiors.full.r0307.c08": {
       "atlas": "interiors",
       "runtime_gid": 318,
       "tile_id": 95
     },
-    "tile.interiors.full.r0245.c11": {
+    "tile.interiors.full.r0327.c06": {
       "atlas": "interiors",
       "runtime_gid": 319,
       "tile_id": 96
     },
-    "tile.interiors.full.r0245.c12": {
+    "tile.interiors.full.r0328.c06": {
       "atlas": "interiors",
       "runtime_gid": 320,
       "tile_id": 97
     },
-    "tile.interiors.full.r0245.c15": {
+    "tile.interiors.full.r0331.c06": {
       "atlas": "interiors",
       "runtime_gid": 321,
       "tile_id": 98
     },
-    "tile.interiors.full.r0246.c11": {
+    "tile.interiors.full.r0331.c09": {
       "atlas": "interiors",
       "runtime_gid": 322,
       "tile_id": 99
     },
-    "tile.interiors.full.r0246.c13": {
+    "tile.interiors.full.r0332.c08": {
       "atlas": "interiors",
       "runtime_gid": 323,
       "tile_id": 100
     },
-    "tile.interiors.full.r0246.c14": {
+    "tile.interiors.full.r0332.c09": {
       "atlas": "interiors",
       "runtime_gid": 324,
       "tile_id": 101
     },
-    "tile.interiors.full.r0247.c11": {
+    "tile.interiors.full.r0332.c11": {
       "atlas": "interiors",
       "runtime_gid": 325,
       "tile_id": 102
     },
-    "tile.interiors.full.r0247.c13": {
+    "tile.interiors.full.r0333.c08": {
       "atlas": "interiors",
       "runtime_gid": 326,
       "tile_id": 103
     },
-    "tile.interiors.full.r0247.c14": {
+    "tile.interiors.full.r0333.c09": {
       "atlas": "interiors",
       "runtime_gid": 327,
       "tile_id": 104
     },
-    "tile.interiors.full.r0247.c15": {
+    "tile.interiors.full.r0333.c11": {
       "atlas": "interiors",
       "runtime_gid": 328,
       "tile_id": 105
     },
-    "tile.interiors.full.r0264.c08": {
+    "tile.interiors.full.r0334.c08": {
       "atlas": "interiors",
       "runtime_gid": 329,
       "tile_id": 106
     },
-    "tile.interiors.full.r0264.c09": {
+    "tile.interiors.full.r0334.c11": {
       "atlas": "interiors",
       "runtime_gid": 330,
       "tile_id": 107
     },
-    "tile.interiors.full.r0274.c00": {
+    "tile.interiors.full.r0335.c02": {
       "atlas": "interiors",
       "runtime_gid": 331,
       "tile_id": 108
     },
-    "tile.interiors.full.r0274.c01": {
+    "tile.interiors.full.r0335.c03": {
       "atlas": "interiors",
       "runtime_gid": 332,
       "tile_id": 109
     },
-    "tile.interiors.full.r0275.c00": {
+    "tile.interiors.full.r0336.c02": {
       "atlas": "interiors",
       "runtime_gid": 333,
       "tile_id": 110
     },
-    "tile.interiors.full.r0275.c01": {
+    "tile.interiors.full.r0336.c03": {
       "atlas": "interiors",
       "runtime_gid": 334,
       "tile_id": 111
     },
-    "tile.interiors.full.r0302.c03": {
+    "tile.interiors.full.r0337.c03": {
       "atlas": "interiors",
       "runtime_gid": 335,
       "tile_id": 112
     },
-    "tile.interiors.full.r0303.c03": {
+    "tile.interiors.full.r0337.c05": {
       "atlas": "interiors",
       "runtime_gid": 336,
       "tile_id": 113
     },
-    "tile.interiors.full.r0304.c03": {
+    "tile.interiors.full.r0338.c04": {
       "atlas": "interiors",
       "runtime_gid": 337,
       "tile_id": 114
     },
-    "tile.interiors.full.r0305.c03": {
+    "tile.interiors.full.r0338.c05": {
       "atlas": "interiors",
       "runtime_gid": 338,
       "tile_id": 115
     },
-    "tile.interiors.full.r0307.c08": {
+    "tile.interiors.full.r0339.c00": {
       "atlas": "interiors",
       "runtime_gid": 339,
       "tile_id": 116
     },
-    "tile.interiors.full.r0314.c04": {
+    "tile.interiors.full.r0339.c01": {
       "atlas": "interiors",
       "runtime_gid": 340,
       "tile_id": 117
     },
-    "tile.interiors.full.r0314.c05": {
+    "tile.interiors.full.r0339.c06": {
       "atlas": "interiors",
       "runtime_gid": 341,
       "tile_id": 118
     },
-    "tile.interiors.full.r0314.c12": {
+    "tile.interiors.full.r0339.c07": {
       "atlas": "interiors",
       "runtime_gid": 342,
       "tile_id": 119
     },
-    "tile.interiors.full.r0314.c15": {
+    "tile.interiors.full.r0340.c04": {
       "atlas": "interiors",
       "runtime_gid": 343,
       "tile_id": 120
     },
-    "tile.interiors.full.r0315.c04": {
+    "tile.interiors.full.r0340.c05": {
       "atlas": "interiors",
       "runtime_gid": 344,
       "tile_id": 121
     },
-    "tile.interiors.full.r0315.c05": {
+    "tile.interiors.full.r0374.c06": {
       "atlas": "interiors",
       "runtime_gid": 345,
       "tile_id": 122
     },
-    "tile.interiors.full.r0315.c12": {
+    "tile.interiors.full.r0374.c07": {
       "atlas": "interiors",
       "runtime_gid": 346,
       "tile_id": 123
     },
-    "tile.interiors.full.r0327.c06": {
+    "tile.interiors.full.r0376.c02": {
       "atlas": "interiors",
       "runtime_gid": 347,
       "tile_id": 124
     },
-    "tile.interiors.full.r0328.c06": {
+    "tile.interiors.full.r0376.c03": {
       "atlas": "interiors",
       "runtime_gid": 348,
       "tile_id": 125
     },
-    "tile.interiors.full.r0331.c06": {
+    "tile.interiors.full.r0377.c02": {
       "atlas": "interiors",
       "runtime_gid": 349,
       "tile_id": 126
     },
-    "tile.interiors.full.r0331.c09": {
+    "tile.interiors.full.r0377.c03": {
       "atlas": "interiors",
       "runtime_gid": 350,
       "tile_id": 127
     },
-    "tile.interiors.full.r0332.c08": {
+    "tile.interiors.full.r0426.c01": {
       "atlas": "interiors",
       "runtime_gid": 351,
       "tile_id": 128
     },
-    "tile.interiors.full.r0332.c09": {
+    "tile.interiors.full.r0427.c01": {
       "atlas": "interiors",
       "runtime_gid": 352,
       "tile_id": 129
     },
-    "tile.interiors.full.r0332.c11": {
+    "tile.interiors.full.r0428.c01": {
       "atlas": "interiors",
       "runtime_gid": 353,
       "tile_id": 130
     },
-    "tile.interiors.full.r0333.c08": {
+    "tile.interiors.full.r0442.c12": {
       "atlas": "interiors",
       "runtime_gid": 354,
       "tile_id": 131
     },
-    "tile.interiors.full.r0333.c09": {
+    "tile.interiors.full.r0442.c13": {
       "atlas": "interiors",
       "runtime_gid": 355,
       "tile_id": 132
     },
-    "tile.interiors.full.r0333.c11": {
+    "tile.interiors.full.r0443.c12": {
       "atlas": "interiors",
       "runtime_gid": 356,
       "tile_id": 133
     },
-    "tile.interiors.full.r0334.c08": {
+    "tile.interiors.full.r0443.c13": {
       "atlas": "interiors",
       "runtime_gid": 357,
       "tile_id": 134
     },
-    "tile.interiors.full.r0334.c11": {
+    "tile.interiors.full.r0444.c12": {
       "atlas": "interiors",
       "runtime_gid": 358,
       "tile_id": 135
     },
-    "tile.interiors.full.r0335.c02": {
+    "tile.interiors.full.r0444.c13": {
       "atlas": "interiors",
       "runtime_gid": 359,
       "tile_id": 136
     },
-    "tile.interiors.full.r0335.c03": {
+    "tile.interiors.full.r0499.c12": {
       "atlas": "interiors",
       "runtime_gid": 360,
       "tile_id": 137
     },
-    "tile.interiors.full.r0336.c02": {
+    "tile.interiors.full.r0499.c13": {
       "atlas": "interiors",
       "runtime_gid": 361,
       "tile_id": 138
     },
-    "tile.interiors.full.r0336.c03": {
+    "tile.interiors.full.r0533.c14": {
       "atlas": "interiors",
       "runtime_gid": 362,
       "tile_id": 139
     },
-    "tile.interiors.full.r0337.c03": {
+    "tile.interiors.full.r0535.c14": {
       "atlas": "interiors",
       "runtime_gid": 363,
       "tile_id": 140
     },
-    "tile.interiors.full.r0337.c05": {
+    "tile.interiors.full.r0536.c12": {
       "atlas": "interiors",
       "runtime_gid": 364,
       "tile_id": 141
     },
-    "tile.interiors.full.r0338.c04": {
+    "tile.interiors.full.r0547.c06": {
       "atlas": "interiors",
       "runtime_gid": 365,
       "tile_id": 142
     },
-    "tile.interiors.full.r0338.c05": {
+    "tile.interiors.full.r0559.c01": {
       "atlas": "interiors",
       "runtime_gid": 366,
       "tile_id": 143
     },
-    "tile.interiors.full.r0339.c00": {
+    "tile.interiors.full.r0559.c02": {
       "atlas": "interiors",
       "runtime_gid": 367,
       "tile_id": 144
     },
-    "tile.interiors.full.r0339.c01": {
+    "tile.interiors.full.r0579.c00": {
       "atlas": "interiors",
       "runtime_gid": 368,
       "tile_id": 145
     },
-    "tile.interiors.full.r0339.c06": {
+    "tile.interiors.full.r0579.c01": {
       "atlas": "interiors",
       "runtime_gid": 369,
       "tile_id": 146
     },
-    "tile.interiors.full.r0339.c07": {
+    "tile.interiors.full.r0580.c00": {
       "atlas": "interiors",
       "runtime_gid": 370,
       "tile_id": 147
     },
-    "tile.interiors.full.r0340.c04": {
+    "tile.interiors.full.r0580.c01": {
       "atlas": "interiors",
       "runtime_gid": 371,
       "tile_id": 148
     },
-    "tile.interiors.full.r0340.c05": {
+    "tile.interiors.full.r0581.c00": {
       "atlas": "interiors",
       "runtime_gid": 372,
       "tile_id": 149
     },
-    "tile.interiors.full.r0374.c06": {
+    "tile.interiors.full.r0581.c01": {
       "atlas": "interiors",
       "runtime_gid": 373,
       "tile_id": 150
     },
-    "tile.interiors.full.r0374.c07": {
+    "tile.interiors.full.r0597.c08": {
       "atlas": "interiors",
       "runtime_gid": 374,
       "tile_id": 151
     },
-    "tile.interiors.full.r0376.c02": {
+    "tile.interiors.full.r0598.c08": {
       "atlas": "interiors",
       "runtime_gid": 375,
       "tile_id": 152
     },
-    "tile.interiors.full.r0376.c03": {
+    "tile.interiors.full.r0599.c08": {
       "atlas": "interiors",
       "runtime_gid": 376,
       "tile_id": 153
     },
-    "tile.interiors.full.r0377.c02": {
+    "tile.interiors.full.r0807.c00": {
       "atlas": "interiors",
       "runtime_gid": 377,
       "tile_id": 154
     },
-    "tile.interiors.full.r0377.c03": {
+    "tile.interiors.full.r0808.c00": {
       "atlas": "interiors",
       "runtime_gid": 378,
       "tile_id": 155
     },
-    "tile.interiors.full.r0426.c01": {
+    "tile.interiors.full.r0809.c00": {
       "atlas": "interiors",
       "runtime_gid": 379,
       "tile_id": 156
     },
-    "tile.interiors.full.r0427.c01": {
+    "tile.interiors.room_builder.r0015.c27": {
       "atlas": "interiors",
       "runtime_gid": 380,
       "tile_id": 157
     },
-    "tile.interiors.full.r0428.c01": {
+    "tile.interiors.room_builder.r0029.c27": {
       "atlas": "interiors",
       "runtime_gid": 381,
       "tile_id": 158
     },
-    "tile.interiors.full.r0442.c12": {
+    "tile.interiors.room_builder.r0031.c05": {
       "atlas": "interiors",
       "runtime_gid": 382,
       "tile_id": 159
     },
-    "tile.interiors.full.r0442.c13": {
+    "tile.interiors.room_builder.r0043.c05": {
       "atlas": "interiors",
       "runtime_gid": 383,
       "tile_id": 160
     },
-    "tile.interiors.full.r0443.c12": {
+    "tile.interiors.room_builder.r0054.c01": {
       "atlas": "interiors",
       "runtime_gid": 384,
       "tile_id": 161
     },
-    "tile.interiors.full.r0443.c13": {
+    "tile.interiors.room_builder.r0054.c02": {
       "atlas": "interiors",
       "runtime_gid": 385,
       "tile_id": 162
     },
-    "tile.interiors.full.r0444.c12": {
+    "tile.interiors.room_builder.r0054.c03": {
       "atlas": "interiors",
       "runtime_gid": 386,
       "tile_id": 163
     },
-    "tile.interiors.full.r0444.c13": {
+    "tile.interiors.room_builder.r0054.c04": {
       "atlas": "interiors",
       "runtime_gid": 387,
       "tile_id": 164
     },
-    "tile.interiors.full.r0499.c12": {
+    "tile.interiors.room_builder.r0054.c07": {
       "atlas": "interiors",
       "runtime_gid": 388,
       "tile_id": 165
     },
-    "tile.interiors.full.r0499.c13": {
+    "tile.interiors.room_builder.r0054.c08": {
       "atlas": "interiors",
       "runtime_gid": 389,
       "tile_id": 166
     },
-    "tile.interiors.full.r0533.c14": {
+    "tile.interiors.room_builder.r0054.c09": {
       "atlas": "interiors",
       "runtime_gid": 390,
       "tile_id": 167
     },
-    "tile.interiors.full.r0535.c14": {
+    "tile.interiors.room_builder.r0054.c10": {
       "atlas": "interiors",
       "runtime_gid": 391,
       "tile_id": 168
     },
-    "tile.interiors.full.r0536.c12": {
+    "tile.interiors.room_builder.r0054.c25": {
       "atlas": "interiors",
       "runtime_gid": 392,
       "tile_id": 169
     },
-    "tile.interiors.full.r0547.c06": {
+    "tile.interiors.room_builder.r0054.c28": {
       "atlas": "interiors",
       "runtime_gid": 393,
       "tile_id": 170
     },
-    "tile.interiors.full.r0559.c01": {
+    "tile.interiors.room_builder.r0054.c60": {
       "atlas": "interiors",
       "runtime_gid": 394,
       "tile_id": 171
     },
-    "tile.interiors.full.r0559.c02": {
+    "tile.interiors.room_builder.r0054.c65": {
       "atlas": "interiors",
       "runtime_gid": 395,
       "tile_id": 172
     },
-    "tile.interiors.full.r0579.c00": {
+    "tile.interiors.room_builder.r0055.c01": {
       "atlas": "interiors",
       "runtime_gid": 396,
       "tile_id": 173
     },
-    "tile.interiors.full.r0579.c01": {
+    "tile.interiors.room_builder.r0055.c02": {
       "atlas": "interiors",
       "runtime_gid": 397,
       "tile_id": 174
     },
-    "tile.interiors.full.r0580.c00": {
+    "tile.interiors.room_builder.r0055.c03": {
       "atlas": "interiors",
       "runtime_gid": 398,
       "tile_id": 175
     },
-    "tile.interiors.full.r0580.c01": {
+    "tile.interiors.room_builder.r0055.c04": {
       "atlas": "interiors",
       "runtime_gid": 399,
       "tile_id": 176
     },
-    "tile.interiors.full.r0581.c00": {
+    "tile.interiors.room_builder.r0055.c07": {
       "atlas": "interiors",
       "runtime_gid": 400,
       "tile_id": 177
     },
-    "tile.interiors.full.r0581.c01": {
+    "tile.interiors.room_builder.r0055.c08": {
       "atlas": "interiors",
       "runtime_gid": 401,
       "tile_id": 178
     },
-    "tile.interiors.full.r0597.c08": {
+    "tile.interiors.room_builder.r0055.c09": {
       "atlas": "interiors",
       "runtime_gid": 402,
       "tile_id": 179
     },
-    "tile.interiors.full.r0598.c08": {
+    "tile.interiors.room_builder.r0055.c10": {
       "atlas": "interiors",
       "runtime_gid": 403,
       "tile_id": 180
     },
-    "tile.interiors.full.r0599.c08": {
+    "tile.interiors.room_builder.r0055.c26": {
       "atlas": "interiors",
       "runtime_gid": 404,
       "tile_id": 181
     },
-    "tile.interiors.full.r0807.c00": {
+    "tile.interiors.room_builder.r0055.c27": {
       "atlas": "interiors",
       "runtime_gid": 405,
       "tile_id": 182
     },
-    "tile.interiors.full.r0808.c00": {
+    "tile.interiors.room_builder.r0055.c28": {
       "atlas": "interiors",
       "runtime_gid": 406,
       "tile_id": 183
     },
-    "tile.interiors.full.r0809.c00": {
+    "tile.interiors.room_builder.r0055.c60": {
       "atlas": "interiors",
       "runtime_gid": 407,
       "tile_id": 184
     },
-    "tile.interiors.room_builder.r0015.c27": {
+    "tile.interiors.room_builder.r0055.c62": {
       "atlas": "interiors",
       "runtime_gid": 408,
       "tile_id": 185
     },
-    "tile.interiors.room_builder.r0029.c27": {
+    "tile.interiors.room_builder.r0055.c65": {
       "atlas": "interiors",
       "runtime_gid": 409,
       "tile_id": 186
     },
-    "tile.interiors.room_builder.r0031.c05": {
+    "tile.interiors.room_builder.r0056.c01": {
       "atlas": "interiors",
       "runtime_gid": 410,
       "tile_id": 187
     },
-    "tile.interiors.room_builder.r0043.c05": {
+    "tile.interiors.room_builder.r0056.c02": {
       "atlas": "interiors",
       "runtime_gid": 411,
       "tile_id": 188
     },
-    "tile.interiors.room_builder.r0054.c01": {
+    "tile.interiors.room_builder.r0056.c03": {
       "atlas": "interiors",
       "runtime_gid": 412,
       "tile_id": 189
     },
-    "tile.interiors.room_builder.r0054.c02": {
+    "tile.interiors.room_builder.r0056.c04": {
       "atlas": "interiors",
       "runtime_gid": 413,
       "tile_id": 190
     },
-    "tile.interiors.room_builder.r0054.c03": {
+    "tile.interiors.room_builder.r0056.c07": {
       "atlas": "interiors",
       "runtime_gid": 414,
       "tile_id": 191
     },
-    "tile.interiors.room_builder.r0054.c04": {
+    "tile.interiors.room_builder.r0056.c08": {
       "atlas": "interiors",
       "runtime_gid": 415,
       "tile_id": 192
     },
-    "tile.interiors.room_builder.r0054.c07": {
+    "tile.interiors.room_builder.r0056.c09": {
       "atlas": "interiors",
       "runtime_gid": 416,
       "tile_id": 193
     },
-    "tile.interiors.room_builder.r0054.c08": {
+    "tile.interiors.room_builder.r0056.c10": {
       "atlas": "interiors",
       "runtime_gid": 417,
       "tile_id": 194
     },
-    "tile.interiors.room_builder.r0054.c09": {
+    "tile.interiors.room_builder.r0056.c25": {
       "atlas": "interiors",
       "runtime_gid": 418,
       "tile_id": 195
     },
-    "tile.interiors.room_builder.r0054.c10": {
+    "tile.interiors.room_builder.r0056.c26": {
       "atlas": "interiors",
       "runtime_gid": 419,
       "tile_id": 196
     },
-    "tile.interiors.room_builder.r0054.c25": {
+    "tile.interiors.room_builder.r0056.c27": {
       "atlas": "interiors",
       "runtime_gid": 420,
       "tile_id": 197
     },
-    "tile.interiors.room_builder.r0054.c28": {
+    "tile.interiors.room_builder.r0056.c28": {
       "atlas": "interiors",
       "runtime_gid": 421,
       "tile_id": 198
     },
-    "tile.interiors.room_builder.r0054.c60": {
+    "tile.interiors.room_builder.r0056.c62": {
       "atlas": "interiors",
       "runtime_gid": 422,
       "tile_id": 199
     },
-    "tile.interiors.room_builder.r0054.c65": {
+    "tile.interiors.room_builder.r0056.c63": {
       "atlas": "interiors",
       "runtime_gid": 423,
       "tile_id": 200
     },
-    "tile.interiors.room_builder.r0055.c01": {
+    "tile.interiors.room_builder.r0056.c64": {
       "atlas": "interiors",
       "runtime_gid": 424,
       "tile_id": 201
     },
-    "tile.interiors.room_builder.r0055.c02": {
+    "tile.interiors.room_builder.r0056.c65": {
       "atlas": "interiors",
       "runtime_gid": 425,
       "tile_id": 202
     },
-    "tile.interiors.room_builder.r0055.c03": {
+    "tile.interiors.room_builder.r0057.c01": {
       "atlas": "interiors",
       "runtime_gid": 426,
       "tile_id": 203
     },
-    "tile.interiors.room_builder.r0055.c04": {
+    "tile.interiors.room_builder.r0057.c02": {
       "atlas": "interiors",
       "runtime_gid": 427,
       "tile_id": 204
     },
-    "tile.interiors.room_builder.r0055.c07": {
+    "tile.interiors.room_builder.r0057.c03": {
       "atlas": "interiors",
       "runtime_gid": 428,
       "tile_id": 205
     },
-    "tile.interiors.room_builder.r0055.c08": {
+    "tile.interiors.room_builder.r0057.c04": {
       "atlas": "interiors",
       "runtime_gid": 429,
       "tile_id": 206
     },
-    "tile.interiors.room_builder.r0055.c09": {
+    "tile.interiors.room_builder.r0057.c07": {
       "atlas": "interiors",
       "runtime_gid": 430,
       "tile_id": 207
     },
-    "tile.interiors.room_builder.r0055.c10": {
+    "tile.interiors.room_builder.r0057.c08": {
       "atlas": "interiors",
       "runtime_gid": 431,
       "tile_id": 208
     },
-    "tile.interiors.room_builder.r0055.c26": {
+    "tile.interiors.room_builder.r0057.c09": {
       "atlas": "interiors",
       "runtime_gid": 432,
       "tile_id": 209
     },
-    "tile.interiors.room_builder.r0055.c27": {
+    "tile.interiors.room_builder.r0057.c10": {
       "atlas": "interiors",
       "runtime_gid": 433,
       "tile_id": 210
     },
-    "tile.interiors.room_builder.r0055.c28": {
+    "tile.interiors.room_builder.r0057.c25": {
       "atlas": "interiors",
       "runtime_gid": 434,
       "tile_id": 211
     },
-    "tile.interiors.room_builder.r0055.c60": {
+    "tile.interiors.room_builder.r0057.c26": {
       "atlas": "interiors",
       "runtime_gid": 435,
       "tile_id": 212
     },
-    "tile.interiors.room_builder.r0055.c62": {
+    "tile.interiors.room_builder.r0057.c27": {
       "atlas": "interiors",
       "runtime_gid": 436,
       "tile_id": 213
     },
-    "tile.interiors.room_builder.r0055.c65": {
+    "tile.interiors.room_builder.r0057.c28": {
       "atlas": "interiors",
       "runtime_gid": 437,
       "tile_id": 214
     },
-    "tile.interiors.room_builder.r0056.c01": {
+    "tile.interiors.room_builder.r0057.c60": {
       "atlas": "interiors",
       "runtime_gid": 438,
       "tile_id": 215
     },
-    "tile.interiors.room_builder.r0056.c02": {
+    "tile.interiors.room_builder.r0057.c63": {
       "atlas": "interiors",
       "runtime_gid": 439,
       "tile_id": 216
     },
-    "tile.interiors.room_builder.r0056.c03": {
+    "tile.interiors.room_builder.r0057.c64": {
       "atlas": "interiors",
       "runtime_gid": 440,
       "tile_id": 217
     },
-    "tile.interiors.room_builder.r0056.c04": {
+    "tile.interiors.room_builder.r0058.c01": {
       "atlas": "interiors",
       "runtime_gid": 441,
       "tile_id": 218
     },
-    "tile.interiors.room_builder.r0056.c07": {
+    "tile.interiors.room_builder.r0058.c02": {
       "atlas": "interiors",
       "runtime_gid": 442,
       "tile_id": 219
     },
-    "tile.interiors.room_builder.r0056.c08": {
+    "tile.interiors.room_builder.r0058.c03": {
       "atlas": "interiors",
       "runtime_gid": 443,
       "tile_id": 220
     },
-    "tile.interiors.room_builder.r0056.c09": {
+    "tile.interiors.room_builder.r0058.c04": {
       "atlas": "interiors",
       "runtime_gid": 444,
       "tile_id": 221
     },
-    "tile.interiors.room_builder.r0056.c10": {
+    "tile.interiors.room_builder.r0058.c07": {
       "atlas": "interiors",
       "runtime_gid": 445,
       "tile_id": 222
     },
-    "tile.interiors.room_builder.r0056.c25": {
+    "tile.interiors.room_builder.r0058.c08": {
       "atlas": "interiors",
       "runtime_gid": 446,
       "tile_id": 223
     },
-    "tile.interiors.room_builder.r0056.c26": {
+    "tile.interiors.room_builder.r0058.c09": {
       "atlas": "interiors",
       "runtime_gid": 447,
       "tile_id": 224
     },
-    "tile.interiors.room_builder.r0056.c27": {
+    "tile.interiors.room_builder.r0058.c10": {
       "atlas": "interiors",
       "runtime_gid": 448,
       "tile_id": 225
     },
-    "tile.interiors.room_builder.r0056.c28": {
+    "tile.interiors.room_builder.r0058.c26": {
       "atlas": "interiors",
       "runtime_gid": 449,
       "tile_id": 226
     },
-    "tile.interiors.room_builder.r0056.c62": {
+    "tile.interiors.room_builder.r0058.c27": {
       "atlas": "interiors",
       "runtime_gid": 450,
       "tile_id": 227
     },
-    "tile.interiors.room_builder.r0056.c63": {
+    "tile.interiors.room_builder.r0058.c28": {
       "atlas": "interiors",
       "runtime_gid": 451,
       "tile_id": 228
     },
-    "tile.interiors.room_builder.r0056.c64": {
+    "tile.interiors.room_builder.r0058.c60": {
       "atlas": "interiors",
       "runtime_gid": 452,
       "tile_id": 229
     },
-    "tile.interiors.room_builder.r0056.c65": {
+    "tile.interiors.room_builder.r0059.c01": {
       "atlas": "interiors",
       "runtime_gid": 453,
       "tile_id": 230
     },
-    "tile.interiors.room_builder.r0057.c01": {
+    "tile.interiors.room_builder.r0059.c02": {
       "atlas": "interiors",
       "runtime_gid": 454,
       "tile_id": 231
     },
-    "tile.interiors.room_builder.r0057.c02": {
+    "tile.interiors.room_builder.r0059.c03": {
       "atlas": "interiors",
       "runtime_gid": 455,
       "tile_id": 232
     },
-    "tile.interiors.room_builder.r0057.c03": {
+    "tile.interiors.room_builder.r0059.c04": {
       "atlas": "interiors",
       "runtime_gid": 456,
       "tile_id": 233
     },
-    "tile.interiors.room_builder.r0057.c04": {
+    "tile.interiors.room_builder.r0059.c07": {
       "atlas": "interiors",
       "runtime_gid": 457,
       "tile_id": 234
     },
-    "tile.interiors.room_builder.r0057.c07": {
+    "tile.interiors.room_builder.r0059.c08": {
       "atlas": "interiors",
       "runtime_gid": 458,
       "tile_id": 235
     },
-    "tile.interiors.room_builder.r0057.c08": {
+    "tile.interiors.room_builder.r0059.c09": {
       "atlas": "interiors",
       "runtime_gid": 459,
       "tile_id": 236
     },
-    "tile.interiors.room_builder.r0057.c09": {
+    "tile.interiors.room_builder.r0059.c10": {
       "atlas": "interiors",
       "runtime_gid": 460,
       "tile_id": 237
     },
-    "tile.interiors.room_builder.r0057.c10": {
+    "tile.interiors.room_builder.r0059.c25": {
       "atlas": "interiors",
       "runtime_gid": 461,
       "tile_id": 238
     },
-    "tile.interiors.room_builder.r0057.c25": {
+    "tile.interiors.room_builder.r0059.c26": {
       "atlas": "interiors",
       "runtime_gid": 462,
       "tile_id": 239
     },
-    "tile.interiors.room_builder.r0057.c26": {
+    "tile.interiors.room_builder.r0059.c27": {
       "atlas": "interiors",
       "runtime_gid": 463,
       "tile_id": 240
     },
-    "tile.interiors.room_builder.r0057.c27": {
+    "tile.interiors.room_builder.r0059.c28": {
       "atlas": "interiors",
       "runtime_gid": 464,
       "tile_id": 241
     },
-    "tile.interiors.room_builder.r0057.c28": {
+    "tile.interiors.room_builder.r0059.c62": {
       "atlas": "interiors",
       "runtime_gid": 465,
       "tile_id": 242
     },
-    "tile.interiors.room_builder.r0057.c60": {
+    "tile.interiors.room_builder.r0059.c63": {
       "atlas": "interiors",
       "runtime_gid": 466,
       "tile_id": 243
     },
-    "tile.interiors.room_builder.r0057.c63": {
+    "tile.interiors.room_builder.r0059.c64": {
       "atlas": "interiors",
       "runtime_gid": 467,
       "tile_id": 244
     },
-    "tile.interiors.room_builder.r0057.c64": {
+    "tile.interiors.room_builder.r0059.c65": {
       "atlas": "interiors",
       "runtime_gid": 468,
       "tile_id": 245
     },
-    "tile.interiors.room_builder.r0058.c01": {
+    "tile.interiors.room_builder.r0060.c19": {
       "atlas": "interiors",
       "runtime_gid": 469,
       "tile_id": 246
     },
-    "tile.interiors.room_builder.r0058.c02": {
+    "tile.interiors.room_builder.r0060.c20": {
       "atlas": "interiors",
       "runtime_gid": 470,
       "tile_id": 247
     },
-    "tile.interiors.room_builder.r0058.c03": {
+    "tile.interiors.room_builder.r0060.c21": {
       "atlas": "interiors",
       "runtime_gid": 471,
       "tile_id": 248
     },
-    "tile.interiors.room_builder.r0058.c04": {
+    "tile.interiors.room_builder.r0060.c22": {
       "atlas": "interiors",
       "runtime_gid": 472,
       "tile_id": 249
     },
-    "tile.interiors.room_builder.r0058.c07": {
+    "tile.interiors.room_builder.r0061.c19": {
       "atlas": "interiors",
       "runtime_gid": 473,
       "tile_id": 250
     },
-    "tile.interiors.room_builder.r0058.c08": {
+    "tile.interiors.room_builder.r0061.c20": {
       "atlas": "interiors",
       "runtime_gid": 474,
       "tile_id": 251
     },
-    "tile.interiors.room_builder.r0058.c09": {
+    "tile.interiors.room_builder.r0061.c21": {
       "atlas": "interiors",
       "runtime_gid": 475,
       "tile_id": 252
     },
-    "tile.interiors.room_builder.r0058.c10": {
+    "tile.interiors.room_builder.r0061.c22": {
       "atlas": "interiors",
       "runtime_gid": 476,
       "tile_id": 253
     },
-    "tile.interiors.room_builder.r0058.c26": {
+    "tile.interiors.room_builder.r0062.c19": {
       "atlas": "interiors",
       "runtime_gid": 477,
       "tile_id": 254
     },
-    "tile.interiors.room_builder.r0058.c27": {
+    "tile.interiors.room_builder.r0062.c20": {
       "atlas": "interiors",
       "runtime_gid": 478,
       "tile_id": 255
     },
-    "tile.interiors.room_builder.r0058.c28": {
+    "tile.interiors.room_builder.r0062.c21": {
       "atlas": "interiors",
       "runtime_gid": 479,
       "tile_id": 256
     },
-    "tile.interiors.room_builder.r0058.c60": {
+    "tile.interiors.room_builder.r0062.c22": {
       "atlas": "interiors",
       "runtime_gid": 480,
       "tile_id": 257
     },
-    "tile.interiors.room_builder.r0059.c01": {
+    "tile.interiors.room_builder.r0063.c19": {
       "atlas": "interiors",
       "runtime_gid": 481,
       "tile_id": 258
     },
-    "tile.interiors.room_builder.r0059.c02": {
+    "tile.interiors.room_builder.r0063.c20": {
       "atlas": "interiors",
       "runtime_gid": 482,
       "tile_id": 259
     },
-    "tile.interiors.room_builder.r0059.c03": {
+    "tile.interiors.room_builder.r0063.c21": {
       "atlas": "interiors",
       "runtime_gid": 483,
       "tile_id": 260
     },
-    "tile.interiors.room_builder.r0059.c04": {
+    "tile.interiors.room_builder.r0063.c22": {
       "atlas": "interiors",
       "runtime_gid": 484,
       "tile_id": 261
     },
-    "tile.interiors.room_builder.r0059.c07": {
+    "tile.interiors.room_builder.r0064.c19": {
       "atlas": "interiors",
       "runtime_gid": 485,
       "tile_id": 262
     },
-    "tile.interiors.room_builder.r0059.c08": {
+    "tile.interiors.room_builder.r0064.c20": {
       "atlas": "interiors",
       "runtime_gid": 486,
       "tile_id": 263
     },
-    "tile.interiors.room_builder.r0059.c09": {
+    "tile.interiors.room_builder.r0064.c21": {
       "atlas": "interiors",
       "runtime_gid": 487,
       "tile_id": 264
     },
-    "tile.interiors.room_builder.r0059.c10": {
+    "tile.interiors.room_builder.r0064.c22": {
       "atlas": "interiors",
       "runtime_gid": 488,
       "tile_id": 265
     },
-    "tile.interiors.room_builder.r0059.c25": {
+    "tile.interiors.room_builder.r0065.c19": {
       "atlas": "interiors",
       "runtime_gid": 489,
       "tile_id": 266
     },
-    "tile.interiors.room_builder.r0059.c26": {
+    "tile.interiors.room_builder.r0065.c20": {
       "atlas": "interiors",
       "runtime_gid": 490,
       "tile_id": 267
     },
-    "tile.interiors.room_builder.r0059.c27": {
+    "tile.interiors.room_builder.r0065.c21": {
       "atlas": "interiors",
       "runtime_gid": 491,
       "tile_id": 268
     },
-    "tile.interiors.room_builder.r0059.c28": {
+    "tile.interiors.room_builder.r0065.c22": {
       "atlas": "interiors",
       "runtime_gid": 492,
       "tile_id": 269
     },
-    "tile.interiors.room_builder.r0059.c62": {
+    "tile.interiors.room_builder.r0068.c44": {
       "atlas": "interiors",
       "runtime_gid": 493,
       "tile_id": 270
     },
-    "tile.interiors.room_builder.r0059.c63": {
+    "tile.interiors.room_builder.r0068.c46": {
       "atlas": "interiors",
       "runtime_gid": 494,
       "tile_id": 271
     },
-    "tile.interiors.room_builder.r0059.c64": {
+    "tile.interiors.room_builder.r0068.c49": {
       "atlas": "interiors",
       "runtime_gid": 495,
       "tile_id": 272
     },
-    "tile.interiors.room_builder.r0059.c65": {
+    "tile.interiors.room_builder.r0069.c44": {
       "atlas": "interiors",
       "runtime_gid": 496,
       "tile_id": 273
     },
-    "tile.interiors.room_builder.r0060.c19": {
+    "tile.interiors.room_builder.r0069.c46": {
       "atlas": "interiors",
       "runtime_gid": 497,
       "tile_id": 274
     },
-    "tile.interiors.room_builder.r0060.c20": {
+    "tile.interiors.room_builder.r0069.c49": {
       "atlas": "interiors",
       "runtime_gid": 498,
       "tile_id": 275
     },
-    "tile.interiors.room_builder.r0060.c21": {
+    "tile.interiors.room_builder.r0070.c46": {
       "atlas": "interiors",
       "runtime_gid": 499,
       "tile_id": 276
     },
-    "tile.interiors.room_builder.r0060.c22": {
+    "tile.interiors.room_builder.r0070.c47": {
       "atlas": "interiors",
       "runtime_gid": 500,
       "tile_id": 277
     },
-    "tile.interiors.room_builder.r0061.c19": {
+    "tile.interiors.room_builder.r0070.c49": {
       "atlas": "interiors",
       "runtime_gid": 501,
       "tile_id": 278
     },
-    "tile.interiors.room_builder.r0061.c20": {
+    "tile.interiors.room_builder.r0071.c44": {
       "atlas": "interiors",
       "runtime_gid": 502,
       "tile_id": 279
     },
-    "tile.interiors.room_builder.r0061.c21": {
+    "tile.interiors.room_builder.r0071.c47": {
       "atlas": "interiors",
       "runtime_gid": 503,
       "tile_id": 280
     },
-    "tile.interiors.room_builder.r0061.c22": {
+    "tile.interiors.room_builder.r0072.c44": {
       "atlas": "interiors",
       "runtime_gid": 504,
       "tile_id": 281
     },
-    "tile.interiors.room_builder.r0062.c19": {
+    "tile.interiors.room_builder.r0080.c46": {
       "atlas": "interiors",
       "runtime_gid": 505,
       "tile_id": 282
     },
-    "tile.interiors.room_builder.r0062.c20": {
+    "tile.interiors.room_builder.r0080.c49": {
       "atlas": "interiors",
       "runtime_gid": 506,
       "tile_id": 283
-    },
-    "tile.interiors.room_builder.r0062.c21": {
-      "atlas": "interiors",
-      "runtime_gid": 507,
-      "tile_id": 284
-    },
-    "tile.interiors.room_builder.r0062.c22": {
-      "atlas": "interiors",
-      "runtime_gid": 508,
-      "tile_id": 285
-    },
-    "tile.interiors.room_builder.r0063.c19": {
-      "atlas": "interiors",
-      "runtime_gid": 509,
-      "tile_id": 286
-    },
-    "tile.interiors.room_builder.r0063.c20": {
-      "atlas": "interiors",
-      "runtime_gid": 510,
-      "tile_id": 287
-    },
-    "tile.interiors.room_builder.r0063.c21": {
-      "atlas": "interiors",
-      "runtime_gid": 511,
-      "tile_id": 288
-    },
-    "tile.interiors.room_builder.r0063.c22": {
-      "atlas": "interiors",
-      "runtime_gid": 512,
-      "tile_id": 289
-    },
-    "tile.interiors.room_builder.r0064.c19": {
-      "atlas": "interiors",
-      "runtime_gid": 513,
-      "tile_id": 290
-    },
-    "tile.interiors.room_builder.r0064.c20": {
-      "atlas": "interiors",
-      "runtime_gid": 514,
-      "tile_id": 291
-    },
-    "tile.interiors.room_builder.r0064.c21": {
-      "atlas": "interiors",
-      "runtime_gid": 515,
-      "tile_id": 292
-    },
-    "tile.interiors.room_builder.r0064.c22": {
-      "atlas": "interiors",
-      "runtime_gid": 516,
-      "tile_id": 293
-    },
-    "tile.interiors.room_builder.r0065.c19": {
-      "atlas": "interiors",
-      "runtime_gid": 517,
-      "tile_id": 294
-    },
-    "tile.interiors.room_builder.r0065.c20": {
-      "atlas": "interiors",
-      "runtime_gid": 518,
-      "tile_id": 295
-    },
-    "tile.interiors.room_builder.r0065.c21": {
-      "atlas": "interiors",
-      "runtime_gid": 519,
-      "tile_id": 296
-    },
-    "tile.interiors.room_builder.r0065.c22": {
-      "atlas": "interiors",
-      "runtime_gid": 520,
-      "tile_id": 297
-    },
-    "tile.interiors.room_builder.r0068.c44": {
-      "atlas": "interiors",
-      "runtime_gid": 521,
-      "tile_id": 298
-    },
-    "tile.interiors.room_builder.r0068.c46": {
-      "atlas": "interiors",
-      "runtime_gid": 522,
-      "tile_id": 299
-    },
-    "tile.interiors.room_builder.r0068.c49": {
-      "atlas": "interiors",
-      "runtime_gid": 523,
-      "tile_id": 300
-    },
-    "tile.interiors.room_builder.r0069.c44": {
-      "atlas": "interiors",
-      "runtime_gid": 524,
-      "tile_id": 301
-    },
-    "tile.interiors.room_builder.r0069.c46": {
-      "atlas": "interiors",
-      "runtime_gid": 525,
-      "tile_id": 302
-    },
-    "tile.interiors.room_builder.r0069.c49": {
-      "atlas": "interiors",
-      "runtime_gid": 526,
-      "tile_id": 303
-    },
-    "tile.interiors.room_builder.r0070.c46": {
-      "atlas": "interiors",
-      "runtime_gid": 527,
-      "tile_id": 304
-    },
-    "tile.interiors.room_builder.r0070.c47": {
-      "atlas": "interiors",
-      "runtime_gid": 528,
-      "tile_id": 305
-    },
-    "tile.interiors.room_builder.r0070.c49": {
-      "atlas": "interiors",
-      "runtime_gid": 529,
-      "tile_id": 306
-    },
-    "tile.interiors.room_builder.r0071.c44": {
-      "atlas": "interiors",
-      "runtime_gid": 530,
-      "tile_id": 307
-    },
-    "tile.interiors.room_builder.r0071.c47": {
-      "atlas": "interiors",
-      "runtime_gid": 531,
-      "tile_id": 308
-    },
-    "tile.interiors.room_builder.r0072.c44": {
-      "atlas": "interiors",
-      "runtime_gid": 532,
-      "tile_id": 309
-    },
-    "tile.interiors.room_builder.r0080.c46": {
-      "atlas": "interiors",
-      "runtime_gid": 533,
-      "tile_id": 310
-    },
-    "tile.interiors.room_builder.r0080.c49": {
-      "atlas": "interiors",
-      "runtime_gid": 534,
-      "tile_id": 311
     },
     "tile.office_room_builder.0032.0016": {
       "atlas": "office",
@@ -3109,238 +2979,210 @@
     "41181": 303,
     "41182": 304,
     "41538": 305,
-    "41585": 306,
-    "41586": 307,
-    "41587": 308,
-    "41597": 309,
-    "41599": 310,
-    "41601": 311,
-    "41602": 312,
-    "41603": 313,
-    "41617": 314,
-    "41618": 315,
-    "41619": 316,
-    "41690": 317,
-    "41691": 318,
-    "41697": 319,
-    "41698": 320,
-    "41701": 321,
-    "41713": 322,
-    "41715": 323,
-    "41716": 324,
-    "41729": 325,
-    "41731": 326,
-    "41732": 327,
-    "41733": 328,
-    "41961": 329,
-    "41962": 330,
-    "42111": 331,
-    "42112": 332,
-    "42127": 333,
-    "42128": 334,
-    "42539": 335,
-    "42555": 336,
-    "42571": 337,
-    "42587": 338,
-    "42622": 339,
-    "42728": 340,
-    "42729": 341,
-    "42736": 342,
-    "42739": 343,
-    "42744": 344,
-    "42745": 345,
-    "42752": 346,
-    "42909": 347,
-    "42925": 348,
-    "42964": 349,
-    "42967": 350,
-    "42972": 351,
-    "42973": 352,
-    "42975": 353,
-    "42985": 354,
-    "42986": 355,
-    "42988": 356,
-    "43000": 357,
-    "43001": 358,
-    "43007": 359,
-    "43008": 360,
-    "43020": 361,
-    "43021": 362,
-    "43034": 363,
-    "43036": 364,
-    "43047": 365,
-    "43048": 366,
-    "43055": 367,
-    "43056": 368,
-    "43061": 369,
-    "43062": 370,
-    "43074": 371,
-    "43075": 372,
-    "43580": 373,
-    "43581": 374,
-    "43607": 375,
-    "43608": 376,
-    "43623": 377,
-    "43624": 378,
+    "41597": 306,
+    "41599": 307,
+    "41961": 308,
+    "41962": 309,
+    "42111": 310,
+    "42112": 311,
+    "42127": 312,
+    "42128": 313,
+    "42539": 314,
+    "42555": 315,
+    "42571": 316,
+    "42587": 317,
+    "42622": 318,
+    "42909": 319,
+    "42925": 320,
+    "42964": 321,
+    "42967": 322,
+    "42972": 323,
+    "42973": 324,
+    "42975": 325,
+    "42985": 326,
+    "42986": 327,
+    "42988": 328,
+    "43000": 329,
+    "43001": 330,
+    "43007": 331,
+    "43008": 332,
+    "43020": 333,
+    "43021": 334,
+    "43034": 335,
+    "43036": 336,
+    "43047": 337,
+    "43048": 338,
+    "43055": 339,
+    "43056": 340,
+    "43061": 341,
+    "43062": 342,
+    "43074": 343,
+    "43075": 344,
+    "43580": 345,
+    "43581": 346,
+    "43607": 347,
+    "43608": 348,
+    "43623": 349,
+    "43624": 350,
     "4386": 13,
     "4387": 14,
     "4388": 15,
-    "44308": 379,
-    "44322": 380,
-    "44338": 381,
-    "44543": 382,
-    "44544": 383,
-    "44559": 384,
-    "44560": 385,
-    "44574": 386,
-    "44575": 387,
-    "45358": 388,
-    "45359": 389,
-    "45846": 390,
-    "45878": 391,
-    "45892": 392,
-    "46038": 393,
-    "46178": 394,
-    "46179": 395,
-    "46466": 396,
-    "46467": 397,
-    "46482": 398,
-    "46483": 399,
-    "46495": 400,
-    "46496": 401,
-    "46696": 402,
-    "46711": 403,
-    "46726": 404,
-    "49619": 405,
-    "49634": 406,
-    "49650": 407,
-    "53796": 408,
-    "54544": 409,
-    "54626": 410,
-    "55219": 411,
-    "55413": 412,
-    "55414": 413,
-    "55415": 414,
-    "55416": 415,
-    "55419": 416,
-    "55420": 417,
-    "55421": 418,
-    "55422": 419,
-    "55437": 420,
-    "55440": 421,
-    "55470": 422,
-    "55475": 423,
-    "55479": 424,
-    "55480": 425,
-    "55481": 426,
-    "55482": 427,
-    "55485": 428,
-    "55486": 429,
-    "55487": 430,
-    "55488": 431,
-    "55504": 432,
-    "55505": 433,
-    "55506": 434,
-    "55536": 435,
-    "55538": 436,
-    "55541": 437,
-    "55545": 438,
-    "55546": 439,
-    "55547": 440,
-    "55548": 441,
-    "55550": 442,
-    "55551": 443,
-    "55552": 444,
-    "55553": 445,
-    "55565": 446,
-    "55566": 447,
-    "55567": 448,
-    "55568": 449,
-    "55597": 450,
-    "55598": 451,
-    "55599": 452,
-    "55600": 453,
-    "55603": 454,
-    "55604": 455,
-    "55605": 456,
-    "55606": 457,
-    "55607": 458,
-    "55608": 459,
-    "55609": 460,
-    "55610": 461,
-    "55619": 462,
-    "55620": 463,
-    "55621": 464,
-    "55622": 465,
-    "55647": 466,
-    "55650": 467,
-    "55651": 468,
-    "55655": 469,
-    "55656": 470,
-    "55657": 471,
-    "55658": 472,
-    "55659": 473,
-    "55660": 474,
-    "55661": 475,
-    "55662": 476,
-    "55672": 477,
-    "55673": 478,
-    "55674": 479,
-    "55699": 480,
-    "55707": 481,
-    "55708": 482,
-    "55709": 483,
-    "55710": 484,
-    "55711": 485,
-    "55712": 486,
-    "55713": 487,
-    "55714": 488,
-    "55723": 489,
-    "55724": 490,
-    "55725": 491,
-    "55726": 492,
-    "55753": 493,
-    "55754": 494,
-    "55755": 495,
-    "55756": 496,
-    "55778": 497,
-    "55779": 498,
-    "55780": 499,
-    "55781": 500,
-    "55802": 501,
-    "55803": 502,
-    "55804": 503,
-    "55805": 504,
-    "55847": 505,
-    "55848": 506,
-    "55849": 507,
-    "55850": 508,
-    "55892": 509,
-    "55893": 510,
-    "55894": 511,
-    "55895": 512,
-    "55936": 513,
-    "55937": 514,
-    "55938": 515,
-    "55939": 516,
-    "55977": 517,
-    "55978": 518,
-    "55979": 519,
-    "55980": 520,
-    "56029": 521,
-    "56031": 522,
-    "56034": 523,
-    "56053": 524,
-    "56055": 525,
-    "56058": 526,
-    "56079": 527,
-    "56080": 528,
-    "56082": 529,
-    "56101": 530,
-    "56104": 531,
-    "56125": 532,
-    "56295": 533,
-    "56298": 534,
+    "44308": 351,
+    "44322": 352,
+    "44338": 353,
+    "44543": 354,
+    "44544": 355,
+    "44559": 356,
+    "44560": 357,
+    "44574": 358,
+    "44575": 359,
+    "45358": 360,
+    "45359": 361,
+    "45846": 362,
+    "45878": 363,
+    "45892": 364,
+    "46038": 365,
+    "46178": 366,
+    "46179": 367,
+    "46466": 368,
+    "46467": 369,
+    "46482": 370,
+    "46483": 371,
+    "46495": 372,
+    "46496": 373,
+    "46696": 374,
+    "46711": 375,
+    "46726": 376,
+    "49619": 377,
+    "49634": 378,
+    "49650": 379,
+    "53796": 380,
+    "54544": 381,
+    "54626": 382,
+    "55219": 383,
+    "55413": 384,
+    "55414": 385,
+    "55415": 386,
+    "55416": 387,
+    "55419": 388,
+    "55420": 389,
+    "55421": 390,
+    "55422": 391,
+    "55437": 392,
+    "55440": 393,
+    "55470": 394,
+    "55475": 395,
+    "55479": 396,
+    "55480": 397,
+    "55481": 398,
+    "55482": 399,
+    "55485": 400,
+    "55486": 401,
+    "55487": 402,
+    "55488": 403,
+    "55504": 404,
+    "55505": 405,
+    "55506": 406,
+    "55536": 407,
+    "55538": 408,
+    "55541": 409,
+    "55545": 410,
+    "55546": 411,
+    "55547": 412,
+    "55548": 413,
+    "55550": 414,
+    "55551": 415,
+    "55552": 416,
+    "55553": 417,
+    "55565": 418,
+    "55566": 419,
+    "55567": 420,
+    "55568": 421,
+    "55597": 422,
+    "55598": 423,
+    "55599": 424,
+    "55600": 425,
+    "55603": 426,
+    "55604": 427,
+    "55605": 428,
+    "55606": 429,
+    "55607": 430,
+    "55608": 431,
+    "55609": 432,
+    "55610": 433,
+    "55619": 434,
+    "55620": 435,
+    "55621": 436,
+    "55622": 437,
+    "55647": 438,
+    "55650": 439,
+    "55651": 440,
+    "55655": 441,
+    "55656": 442,
+    "55657": 443,
+    "55658": 444,
+    "55659": 445,
+    "55660": 446,
+    "55661": 447,
+    "55662": 448,
+    "55672": 449,
+    "55673": 450,
+    "55674": 451,
+    "55699": 452,
+    "55707": 453,
+    "55708": 454,
+    "55709": 455,
+    "55710": 456,
+    "55711": 457,
+    "55712": 458,
+    "55713": 459,
+    "55714": 460,
+    "55723": 461,
+    "55724": 462,
+    "55725": 463,
+    "55726": 464,
+    "55753": 465,
+    "55754": 466,
+    "55755": 467,
+    "55756": 468,
+    "55778": 469,
+    "55779": 470,
+    "55780": 471,
+    "55781": 472,
+    "55802": 473,
+    "55803": 474,
+    "55804": 475,
+    "55805": 476,
+    "55847": 477,
+    "55848": 478,
+    "55849": 479,
+    "55850": 480,
+    "55892": 481,
+    "55893": 482,
+    "55894": 483,
+    "55895": 484,
+    "55936": 485,
+    "55937": 486,
+    "55938": 487,
+    "55939": 488,
+    "55977": 489,
+    "55978": 490,
+    "55979": 491,
+    "55980": 492,
+    "56029": 493,
+    "56031": 494,
+    "56034": 495,
+    "56053": 496,
+    "56055": 497,
+    "56058": 498,
+    "56079": 499,
+    "56080": 500,
+    "56082": 501,
+    "56101": 502,
+    "56104": 503,
+    "56125": 504,
+    "56295": 505,
+    "56298": 506,
     "59": 1,
     "61": 2,
     "62": 3,
@@ -3399,7 +3241,7 @@
       "firstgid": 223,
       "image": "tiles/interiors.png",
       "key": "interiors",
-      "tile_count": 312,
+      "tile_count": 284,
       "tileset": "tiles/interiors.tsj"
     }
   ]
