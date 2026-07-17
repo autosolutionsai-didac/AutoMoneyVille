@@ -78,6 +78,13 @@ assert.strictEqual(resident.played, "Nora_Vale-left-walk");
 adapter.setIdle(scene, resident, "Nora Vale", "up");
 assert.strictEqual(resident.frame, 62);
 
+const residentDefinition = queued.manifest.residents.find(item => item.name === "Nora Vale");
+residentDefinition.foot_offset = {x: 1, y: -2};
+const offsetResident = adapter.createSprite(scene, "Nora Vale", 30, 40);
+assert.deepStrictEqual(offsetResident.bodyOffset, [9, 30]);
+assert.deepStrictEqual(adapter.displayWorldFoot(offsetResident), {x: 31, y: 38});
+residentDefinition.foot_offset = {x: 0, y: 0};
+
 const fallback = adapter.createSprite(scene, "Missing Person", 0, 0);
 assert.strictEqual(fallback.key, "atlas");
 assert.deepStrictEqual(fallback.origin, [0.5, 1]);

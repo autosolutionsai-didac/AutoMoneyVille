@@ -292,10 +292,10 @@
       : {width: 32, height: 32};
     if (typeof sprite.setSize === "function" && typeof sprite.setOffset === "function") {
       // Movement packets store the logical foot in body.x/body.y. A one-pixel
-      // proxy at the frame origin keeps that coordinate independent of art size.
+      // proxy at the declared foot keeps that coordinate independent of art size.
       sprite.setSize(1, 1).setOffset(
-        sprite.frameDimensions.width * origin.x,
-        sprite.frameDimensions.height * origin.y
+        sprite.frameDimensions.width * origin.x + footOffset.x,
+        sprite.frameDimensions.height * origin.y + footOffset.y
       );
       if (sprite.body && typeof sprite.body.updateFromGameObject === "function") {
         sprite.body.updateFromGameObject();
