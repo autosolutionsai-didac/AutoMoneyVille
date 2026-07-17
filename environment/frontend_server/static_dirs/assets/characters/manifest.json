@@ -1,7 +1,27 @@
 {
-  "schema_version": 1,
-  "asset_pack": "existing-96x128-sheets",
-  "rendering": {"texture_filter": "nearest"},
+  "schema_version": 2,
+  "asset_pack": "limezu-character-generator-derivatives",
+  "rendering": {
+    "texture_filter": "nearest",
+    "native_frame": {
+      "width": 16,
+      "height": 32
+    }
+  },
+  "credits": [
+    {
+      "name": "LimeZu",
+      "role": "Modern Interiors artwork",
+      "url": "https://limezu.itch.io/",
+      "required": true
+    },
+    {
+      "name": "0a3r",
+      "role": "Modern Interiors Character Generator tool",
+      "url": "https://0a3r.itch.io/modern-interiors-character-generation-tool",
+      "required": true
+    }
+  ],
   "active_residents": [
     "Nora Vale",
     "Milo Chen",
@@ -16,177 +36,1184 @@
   ],
   "generation": {
     "default_activation": false,
-    "required_full_pack": "Modern Interiors (paid)",
+    "required_compatibility_pack": "Modern Interiors Full Version",
     "free_pack_allowed": false
+  },
+  "compatibility_gate": {
+    "purpose": "license-and-component-compatibility-only",
+    "paid_pack": "Modern Interiors Full Version",
+    "runtime_vendor_sources_shipped": false
+  },
+  "optional_actions": {
+    "status": "disabled-pending-visual-review",
+    "not_exposed_in_runtime": [
+      "sit",
+      "phone",
+      "hurt"
+    ]
+  },
+  "curation_audit": {
+    "candidate_hashes": {
+      "Adrian.png": "d7a67d9e3db1be7e8596a352c47f680316b5fc84017c10f6376d76f9306274b8",
+      "Dominic.png": "ae1555bab0b394b734331a42de4238d2f6a473a0535868dbaa00472fcd1bc63e",
+      "Elena.png": "b434c22dc6526e12bc7b8516d1f755243d24da30e9339eaf429233b63573c1e2",
+      "Ethan.png": "d0949db09166e039e3215ff9ebd9d8b77d84df8be4c8926e95de708ba30ca9a0",
+      "Felix.png": "e2700071bbb6e92ccf9c59b7461ddb538784ae86b9af8e4dddf107e3625e29a1",
+      "Henrik.png": "1d54215111990905e5dcdfbb3dbac39d609cd25401f67477155980640833f7b7",
+      "Julian.png": "afb4b364e3bd9e9ec10522f624d91ceba7148108419773d32e36dfdebada1698",
+      "Lucas.png": "88a35b3c83423fa9b4e9d13ed50bec561314c7f10b297079fa38d8315f9e3f37",
+      "Marcus.png": "bd65c88ccaeeab2d1d93a6733217ad2e96f990a5e354a1e73a9320b421d0d5cc",
+      "Mateo.png": "7f0c22bae96993aef9ad135c35c08ec8197e61f353b83c7fcdfb98567472d3e1",
+      "Nathan.png": "aa8a53e213f70f247d1d133dd2f8b6ede5d3e5211a855238d12eaaefcbff48db",
+      "Oscar.png": "e09dd75f1f161dfc81850f2b058c95d03802c42a7834c7fcc6a7eb0f0094c3f2",
+      "Owen.png": "6f350b482081de2bc137cad4fbba2cf6c695ff8333175074c4be87f431927000",
+      "Sebastian.png": "2c2a9fe7483c32f27ad89ea7f4bd3a20b25cb0c1f8bdf0b6c9fc4f26af59abfe",
+      "Selene.png": "d217bcb9c3e0983ef99fa45cece0d9261aec44566cd4efc1f98c7cbf919794b7",
+      "Unnamed Character.png": "df4d320f959fab554da59aa822348ef1eca377986b1588b63749cca77ea6b208"
+    },
+    "candidate_pool_sha256": "c2ddc2a5f09e619c8424b90f6cc7bc21ff7a0a3939f0c457c99820c5df790f79"
   },
   "residents": [
     {
       "name": "Nora Vale",
       "texture_key": "Nora_Vale",
-      "sprite_url": "assets/characters/Nora_Vale.png",
-      "portrait_url": "assets/characters/profile/Nora_Vale.png",
-      "source": "fallback",
-      "sheet": {"width": 96, "height": 128},
-      "frame": {"width": 32, "height": 32},
+      "sprite_url": "assets/characters/modern_pixels/Nora_Vale.png",
+      "portrait_url": "assets/characters/modern_pixels/profile/Nora_Vale.png",
+      "source": "user-supplied-limezu-generator-derivative",
+      "provenance": {
+        "kind": "user-supplied-limezu-generator-derivative",
+        "source_asset": "characters/Marcus.png",
+        "source_sha256": "bd65c88ccaeeab2d1d93a6733217ad2e96f990a5e354a1e73a9320b421d0d5cc"
+      },
+      "runtime_sha256": "bd65c88ccaeeab2d1d93a6733217ad2e96f990a5e354a1e73a9320b421d0d5cc",
+      "portrait_sha256": "ba3ce58854458a19f76d37508a84723a7f5d485efb3fac85819265562e1b4606",
+      "sheet": {
+        "width": 896,
+        "height": 640
+      },
+      "frame": {
+        "width": 16,
+        "height": 32
+      },
       "scale": 1,
-      "origin": {"x": 0.5, "y": 1},
-      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "foot_offset": {
+        "x": 0,
+        "y": 0
+      },
+      "portrait_crop": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
       "animations": {
-        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
-        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "idle": {
+          "down": [
+            74,
+            75,
+            76,
+            77,
+            78,
+            79
+          ],
+          "left": [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61
+          ],
+          "right": [
+            68,
+            69,
+            70,
+            71,
+            72,
+            73
+          ],
+          "up": [
+            62,
+            63,
+            64,
+            65,
+            66,
+            67
+          ]
+        },
+        "walk": {
+          "down": [
+            130,
+            131,
+            132,
+            133,
+            134,
+            135
+          ],
+          "left": [
+            112,
+            113,
+            114,
+            115,
+            116,
+            117
+          ],
+          "right": [
+            124,
+            125,
+            126,
+            127,
+            128,
+            129
+          ],
+          "up": [
+            118,
+            119,
+            120,
+            121,
+            122,
+            123
+          ]
+        },
         "actions": {}
       }
     },
     {
       "name": "Milo Chen",
       "texture_key": "Milo_Chen",
-      "sprite_url": "assets/characters/Milo_Chen.png",
-      "portrait_url": "assets/characters/profile/Milo_Chen.png",
-      "source": "fallback",
-      "sheet": {"width": 96, "height": 128},
-      "frame": {"width": 32, "height": 32},
+      "sprite_url": "assets/characters/modern_pixels/Milo_Chen.png",
+      "portrait_url": "assets/characters/modern_pixels/profile/Milo_Chen.png",
+      "source": "user-supplied-limezu-generator-derivative",
+      "provenance": {
+        "kind": "user-supplied-limezu-generator-derivative",
+        "source_asset": "characters/Sebastian.png",
+        "source_sha256": "2c2a9fe7483c32f27ad89ea7f4bd3a20b25cb0c1f8bdf0b6c9fc4f26af59abfe"
+      },
+      "runtime_sha256": "2c2a9fe7483c32f27ad89ea7f4bd3a20b25cb0c1f8bdf0b6c9fc4f26af59abfe",
+      "portrait_sha256": "d6a5b55d441c219bc14318bd1049bf97103ac38b39f9a722c1975ec288e1062f",
+      "sheet": {
+        "width": 896,
+        "height": 640
+      },
+      "frame": {
+        "width": 16,
+        "height": 32
+      },
       "scale": 1,
-      "origin": {"x": 0.5, "y": 1},
-      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "foot_offset": {
+        "x": 0,
+        "y": 0
+      },
+      "portrait_crop": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
       "animations": {
-        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
-        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "idle": {
+          "down": [
+            74,
+            75,
+            76,
+            77,
+            78,
+            79
+          ],
+          "left": [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61
+          ],
+          "right": [
+            68,
+            69,
+            70,
+            71,
+            72,
+            73
+          ],
+          "up": [
+            62,
+            63,
+            64,
+            65,
+            66,
+            67
+          ]
+        },
+        "walk": {
+          "down": [
+            130,
+            131,
+            132,
+            133,
+            134,
+            135
+          ],
+          "left": [
+            112,
+            113,
+            114,
+            115,
+            116,
+            117
+          ],
+          "right": [
+            124,
+            125,
+            126,
+            127,
+            128,
+            129
+          ],
+          "up": [
+            118,
+            119,
+            120,
+            121,
+            122,
+            123
+          ]
+        },
         "actions": {}
       }
     },
     {
       "name": "Iris Morgan",
       "texture_key": "Iris_Morgan",
-      "sprite_url": "assets/characters/Iris_Morgan.png",
-      "portrait_url": "assets/characters/profile/Iris_Morgan.png",
-      "source": "fallback",
-      "sheet": {"width": 96, "height": 128},
-      "frame": {"width": 32, "height": 32},
+      "sprite_url": "assets/characters/modern_pixels/Iris_Morgan.png",
+      "portrait_url": "assets/characters/modern_pixels/profile/Iris_Morgan.png",
+      "source": "user-supplied-limezu-generator-derivative",
+      "provenance": {
+        "kind": "user-supplied-limezu-generator-derivative",
+        "source_asset": "characters/Elena.png",
+        "source_sha256": "b434c22dc6526e12bc7b8516d1f755243d24da30e9339eaf429233b63573c1e2"
+      },
+      "runtime_sha256": "b434c22dc6526e12bc7b8516d1f755243d24da30e9339eaf429233b63573c1e2",
+      "portrait_sha256": "12950a938fa39ee4f5dfb53f546623746546e7a88098ec2ab82b7ab013ecf78e",
+      "sheet": {
+        "width": 896,
+        "height": 640
+      },
+      "frame": {
+        "width": 16,
+        "height": 32
+      },
       "scale": 1,
-      "origin": {"x": 0.5, "y": 1},
-      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "foot_offset": {
+        "x": 0,
+        "y": 0
+      },
+      "portrait_crop": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
       "animations": {
-        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
-        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "idle": {
+          "down": [
+            74,
+            75,
+            76,
+            77,
+            78,
+            79
+          ],
+          "left": [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61
+          ],
+          "right": [
+            68,
+            69,
+            70,
+            71,
+            72,
+            73
+          ],
+          "up": [
+            62,
+            63,
+            64,
+            65,
+            66,
+            67
+          ]
+        },
+        "walk": {
+          "down": [
+            130,
+            131,
+            132,
+            133,
+            134,
+            135
+          ],
+          "left": [
+            112,
+            113,
+            114,
+            115,
+            116,
+            117
+          ],
+          "right": [
+            124,
+            125,
+            126,
+            127,
+            128,
+            129
+          ],
+          "up": [
+            118,
+            119,
+            120,
+            121,
+            122,
+            123
+          ]
+        },
         "actions": {}
       }
     },
     {
       "name": "Theo Grant",
       "texture_key": "Theo_Grant",
-      "sprite_url": "assets/characters/Theo_Grant.png",
-      "portrait_url": "assets/characters/profile/Theo_Grant.png",
-      "source": "fallback",
-      "sheet": {"width": 96, "height": 128},
-      "frame": {"width": 32, "height": 32},
+      "sprite_url": "assets/characters/modern_pixels/Theo_Grant.png",
+      "portrait_url": "assets/characters/modern_pixels/profile/Theo_Grant.png",
+      "source": "user-supplied-limezu-generator-derivative",
+      "provenance": {
+        "kind": "user-supplied-limezu-generator-derivative",
+        "source_asset": "characters/Nathan.png",
+        "source_sha256": "aa8a53e213f70f247d1d133dd2f8b6ede5d3e5211a855238d12eaaefcbff48db"
+      },
+      "runtime_sha256": "aa8a53e213f70f247d1d133dd2f8b6ede5d3e5211a855238d12eaaefcbff48db",
+      "portrait_sha256": "0b57151046f2e1b28eb8f46ca5fed8f80205f2a496dde57631a116f93b7069a4",
+      "sheet": {
+        "width": 896,
+        "height": 640
+      },
+      "frame": {
+        "width": 16,
+        "height": 32
+      },
       "scale": 1,
-      "origin": {"x": 0.5, "y": 1},
-      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "foot_offset": {
+        "x": 0,
+        "y": 0
+      },
+      "portrait_crop": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
       "animations": {
-        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
-        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "idle": {
+          "down": [
+            74,
+            75,
+            76,
+            77,
+            78,
+            79
+          ],
+          "left": [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61
+          ],
+          "right": [
+            68,
+            69,
+            70,
+            71,
+            72,
+            73
+          ],
+          "up": [
+            62,
+            63,
+            64,
+            65,
+            66,
+            67
+          ]
+        },
+        "walk": {
+          "down": [
+            130,
+            131,
+            132,
+            133,
+            134,
+            135
+          ],
+          "left": [
+            112,
+            113,
+            114,
+            115,
+            116,
+            117
+          ],
+          "right": [
+            124,
+            125,
+            126,
+            127,
+            128,
+            129
+          ],
+          "up": [
+            118,
+            119,
+            120,
+            121,
+            122,
+            123
+          ]
+        },
         "actions": {}
       }
     },
     {
       "name": "Lena Ortiz",
       "texture_key": "Lena_Ortiz",
-      "sprite_url": "assets/characters/Lena_Ortiz.png",
-      "portrait_url": "assets/characters/profile/Lena_Ortiz.png",
-      "source": "fallback",
-      "sheet": {"width": 96, "height": 128},
-      "frame": {"width": 32, "height": 32},
+      "sprite_url": "assets/characters/modern_pixels/Lena_Ortiz.png",
+      "portrait_url": "assets/characters/modern_pixels/profile/Lena_Ortiz.png",
+      "source": "licensed-generator-component-composite",
+      "provenance": {
+        "kind": "licensed-generator-component-composite",
+        "components": [
+          {
+            "role": "body",
+            "path": "Bodies/16x16/Body_03.png",
+            "sha256": "f44ec919faf63a026bb837f39bfa7fe453e42d9e7446dd37a36e36052f1286fe"
+          },
+          {
+            "role": "eyes",
+            "path": "Eyes/16x16/Eyes_01.png",
+            "sha256": "0c61efd695c8b06fe88227d838042c18f81004f0d1cdd90d1a17a44bc4e9c2c0"
+          },
+          {
+            "role": "outfit",
+            "path": "Outfits/16x16/Outfit_13_03.png",
+            "sha256": "7825bc1f6ac641a3afb7265b6b0ed666a3394b3cfccf1800fd9425e4470efa6c"
+          },
+          {
+            "role": "hairstyle",
+            "path": "Hairstyles/16x16/Hairstyle_07_01.png",
+            "sha256": "c1749aeadb8d4424d7e55b2b6a6998b181074936a4bc3ef6cd0220708b707f38"
+          }
+        ],
+        "recipe_sha256": "0b1db86780360bdbaa1abe0d9b3b554ecc032e88d219752837a21d53af432b15"
+      },
+      "runtime_sha256": "a8dd64ed577ebba3ffde6d5fc055d2946f80708798ed6f1832c0aba250ac752d",
+      "portrait_sha256": "6ebd6544b44f0156260e997e4875ed719002f59da7b55fc2cc3ac659d70f62ac",
+      "sheet": {
+        "width": 896,
+        "height": 640
+      },
+      "frame": {
+        "width": 16,
+        "height": 32
+      },
       "scale": 1,
-      "origin": {"x": 0.5, "y": 1},
-      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "foot_offset": {
+        "x": 0,
+        "y": 0
+      },
+      "portrait_crop": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
       "animations": {
-        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
-        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "idle": {
+          "down": [
+            74,
+            75,
+            76,
+            77,
+            78,
+            79
+          ],
+          "left": [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61
+          ],
+          "right": [
+            68,
+            69,
+            70,
+            71,
+            72,
+            73
+          ],
+          "up": [
+            62,
+            63,
+            64,
+            65,
+            66,
+            67
+          ]
+        },
+        "walk": {
+          "down": [
+            130,
+            131,
+            132,
+            133,
+            134,
+            135
+          ],
+          "left": [
+            112,
+            113,
+            114,
+            115,
+            116,
+            117
+          ],
+          "right": [
+            124,
+            125,
+            126,
+            127,
+            128,
+            129
+          ],
+          "up": [
+            118,
+            119,
+            120,
+            121,
+            122,
+            123
+          ]
+        },
         "actions": {}
       }
     },
     {
       "name": "Ravi Singh",
       "texture_key": "Ravi_Singh",
-      "sprite_url": "assets/characters/Ravi_Singh.png",
-      "portrait_url": "assets/characters/profile/Ravi_Singh.png",
-      "source": "fallback",
-      "sheet": {"width": 96, "height": 128},
-      "frame": {"width": 32, "height": 32},
+      "sprite_url": "assets/characters/modern_pixels/Ravi_Singh.png",
+      "portrait_url": "assets/characters/modern_pixels/profile/Ravi_Singh.png",
+      "source": "user-supplied-limezu-generator-derivative",
+      "provenance": {
+        "kind": "user-supplied-limezu-generator-derivative",
+        "source_asset": "characters/Lucas.png",
+        "source_sha256": "88a35b3c83423fa9b4e9d13ed50bec561314c7f10b297079fa38d8315f9e3f37"
+      },
+      "runtime_sha256": "88a35b3c83423fa9b4e9d13ed50bec561314c7f10b297079fa38d8315f9e3f37",
+      "portrait_sha256": "e45a50d3b2afa2e0a84b293e24ab7e22419e00d0629387b94a7f35f0f7da4029",
+      "sheet": {
+        "width": 896,
+        "height": 640
+      },
+      "frame": {
+        "width": 16,
+        "height": 32
+      },
       "scale": 1,
-      "origin": {"x": 0.5, "y": 1},
-      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "foot_offset": {
+        "x": 0,
+        "y": 0
+      },
+      "portrait_crop": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
       "animations": {
-        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
-        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "idle": {
+          "down": [
+            74,
+            75,
+            76,
+            77,
+            78,
+            79
+          ],
+          "left": [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61
+          ],
+          "right": [
+            68,
+            69,
+            70,
+            71,
+            72,
+            73
+          ],
+          "up": [
+            62,
+            63,
+            64,
+            65,
+            66,
+            67
+          ]
+        },
+        "walk": {
+          "down": [
+            130,
+            131,
+            132,
+            133,
+            134,
+            135
+          ],
+          "left": [
+            112,
+            113,
+            114,
+            115,
+            116,
+            117
+          ],
+          "right": [
+            124,
+            125,
+            126,
+            127,
+            128,
+            129
+          ],
+          "up": [
+            118,
+            119,
+            120,
+            121,
+            122,
+            123
+          ]
+        },
         "actions": {}
       }
     },
     {
       "name": "June Park",
       "texture_key": "June_Park",
-      "sprite_url": "assets/characters/June_Park.png",
-      "portrait_url": "assets/characters/profile/June_Park.png",
-      "source": "fallback",
-      "sheet": {"width": 96, "height": 128},
-      "frame": {"width": 32, "height": 32},
+      "sprite_url": "assets/characters/modern_pixels/June_Park.png",
+      "portrait_url": "assets/characters/modern_pixels/profile/June_Park.png",
+      "source": "licensed-generator-component-composite",
+      "provenance": {
+        "kind": "licensed-generator-component-composite",
+        "components": [
+          {
+            "role": "body",
+            "path": "Bodies/16x16/Body_03.png",
+            "sha256": "f44ec919faf63a026bb837f39bfa7fe453e42d9e7446dd37a36e36052f1286fe"
+          },
+          {
+            "role": "eyes",
+            "path": "Eyes/16x16/Eyes_01.png",
+            "sha256": "0c61efd695c8b06fe88227d838042c18f81004f0d1cdd90d1a17a44bc4e9c2c0"
+          },
+          {
+            "role": "outfit",
+            "path": "Outfits/16x16/Outfit_31_03.png",
+            "sha256": "f29a69684d3afb4aecf2cc307e968f542fbaf7f4e24e45c5568c416e71258fa9"
+          },
+          {
+            "role": "hairstyle",
+            "path": "Hairstyles/16x16/Hairstyle_10_06.png",
+            "sha256": "987ea4a7e3bec37590e6710ca4fafb4dd3068c54cd4b857a9f5ab55aed435623"
+          }
+        ],
+        "recipe_sha256": "5d23f81cb038066ad63413f2751c38c038c51cb56fc60d97c9bf2499f4c6cf36"
+      },
+      "runtime_sha256": "dee0b162c23f98226fbf663db1290d4452d14b758f6f92186490cac5d17eaf9e",
+      "portrait_sha256": "6e74207c443af06d796084ca43f063de5b7e8651147bf7fab5e7bfe7e1322e29",
+      "sheet": {
+        "width": 896,
+        "height": 640
+      },
+      "frame": {
+        "width": 16,
+        "height": 32
+      },
       "scale": 1,
-      "origin": {"x": 0.5, "y": 1},
-      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "foot_offset": {
+        "x": 0,
+        "y": 0
+      },
+      "portrait_crop": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
       "animations": {
-        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
-        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "idle": {
+          "down": [
+            74,
+            75,
+            76,
+            77,
+            78,
+            79
+          ],
+          "left": [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61
+          ],
+          "right": [
+            68,
+            69,
+            70,
+            71,
+            72,
+            73
+          ],
+          "up": [
+            62,
+            63,
+            64,
+            65,
+            66,
+            67
+          ]
+        },
+        "walk": {
+          "down": [
+            130,
+            131,
+            132,
+            133,
+            134,
+            135
+          ],
+          "left": [
+            112,
+            113,
+            114,
+            115,
+            116,
+            117
+          ],
+          "right": [
+            124,
+            125,
+            126,
+            127,
+            128,
+            129
+          ],
+          "up": [
+            118,
+            119,
+            120,
+            121,
+            122,
+            123
+          ]
+        },
         "actions": {}
       }
     },
     {
       "name": "Amara Cole",
       "texture_key": "Amara_Cole",
-      "sprite_url": "assets/characters/Amara_Cole.png",
-      "portrait_url": "assets/characters/profile/Amara_Cole.png",
-      "source": "fallback",
-      "sheet": {"width": 96, "height": 128},
-      "frame": {"width": 32, "height": 32},
+      "sprite_url": "assets/characters/modern_pixels/Amara_Cole.png",
+      "portrait_url": "assets/characters/modern_pixels/profile/Amara_Cole.png",
+      "source": "licensed-generator-component-composite",
+      "provenance": {
+        "kind": "licensed-generator-component-composite",
+        "components": [
+          {
+            "role": "body",
+            "path": "Bodies/16x16/Body_02.png",
+            "sha256": "29e9a3dc8107750592050c7c6159f3db72b8aeb7afe7b597db48b92b0531a614"
+          },
+          {
+            "role": "eyes",
+            "path": "Eyes/16x16/Eyes_01.png",
+            "sha256": "0c61efd695c8b06fe88227d838042c18f81004f0d1cdd90d1a17a44bc4e9c2c0"
+          },
+          {
+            "role": "outfit",
+            "path": "Outfits/16x16/Outfit_31_02.png",
+            "sha256": "0ce1d28593959d0923b0f5bc07b752c379f2f2da22187728137801283c22210a"
+          },
+          {
+            "role": "hairstyle",
+            "path": "Hairstyles/16x16/Hairstyle_27_05.png",
+            "sha256": "c5056a1230ec842d7edfd6a1e28bf47d856df7420d65947c82a1566eb7223f59"
+          }
+        ],
+        "recipe_sha256": "019fff5d9c77d1af8e0cb8d6ae908c3706a0e505dbb3234085097565e1e98612"
+      },
+      "runtime_sha256": "0449a7270888c084ef6a7596ef7759b2b6d2f28295daa9b2e13b54185adda4d4",
+      "portrait_sha256": "b9221ad406ec3fb08f138494d448e82a5ce70e532c2baf327c9fabe21d68eb6c",
+      "sheet": {
+        "width": 896,
+        "height": 640
+      },
+      "frame": {
+        "width": 16,
+        "height": 32
+      },
       "scale": 1,
-      "origin": {"x": 0.5, "y": 1},
-      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "foot_offset": {
+        "x": 0,
+        "y": 0
+      },
+      "portrait_crop": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
       "animations": {
-        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
-        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "idle": {
+          "down": [
+            74,
+            75,
+            76,
+            77,
+            78,
+            79
+          ],
+          "left": [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61
+          ],
+          "right": [
+            68,
+            69,
+            70,
+            71,
+            72,
+            73
+          ],
+          "up": [
+            62,
+            63,
+            64,
+            65,
+            66,
+            67
+          ]
+        },
+        "walk": {
+          "down": [
+            130,
+            131,
+            132,
+            133,
+            134,
+            135
+          ],
+          "left": [
+            112,
+            113,
+            114,
+            115,
+            116,
+            117
+          ],
+          "right": [
+            124,
+            125,
+            126,
+            127,
+            128,
+            129
+          ],
+          "up": [
+            118,
+            119,
+            120,
+            121,
+            122,
+            123
+          ]
+        },
         "actions": {}
       }
     },
     {
       "name": "Felix Reed",
       "texture_key": "Felix_Reed",
-      "sprite_url": "assets/characters/Felix_Reed.png",
-      "portrait_url": "assets/characters/profile/Felix_Reed.png",
-      "source": "fallback",
-      "sheet": {"width": 96, "height": 128},
-      "frame": {"width": 32, "height": 32},
+      "sprite_url": "assets/characters/modern_pixels/Felix_Reed.png",
+      "portrait_url": "assets/characters/modern_pixels/profile/Felix_Reed.png",
+      "source": "user-supplied-limezu-generator-derivative",
+      "provenance": {
+        "kind": "user-supplied-limezu-generator-derivative",
+        "source_asset": "characters/Adrian.png",
+        "source_sha256": "d7a67d9e3db1be7e8596a352c47f680316b5fc84017c10f6376d76f9306274b8"
+      },
+      "runtime_sha256": "d7a67d9e3db1be7e8596a352c47f680316b5fc84017c10f6376d76f9306274b8",
+      "portrait_sha256": "df64eb4149ffb5c8587e8df3310d0cec80c116b0f0cd303bfe75ce1a0b7b1dd8",
+      "sheet": {
+        "width": 896,
+        "height": 640
+      },
+      "frame": {
+        "width": 16,
+        "height": 32
+      },
       "scale": 1,
-      "origin": {"x": 0.5, "y": 1},
-      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "foot_offset": {
+        "x": 0,
+        "y": 0
+      },
+      "portrait_crop": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
       "animations": {
-        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
-        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "idle": {
+          "down": [
+            74,
+            75,
+            76,
+            77,
+            78,
+            79
+          ],
+          "left": [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61
+          ],
+          "right": [
+            68,
+            69,
+            70,
+            71,
+            72,
+            73
+          ],
+          "up": [
+            62,
+            63,
+            64,
+            65,
+            66,
+            67
+          ]
+        },
+        "walk": {
+          "down": [
+            130,
+            131,
+            132,
+            133,
+            134,
+            135
+          ],
+          "left": [
+            112,
+            113,
+            114,
+            115,
+            116,
+            117
+          ],
+          "right": [
+            124,
+            125,
+            126,
+            127,
+            128,
+            129
+          ],
+          "up": [
+            118,
+            119,
+            120,
+            121,
+            122,
+            123
+          ]
+        },
         "actions": {}
       }
     },
     {
       "name": "Sofia Lane",
       "texture_key": "Sofia_Lane",
-      "sprite_url": "assets/characters/Sofia_Lane.png",
-      "portrait_url": "assets/characters/profile/Sofia_Lane.png",
-      "source": "fallback",
-      "sheet": {"width": 96, "height": 128},
-      "frame": {"width": 32, "height": 32},
+      "sprite_url": "assets/characters/modern_pixels/Sofia_Lane.png",
+      "portrait_url": "assets/characters/modern_pixels/profile/Sofia_Lane.png",
+      "source": "user-supplied-limezu-generator-derivative",
+      "provenance": {
+        "kind": "user-supplied-limezu-generator-derivative",
+        "source_asset": "characters/Oscar.png",
+        "source_sha256": "e09dd75f1f161dfc81850f2b058c95d03802c42a7834c7fcc6a7eb0f0094c3f2"
+      },
+      "runtime_sha256": "e09dd75f1f161dfc81850f2b058c95d03802c42a7834c7fcc6a7eb0f0094c3f2",
+      "portrait_sha256": "12c820e2bfb237f61ebab398391b33a048a509e84bedacb6aa676088bd9df2ce",
+      "sheet": {
+        "width": 896,
+        "height": 640
+      },
+      "frame": {
+        "width": 16,
+        "height": 32
+      },
       "scale": 1,
-      "origin": {"x": 0.5, "y": 1},
-      "portrait_crop": {"x": 0, "y": 0, "width": 32, "height": 32},
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "foot_offset": {
+        "x": 0,
+        "y": 0
+      },
+      "portrait_crop": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
       "animations": {
-        "idle": {"down": [1], "left": [4], "right": [7], "up": [10]},
-        "walk": {"down": [0, 1, 2, 1], "left": [3, 4, 5, 4], "right": [6, 7, 8, 7], "up": [9, 10, 11, 10]},
+        "idle": {
+          "down": [
+            74,
+            75,
+            76,
+            77,
+            78,
+            79
+          ],
+          "left": [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61
+          ],
+          "right": [
+            68,
+            69,
+            70,
+            71,
+            72,
+            73
+          ],
+          "up": [
+            62,
+            63,
+            64,
+            65,
+            66,
+            67
+          ]
+        },
+        "walk": {
+          "down": [
+            130,
+            131,
+            132,
+            133,
+            134,
+            135
+          ],
+          "left": [
+            112,
+            113,
+            114,
+            115,
+            116,
+            117
+          ],
+          "right": [
+            124,
+            125,
+            126,
+            127,
+            128,
+            129
+          ],
+          "up": [
+            118,
+            119,
+            120,
+            121,
+            122,
+            123
+          ]
+        },
         "actions": {}
       }
     }

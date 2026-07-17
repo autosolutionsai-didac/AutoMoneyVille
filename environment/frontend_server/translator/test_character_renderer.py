@@ -57,11 +57,11 @@ adapter.createAnimations(scene, ["Nora Vale"]);
 const resident = adapter.createSprite(scene, "Nora Vale", 10, 20);
 assert.deepStrictEqual(resident.origin, [0.5, 1]);
 assert.strictEqual(resident.scale, 1);
-assert.deepStrictEqual(resident.frameDimensions, {width: 32, height: 32});
+assert.deepStrictEqual(resident.frameDimensions, {width: 16, height: 32});
 assert.deepStrictEqual(resident.logicalFootAnchor, {x: 0.5, y: 1});
 assert.deepStrictEqual(resident.logicalFootOffset, {x: 0, y: 0});
 assert.deepStrictEqual(adapter.displayLayout(resident), {
-  left: -6, top: -12, width: 32, height: 32, foot: {x: 10, y: 20},
+  left: 2, top: -12, width: 16, height: 32, foot: {x: 10, y: 20},
 });
 assert.deepStrictEqual(adapter.displayWorldFoot(resident), {x: 10, y: 20});
 assert.strictEqual(adapter.depthForSprite(resident, null), 2020);
@@ -69,7 +69,7 @@ assert.strictEqual(createdAnimations.length, 4);
 adapter.playWalk(scene, resident, "Nora Vale", "left");
 assert.strictEqual(resident.played, "Nora_Vale-left-walk");
 adapter.setIdle(scene, resident, "Nora Vale", "up");
-assert.strictEqual(resident.frame, 10);
+assert.strictEqual(resident.frame, 62);
 
 const fallback = adapter.createSprite(scene, "Missing Person", 0, 0);
 assert.strictEqual(fallback.key, "atlas");
@@ -81,7 +81,7 @@ assert.strictEqual(fallback.frame, "down");
 const image = {dataset: {characterPortrait: "Nora Vale"}, style: {}};
 const sizedImage = {dataset: {characterPortrait: "Milo Chen"}, style: {width: "46px"}};
 adapter.applyPortraits({querySelectorAll: () => [image, sizedImage]}, manifest, root);
-assert(image.src.endsWith("/assets/characters/profile/Nora_Vale.png"));
+assert(image.src.endsWith("/assets/characters/modern_pixels/profile/Nora_Vale.png"));
 assert.strictEqual(image.style.objectPosition, "0px 0px");
 assert.strictEqual(image.style.width, "32px");
 assert.strictEqual(sizedImage.style.width, "46px");
@@ -110,6 +110,11 @@ resident.frame = {width: 16, height: 32};
 resident.origin = {x: 0.5, y: 1};
 resident.scale = 2;
 resident.foot_offset = {x: 1, y: -2};
+resident.animations = {
+  idle: {down: [0], left: [1], right: [2], up: [3]},
+  walk: {down: [4], left: [5], right: [6], up: [7]},
+  actions: {},
+};
 const validated = adapter.validateCharacterManifest(
   manifest, "http://example.test/static/"
 );
@@ -187,7 +192,7 @@ rejects(manifest => {
   manifest.generation.free_pack_allowed = true;
 }, /free_pack_allowed/);
 rejects(manifest => {
-  manifest.residents[0].animations.actions = {wave: [12]};
+  manifest.residents[0].animations.actions = {wave: [1120]};
 }, /actions\.wave/);
 rejects(manifest => {
   manifest.residents[0].sheet.width = 97;

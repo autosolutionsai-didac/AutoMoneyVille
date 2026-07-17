@@ -1,4 +1,4 @@
-"""Character manifest, fallback contact sheet, and paid-pack gate tests."""
+"""Licensed resident curation, provenance, and review artifact tests."""
 
 from __future__ import annotations
 
@@ -9,215 +9,206 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
-try:
-    from tools.mapgen import character_manifest
-except ImportError:
-    character_manifest = None
-
+from tools.mapgen import character_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
 STATIC_ROOT = ROOT / "environment/frontend_server/static_dirs"
 MANIFEST_PATH = STATIC_ROOT / "assets/characters/manifest.json"
-EXPECTED = {
-    "Nora Vale",
-    "Milo Chen",
-    "Iris Morgan",
-    "Theo Grant",
-    "Lena Ortiz",
-    "Ravi Singh",
-    "June Park",
-    "Amara Cole",
-    "Felix Reed",
-    "Sofia Lane",
-}
 
 
 class CharacterManifestTests(unittest.TestCase):
     def setUp(self):
-        self.assertIsNotNone(
-            character_manifest,
-            "tools.mapgen.character_manifest must provide the manifest API",
-        )
         self.manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
 
-    def _build_paid_fixture(self, root: Path):
-        static_root = root / "static"
-        vendor_root = root / "vendor"
-        manifest = copy.deepcopy(self.manifest)
-        manifest["asset_pack"] = "modern-interiors-paid"
-        for index, resident in enumerate(manifest["residents"]):
-            resident["source"] = "modern-interiors-paid"
-            resident["sprite_url"] = f"assets/paid/{resident['texture_key']}.png"
-            resident["portrait_url"] = (
-                f"assets/paid/profile/{resident['texture_key']}.png"
+    @staticmethod
+    def _paint_sheet(path: Path, color: tuple[int, int, int, int], role="body"):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        size = (927, 656) if role == "body" else (896, 656)
+        sheet = Image.new("RGBA", size, (0, 0, 0, 0))
+        x = (character_manifest.IDLE_FRAMES["down"][0] % 56) * 16
+        y = (character_manifest.IDLE_FRAMES["down"][0] // 56) * 32
+        boxes = {
+            "body": (x + 4, y + 4, x + 11, y + 27),
+            "eyes": (x + 6, y + 10, x + 9, y + 11),
+            "outfit": (x + 3, y + 17, x + 12, y + 27),
+            "hairstyle": (x + 3, y + 3, x + 12, y + 13),
+        }
+        ImageDraw.Draw(sheet).rectangle(boxes[role], fill=color)
+        sheet.save(path)
+
+    def _source_fixture(self, root: Path) -> Path:
+        source = root / "Modern Pixels"
+        paid = source / "moderninteriors-win"
+        paid.mkdir(parents=True)
+        (paid / "LICENSE.txt").write_text(
+            "MODERN INTERIORS FULL VERSION LICENSE\nCredits required (limezu.itch.io)\n",
+            encoding="utf-8",
+        )
+        (paid / "READ_ME.txt").write_text("Modern_Interiors by LimeZu", encoding="utf-8")
+        (paid / "THIRD-PARTY TOOLS.txt").write_text(
+            "CHARACTER_GENERATOR Tool by 0a3r", encoding="utf-8"
+        )
+        generator = paid / "2_Characters/Character_Generator"
+        generator.mkdir(parents=True)
+        Image.new("RGBA", (64, 64), (1, 2, 3, 255)).save(
+            generator / "Spritesheet_animations_GUIDE.png"
+        )
+        premade = generator / "0_Premade_Characters/16x16"
+        premade.mkdir(parents=True)
+        Image.new("RGBA", (896, 656), (0, 0, 0, 0)).save(
+            premade / "Premade_Character_01.png"
+        )
+        characters = source / "characters"
+        characters.mkdir()
+        for index, filename in enumerate(character_manifest.SUPPLIED_CANDIDATES):
+            sheet = Image.new("RGBA", (896, 640), (0, 0, 0, 0))
+            ImageDraw.Draw(sheet).rectangle(
+                (290, 38, 299, 60), fill=(index + 1, 70, 130, 255)
             )
-            sprite = static_root / resident["sprite_url"]
-            portrait = static_root / resident["portrait_url"]
-            sprite.parent.mkdir(parents=True, exist_ok=True)
-            portrait.parent.mkdir(parents=True, exist_ok=True)
-            Image.new("RGBA", (96, 128), (index, 20, 40, 255)).save(sprite)
-            Image.new("RGBA", (32, 32), (index, 40, 20, 255)).save(portrait)
+            sheet.save(characters / filename)
+        component_paths = {}
+        for kind, spec in character_manifest.SOURCE_SPECS.values():
+            if kind == character_manifest.COMPOSITE_KIND:
+                component_paths.update({path: role for role, path in spec})
+        for index, (relative, role) in enumerate(sorted(component_paths.items())):
+            self._paint_sheet(
+                generator / relative, (100 + index, 40 + index, 180 - index, 255), role
+            )
+        return source
 
-        paid_root = vendor_root / "moderninteriors-win"
-        paid_root.mkdir(parents=True)
-        (paid_root / "Modern_Interiors_License.pdf").write_bytes(
-            b"%PDF-1.4\nlicensed Modern Interiors fixture\n"
-        )
-        (paid_root / "READ_ME.txt").write_text(
-            "Modern Interiors by LimeZu", encoding="utf-8"
-        )
-        interiors = (
-            paid_root
-            / "Modern_Interiors_32x32"
-            / "Modern_Interiors_Complete_Tileset_32x32.png"
-        )
-        interiors.parent.mkdir(parents=True)
-        Image.new("RGBA", (32, 32), (1, 2, 3, 255)).save(interiors)
-        generator = (
-            paid_root
-            / "Modern_Interiors_32x32"
-            / "Character_Generator_32x32"
-            / "base_32x32.png"
-        )
-        generator.parent.mkdir(parents=True)
-        Image.new("RGBA", (32, 64), (4, 5, 6, 255)).save(generator)
-        return manifest, static_root, vendor_root
-
-    def test_exact_active_roster_has_valid_unique_fallback_assets_and_frames(self):
+    def test_active_manifest_has_exact_runtime_and_accurate_provenance(self):
         validated = character_manifest.validate_character_manifest(
             self.manifest, STATIC_ROOT
         )
-        residents = validated["residents"]
-        self.assertEqual(len(residents), 10)
-        self.assertEqual({resident["name"] for resident in residents}, EXPECTED)
-        self.assertEqual(set(validated["active_residents"]), EXPECTED)
-        self.assertFalse(validated["generation"]["default_activation"])
-        for field in ("texture_key", "sprite_url", "portrait_url"):
-            values = [resident[field] for resident in residents]
-            self.assertEqual(len(values), len(set(values)), field)
-        for resident in residents:
-            self.assertEqual(resident["source"], "fallback")
-            self.assertEqual(resident["sheet"], {"width": 96, "height": 128})
-            self.assertEqual(resident["frame"], {"width": 32, "height": 32})
+        self.assertEqual(validated["asset_pack"], "limezu-character-generator-derivatives")
+        self.assertEqual(validated["optional_actions"], character_manifest.OPTIONAL_ACTIONS)
+        self.assertEqual(
+            validated["compatibility_gate"]["purpose"],
+            "license-and-component-compatibility-only",
+        )
+        self.assertEqual(
+            list(validated["curation_audit"]["candidate_hashes"]),
+            list(character_manifest.SUPPLIED_CANDIDATES),
+        )
+        kinds = {resident["source"] for resident in validated["residents"]}
+        self.assertEqual(
+            kinds, {character_manifest.USER_KIND, character_manifest.COMPOSITE_KIND}
+        )
+        self.assertNotIn("modern-interiors-paid", kinds)
+        for resident in validated["residents"]:
+            self.assertEqual(resident["sheet"], {"width": 896, "height": 640})
+            self.assertEqual(resident["frame"], {"width": 16, "height": 32})
+            self.assertEqual(resident["scale"], 1)
             self.assertEqual(resident["origin"], {"x": 0.5, "y": 1})
-            self.assertGreater(resident["scale"], 0)
+            self.assertEqual(resident["animations"]["idle"], character_manifest.IDLE_FRAMES)
+            self.assertEqual(resident["animations"]["walk"], character_manifest.WALK_FRAMES)
+            self.assertEqual(resident["animations"]["actions"], {})
+            sprite = STATIC_ROOT / resident["sprite_url"]
+            portrait = STATIC_ROOT / resident["portrait_url"]
             self.assertEqual(
-                resident["portrait_crop"], {"x": 0, "y": 0, "width": 32, "height": 32}
+                resident["runtime_sha256"], hashlib.sha256(sprite.read_bytes()).hexdigest()
             )
-            animations = resident["animations"]
-            self.assertEqual(set(animations["idle"]), {"down", "left", "right", "up"})
-            self.assertEqual(set(animations["walk"]), {"down", "left", "right", "up"})
-            self.assertTrue(all(animations["idle"].values()))
-            self.assertTrue(all(animations["walk"].values()))
-            self.assertIsInstance(animations.get("actions", {}), dict)
+            self.assertEqual(
+                resident["portrait_sha256"], hashlib.sha256(portrait.read_bytes()).hexdigest()
+            )
+            provenance = resident["provenance"]
+            if resident["source"] == character_manifest.USER_KIND:
+                self.assertTrue(provenance["source_asset"].startswith("characters/"))
+                self.assertEqual(provenance["source_sha256"], resident["runtime_sha256"])
+            else:
+                self.assertEqual(
+                    [item["role"] for item in provenance["components"]],
+                    ["body", "eyes", "outfit", "hairstyle"],
+                )
+                self.assertRegex(provenance["recipe_sha256"], r"^[0-9a-f]{64}$")
 
-    def test_validator_rejects_unsafe_urls_duplicate_assets_and_bad_frames(self):
+    def test_validator_rejects_spoofed_assets_actions_scale_and_audit(self):
         cases = []
         unsafe = copy.deepcopy(self.manifest)
         unsafe["residents"][0]["sprite_url"] = "../secrets.png"
-        cases.append((unsafe, "safe contained"))
-        duplicate = copy.deepcopy(self.manifest)
-        duplicate["residents"][1]["portrait_url"] = duplicate["residents"][0][
-            "portrait_url"
-        ]
-        cases.append((duplicate, "unique portrait_url"))
-        bad_frame = copy.deepcopy(self.manifest)
-        bad_frame["residents"][0]["animations"]["walk"]["down"] = [12]
-        cases.append((bad_frame, "frame index"))
-        wrong_origin = copy.deepcopy(self.manifest)
-        wrong_origin["residents"][0]["origin"] = {"x": 0.5, "y": 0.5}
-        cases.append((wrong_origin, "bottom-center"))
+        cases.append((unsafe, "contained"))
+        bad_hash = copy.deepcopy(self.manifest)
+        bad_hash["residents"][0]["runtime_sha256"] = "0" * 64
+        cases.append((bad_hash, "does not match"))
+        action = copy.deepcopy(self.manifest)
+        action["residents"][0]["animations"]["actions"] = {"sit": [224]}
+        cases.append((action, "only verified idle and walk"))
+        oversized = copy.deepcopy(self.manifest)
+        oversized["residents"][0]["scale"] = 2
+        cases.append((oversized, "scale 1"))
+        spoofed = copy.deepcopy(self.manifest)
+        spoofed["residents"][0]["source"] = "modern-interiors-paid"
+        cases.append((spoofed, "provenance"))
+        incomplete = copy.deepcopy(self.manifest)
+        incomplete["curation_audit"]["candidate_hashes"].pop("Unnamed Character.png")
+        cases.append((incomplete, "sixteen supplied candidates"))
         for candidate, message in cases:
             with self.subTest(message=message):
-                with self.assertRaisesRegex(
-                    character_manifest.ManifestError, message
-                ):
-                    character_manifest.validate_character_manifest(
-                        candidate, STATIC_ROOT
-                    )
+                with self.assertRaisesRegex(character_manifest.ManifestError, message):
+                    character_manifest.validate_character_manifest(candidate, STATIC_ROOT)
 
-    def test_contact_sheet_is_deterministic_and_clearly_fallback_labeled(self):
-        self.assertIn("FALLBACK", character_manifest.CONTACT_SHEET_LABEL)
-        self.assertIn("96x128", character_manifest.CONTACT_SHEET_LABEL)
+    def test_contact_sheet_records_walk_review_selection_policy_and_disabled_actions(self):
         with TemporaryDirectory() as tmp:
-            first = Path(tmp) / "first.png"
-            second = Path(tmp) / "second.png"
+            first, second = Path(tmp) / "first.png", Path(tmp) / "second.png"
             metadata_path = Path(tmp) / "contact-sheet.json"
             character_manifest.build_contact_sheet(
                 self.manifest, STATIC_ROOT, first, metadata_path=metadata_path
             )
             character_manifest.build_contact_sheet(self.manifest, STATIC_ROOT, second)
-            self.assertEqual(
-                hashlib.sha256(first.read_bytes()).hexdigest(),
-                hashlib.sha256(second.read_bytes()).hexdigest(),
-            )
+            self.assertEqual(hashlib.sha256(first.read_bytes()).digest(),
+                             hashlib.sha256(second.read_bytes()).digest())
             with Image.open(first) as image:
-                self.assertEqual(image.size, (800, 410))
-                self.assertEqual(image.format, "PNG")
+                self.assertEqual(image.size, character_manifest.CONTACT_SHEET_SIZE)
             metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-            self.assertEqual(metadata["label"], character_manifest.CONTACT_SHEET_LABEL)
-            self.assertEqual(metadata["source"], "fallback")
-            self.assertEqual(metadata["image_sha256"], hashlib.sha256(first.read_bytes()).hexdigest())
-            self.assertEqual(metadata["residents"], self.manifest["active_residents"])
+            self.assertEqual(metadata["reviewed_animations"], ["idle", "walk"])
+            self.assertEqual(metadata["optional_actions"], character_manifest.OPTIONAL_ACTIONS)
+            self.assertEqual(len(metadata["selection_policy"]), 5)
+            self.assertEqual(len(metadata["selections"]), 10)
+            self.assertEqual(
+                {entry["name"] for entry in metadata["selections"]},
+                set(character_manifest.ACTIVE_RESIDENTS),
+            )
+            for selection in metadata["selections"]:
+                self.assertTrue(selection["fallback_reference"])
+                self.assertTrue(selection["selected_profile"])
+                self.assertTrue(selection["decision_basis"])
+            self.assertEqual(
+                len(metadata["candidate_audit"]["candidate_hashes"]), 16
+            )
 
-    def test_full_pack_gate_refuses_current_fallback_and_forbids_free_pack(self):
+    def test_paid_compatibility_gate_is_separate_and_forbids_free(self):
         with self.assertRaisesRegex(
-            character_manifest.ManifestError,
-            "paid Modern Interiors character assets are absent.*Free pack is forbidden",
+            character_manifest.ManifestError, "compatibility evidence"
         ):
             character_manifest.require_full_pack(self.manifest)
+        free = copy.deepcopy(self.manifest)
+        free["generation"]["free_pack_allowed"] = True
+        with self.assertRaisesRegex(character_manifest.ManifestError, "top-level"):
+            character_manifest.validate_character_manifest(free, STATIC_ROOT)
 
-    def test_full_pack_gate_rejects_spoofed_paid_labels(self):
-        spoofed = {
-            "asset_pack": "modern-interiors-paid",
-            "residents": [
-                {"source": "modern-interiors-paid"}
-                for _ in character_manifest.ACTIVE_RESIDENTS
-            ],
-        }
-        with self.assertRaisesRegex(
-            character_manifest.ManifestError,
-            "paid Modern Interiors character assets are absent|exact ten-resident roster",
-        ):
-            character_manifest.require_full_pack(spoofed)
-
-    def test_full_pack_gate_validates_assets_and_curation_evidence(self):
-        with TemporaryDirectory() as tmp:
-            manifest, static_root, vendor_root = self._build_paid_fixture(Path(tmp))
-            with self.assertRaisesRegex(
-                character_manifest.ManifestError,
-                "verified paid Modern Interiors evidence",
-            ):
-                character_manifest.require_full_pack(
-                    manifest, static_root, Path(tmp) / "missing-vendor"
-                )
-            validated = character_manifest.require_full_pack(
-                manifest, static_root, vendor_root
-            )
-            self.assertEqual(set(validated["active_residents"]), EXPECTED)
-
-    def test_full_pack_cli_uses_paid_validator_instead_of_fallback_validator(self):
+    def test_curation_audits_all_sixteen_and_emits_only_final_ten(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
-            manifest, static_root, vendor_root = self._build_paid_fixture(root)
-            manifest_path = root / "paid-manifest.json"
-            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-            self.assertEqual(
-                character_manifest.main(
-                    [
-                        "--manifest",
-                        str(manifest_path),
-                        "--static-root",
-                        str(static_root),
-                        "--require-full-pack",
-                        "--paid-source-root",
-                        str(vendor_root),
-                    ]
-                ),
-                0,
-            )
+            source = self._source_fixture(root)
+            static = root / "static"
+            manifest_path = static / "assets/characters/manifest.json"
+            manifest = character_manifest.curate_residents(source, static, manifest_path)
+            validated = character_manifest.require_full_pack(manifest, static, source)
+            runtime = static / "assets/characters/modern_pixels"
+            self.assertEqual(len(list(runtime.glob("*.png"))), 10)
+            self.assertEqual(len(list((runtime / "profile").glob("*.png"))), 10)
+            self.assertEqual(len(validated["curation_audit"]["candidate_hashes"]), 16)
+            composites = [
+                resident for resident in validated["residents"]
+                if resident["source"] == character_manifest.COMPOSITE_KIND
+            ]
+            self.assertEqual({item["name"] for item in composites},
+                             {"Lena Ortiz", "June Park", "Amara Cole"})
+            candidate_hashes = set(validated["curation_audit"]["candidate_hashes"].values())
+            self.assertTrue(all(item["runtime_sha256"] not in candidate_hashes for item in composites))
+            self.assertEqual(json.loads(manifest_path.read_text(encoding="utf-8")), manifest)
 
 
 if __name__ == "__main__":
