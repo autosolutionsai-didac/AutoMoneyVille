@@ -11,34 +11,25 @@ from pathlib import Path
 from PIL import Image
 
 try:
+    from tools.mapgen import curate_modern_interiors_v3 as interiors_v3_curator
+    from tools.mapgen import curate_modern_pixels_v2 as v2_curator
     from tools.mapgen import modern_interiors_v3_source, tiled_gid
-    from tools.mapgen.curate_modern_interiors_v3 import (
-        DEFAULT_OUTPUT_ROOT as INTERIORS_V3_OUTPUT_ROOT,
-    )
-    from tools.mapgen.curate_modern_pixels_v2 import (
-        DEFAULT_OUTPUT_ROOT,
-        MAX_ATLAS_SIZE,
-        TILE_SIZE,
-        CurationError,
-        atlas_dimensions,
-    )
 except ModuleNotFoundError:  # Direct ``python tools/mapgen/cull_modern_pixels_v2.py``.
+    import curate_modern_interiors_v3 as interiors_v3_curator
+    import curate_modern_pixels_v2 as v2_curator
     import modern_interiors_v3_source
     import tiled_gid
-    from curate_modern_interiors_v3 import (
-        DEFAULT_OUTPUT_ROOT as INTERIORS_V3_OUTPUT_ROOT,
-    )
-    from curate_modern_pixels_v2 import (
-        DEFAULT_OUTPUT_ROOT,
-        MAX_ATLAS_SIZE,
-        TILE_SIZE,
-        CurationError,
-        atlas_dimensions,
-    )
+
+INTERIORS_V3_OUTPUT_ROOT, DEFAULT_OUTPUT_ROOT, MAX_ATLAS_SIZE, TILE_SIZE = interiors_v3_curator.DEFAULT_OUTPUT_ROOT, v2_curator.DEFAULT_OUTPUT_ROOT, v2_curator.MAX_ATLAS_SIZE, v2_curator.TILE_SIZE
+CurationError, atlas_dimensions = v2_curator.CurationError, v2_curator.atlas_dimensions
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_SIZE = (176, 96)
 FLIP_MASK = tiled_gid.GID_MASK
+BASE_TILESETS = ("terrain", "town", "office", "interiors")
+V3_TILESETS = {"room_floors", "room_walls"}
+GENERATED_ROOT_FILES = ("credits.json", "props.json", "props.png", "runtime_manifest.json")
+GENERATED_TILESETS = (*BASE_TILESETS, "interiors_v3")
 
 
 class CullError(CurationError):
@@ -74,6 +65,19 @@ def _write_png(path: Path, image: Image.Image) -> None:
     temporary.replace(path)
 
 
+def _clear_generated(output: Path) -> None:
+    """Remove only known generated files so a rebuild cannot retain stale assets."""
+    paths = [output / name for name in GENERATED_ROOT_FILES] + [
+        output / "tiles" / f"{key}.{suffix}"
+        for key in GENERATED_TILESETS for suffix in ("png", "tsj")
+    ]
+    for path in paths:
+        if path.is_file():
+            path.unlink()
+        elif path.exists():
+            raise CullError(f"generated runtime path is not a file: {path}")
+
+
 def _contained_file(root: Path, relative: object, label: str) -> Path:
     if not isinstance(relative, str) or not relative or "\\" in relative:
         raise CullError(f"{label} path is malformed")
@@ -94,17 +98,14 @@ def _map_tilesets(source: dict) -> list[tuple[int, str]]:
             raise CullError("TMJ tilesets need integer firstgid values")
         source_path = entry.get("source")
         key = Path(str(source_path)).stem if isinstance(source_path, str) else None
-        if key not in {"terrain", "town", "office", "interiors", "interiors_props"}:
-            raise CullError(
-                "TMJ may reference only curated v2 tiles or the v3 interiors prop collection"
-            )
+        if key not in {*BASE_TILESETS, "interiors_props", *V3_TILESETS}:
+            raise CullError("TMJ may reference only approved v2 and Modern Interiors v3 tilesets")
         result.append((entry["firstgid"], key))
     if len({firstgid for firstgid, _ in result}) != len(result):
         raise CullError("TMJ tileset firstgid values must be unique")
     keys = [key for _, key in result]
-    if set(keys[:4]) != {"terrain", "town", "office", "interiors"} or \
-            keys.count("interiors_props") > 1 or len(keys) not in {4, 5}:
-        raise CullError("TMJ must retain four v2 tilesets and at most one v3 prop collection")
+    if len(keys) != len(set(keys)):
+        raise CullError("TMJ may reference each approved tileset only once")
     return sorted(result)
 
 
@@ -135,6 +136,18 @@ def _object_asset_key(properties) -> str | None:
 def _source_gid(firstgids: list[int], tilesets: dict[int, str], gid: int) -> tuple[str, int]:
     firstgid = firstgids[bisect.bisect_right(firstgids, gid) - 1]
     return tilesets[firstgid], gid - firstgid
+
+
+def _uses_v3(source: dict) -> bool:
+    if any(key in V3_TILESETS for _, key in _map_tilesets(source)):
+        return True
+    return any(
+        (key := _object_asset_key(obj.get("properties"))) is not None
+        and key.startswith("prop.interiors_v3.")
+        for layer in _walk_layers(source.get("layers", []))
+        if layer.get("type") == "objectgroup"
+        for obj in (layer.get("objects") if isinstance(layer.get("objects"), list) else ()) if isinstance(obj, dict)
+    )
 
 
 def _selected_assets(source: dict, tile_catalog: dict[tuple[str, int], dict]):
@@ -215,45 +228,116 @@ def _v3_props(authoring: Path) -> dict[str, dict]:
     return result
 
 
+def _v3_tiles(authoring: Path) -> dict[tuple[str, int], dict]:
+    catalog = _read_json(authoring / "catalog.json", "Modern Interiors v3 catalog")
+    if catalog.get("profile") != modern_interiors_v3_source.PROFILE or \
+            catalog.get("schema_version") != 3:
+        raise CullError("Modern Interiors v3 catalog has the wrong profile")
+    sources = catalog.get("tilesets")
+    tiles = catalog.get("tiles")
+    if not isinstance(sources, list) or not isinstance(tiles, list):
+        raise CullError("Modern Interiors v3 catalog is missing tiles")
+    source_records = {
+        item.get("source_id"): item for item in sources
+        if isinstance(item, dict) and isinstance(item.get("source_id"), str)
+    }
+    result = {}
+    for item in tiles:
+        if not isinstance(item, dict) or item.get("source_id") not in source_records:
+            raise CullError("Modern Interiors v3 tile record is malformed")
+        source = source_records[item["source_id"]]
+        tileset = Path(str(source.get("tileset", ""))).stem
+        tile_id = item.get("source_tiled_id")
+        if tileset not in V3_TILESETS or not isinstance(tile_id, int):
+            continue
+        record = dict(item)
+        record.update({"atlas": "interiors_v3", "atlas_index": tile_id,
+                       "source_columns": source.get("columns"),
+                       "source_relative_path": source.get("relative_path"),
+                       "source_sha256": source.get("sha256")})
+        key = tileset, tile_id
+        if key in result:
+            raise CullError(f"duplicate Modern Interiors v3 tile: {key}")
+        result[key] = record
+    return result
+
+
 def _validate_requested_props(
-    authoring: Path, v3_authoring: Path, requested: list[str]
+    authoring: Path, v3_authoring: Path | None, requested: list[str]
 ) -> tuple[dict, dict]:
     frames = _read_json(authoring / "props.json", "authoring props metadata").get("frames")
     if not isinstance(frames, dict):
         raise CullError("authoring props metadata is missing frames")
-    v3 = _v3_props(v3_authoring)
+    v3 = _v3_props(v3_authoring) if v3_authoring is not None else {}
     missing = sorted(set(requested) - set(frames) - set(v3))
     if missing:
-        raise CullError(f"TMJ object assets are missing from approved prop catalogs: {missing}")
+        raise CullError(f"TMJ object assets are missing from props in approved catalogs: {missing}")
     return frames, v3
 
 
-def _write_runtime_tiles(output: Path, authoring: Path, selected: dict[str, dict]):
+def _write_runtime_tiles(
+    output: Path, authoring: Path, v3_source: Path | None, selected: dict[str, dict],
+):
     atlas_meta = _read_json(authoring / "atlas.json", "authoring atlas metadata")
     pages = {page.get("key"): page for page in atlas_meta.get("atlases", []) if isinstance(page, dict)}
-    groups = {"terrain": [], "town": [], "office": [], "interiors": []}
+    page_order = (*BASE_TILESETS, "interiors_v3")
+    groups = {key: [] for key in page_order}
     for record in selected.values():
         groups[record["atlas"]].append(record)
     runtime_pages, asset_remap, firstgid = [], {}, 1
-    for key in ("terrain", "town", "office", "interiors"):
-        records = sorted(groups[key], key=lambda item: item["atlas_index"])
+    for key in page_order:
+        records = sorted(groups[key], key=lambda item: (
+            item["atlas_index"] if key != "interiors_v3" else item["asset_key"]
+        ))
         if not records:
             continue
-        source_page = pages.get(key)
-        if source_page is None:
-            raise CullError(f"authoring atlas page is missing: {key}")
-        with Image.open(
-            _contained_file(authoring, source_page.get("image"), f"authoring {key} atlas")
-        ) as opened:
-            source_image = opened.convert("RGBA")
         width, height, columns = atlas_dimensions(len(records))
         image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-        for new_id, record in enumerate(records):
-            old_id = record["atlas_index"]
-            old_x = (old_id % source_page["columns"]) * TILE_SIZE
-            old_y = (old_id // source_page["columns"]) * TILE_SIZE
-            image.paste(source_image.crop((old_x, old_y, old_x + TILE_SIZE, old_y + TILE_SIZE)), ((new_id % columns) * TILE_SIZE, (new_id // columns) * TILE_SIZE))
-            asset_remap[record["asset_key"]] = {"atlas": key, "runtime_gid": firstgid + new_id, "tile_id": new_id}
+        source_image = None
+        v3_images = {}
+        try:
+            if key != "interiors_v3":
+                source_page = pages.get(key)
+                if source_page is None:
+                    raise CullError(f"authoring atlas page is missing: {key}")
+                with Image.open(_contained_file(authoring, source_page.get("image"), f"authoring {key} atlas")) as opened:
+                    source_image = opened.convert("RGBA")
+            for new_id, record in enumerate(records):
+                if key == "interiors_v3":
+                    if v3_source is None:
+                        raise CullError("Modern Interiors v3 tile source was not preflighted")
+                    relative = record.get("source_relative_path")
+                    if relative not in v3_images:
+                        path = modern_interiors_v3_source.validate_source_path(v3_source, relative)
+                        if modern_interiors_v3_source.file_sha256(path) != record.get(
+                            "source_sha256"
+                        ):
+                            raise CullError(
+                                f"Modern Interiors v3 tile hash changed: {record['asset_key']}"
+                            )
+                        v3_images[relative] = modern_interiors_v3_source.open_png(path)
+                    source = v3_images[relative]
+                    old_x = record["source_col"] * TILE_SIZE
+                    old_y = record["source_row"] * TILE_SIZE
+                else:
+                    source = source_image
+                    old_id = record["atlas_index"]
+                    old_x = (old_id % source_page["columns"]) * TILE_SIZE
+                    old_y = (old_id // source_page["columns"]) * TILE_SIZE
+                destination = (new_id % columns * TILE_SIZE, new_id // columns * TILE_SIZE)
+                image.paste(
+                    source.crop((old_x, old_y, old_x + TILE_SIZE, old_y + TILE_SIZE)),
+                    destination,
+                )
+                asset_remap[record["asset_key"]] = {
+                    "atlas": key, "runtime_gid": firstgid + new_id,
+                    "tile_id": new_id,
+                }
+        finally:
+            if source_image is not None:
+                source_image.close()
+            for opened in v3_images.values():
+                opened.close()
         tile_dir = output / "tiles"
         tile_dir.mkdir(parents=True, exist_ok=True)
         image_path = tile_dir / f"{key}.png"
@@ -266,7 +350,7 @@ def _write_runtime_tiles(output: Path, authoring: Path, selected: dict[str, dict
 
 
 def _write_runtime_props(
-    output: Path, authoring: Path, v3_authoring: Path, v3_source: Path,
+    output: Path, authoring: Path, v3_authoring: Path | None, v3_source: Path | None,
     requested: list[str],
 ):
     frames, v3 = _validate_requested_props(authoring, v3_authoring, requested)
@@ -289,6 +373,8 @@ def _write_runtime_props(
                 ))))
                 continue
             record = v3[key]
+            if v3_source is None:
+                raise CullError("Modern Interiors v3 prop source was not preflighted")
             path = modern_interiors_v3_source.validate_source_path(
                 v3_source, record.get("source")
             )
@@ -324,26 +410,51 @@ def cull_runtime_tilesets(
     """Return a deterministic compact runtime asset manifest for one hand-authored TMJ."""
     source_path = Path(source_tmj).expanduser().resolve(strict=True)
     authoring = Path(authoring_root).expanduser().resolve(strict=True)
-    v3_authoring = Path(interiors_v3_authoring_root).expanduser().resolve(strict=True)
-    v3_source = Path(interiors_v3_source_root).expanduser().resolve(strict=True)
     output = Path(output_root).expanduser().resolve(strict=False)
-    protected = (authoring, v3_authoring, v3_source)
-    if source_path.suffix.lower() != ".tmj" or not all(path.is_dir() for path in protected) \
-            or any(output == path or path in output.parents or output in path.parents for path in protected):
-        raise CullError("TMJ source and runtime output must be separate valid paths")
     source = _read_json(source_path, "TMJ source")
     if (source.get("width"), source.get("height"), source.get("tilewidth"), source.get("tileheight"), source.get("infinite")) != (*EXPECTED_SIZE, TILE_SIZE, TILE_SIZE, False):
         raise CullError("TMJ must be a finite 176x96 native-16px map")
+    v3_authoring = v3_source = v3_pack = None
+    protected = [authoring]
+    if _uses_v3(source):
+        try:
+            v3_authoring = Path(interiors_v3_authoring_root).expanduser().resolve(strict=True)
+            v3_source = Path(interiors_v3_source_root).expanduser().resolve(strict=True)
+            protected.extend((v3_authoring, v3_source))
+            v3_pack = modern_interiors_v3_source.validate_pack(v3_source)
+        except (OSError, modern_interiors_v3_source.ModernInteriorsV3Error) as exc:
+            raise CullError(f"Modern Interiors v3 preflight failed: {exc}") from exc
+    if source_path.suffix.lower() != ".tmj" or not all(path.is_dir() for path in protected) \
+            or any(output == path or path in output.parents or output in path.parents for path in protected):
+        raise CullError("TMJ source and runtime output must be separate valid paths")
     tile_records = _read_json(authoring / "tiles.json", "authoring tile catalog").get("tiles")
     if not isinstance(tile_records, list):
         raise CullError("authoring tile catalog is missing tiles")
     tile_catalog = {(record.get("atlas"), record.get("atlas_index")): record for record in tile_records if isinstance(record, dict)}
+    if v3_authoring is not None:
+        tile_catalog.update(_v3_tiles(v3_authoring))
     selected, source_gids, props = _selected_assets(source, tile_catalog)
     if not selected:
         raise CullError("TMJ must reference at least one curated tile")
     _validate_requested_props(authoring, v3_authoring, props)
+    source_credits = _read_json(authoring / "credits.json", "authoring credits")
+    packs = source_credits.get("packs")
+    if not isinstance(packs, list) or not packs:
+        raise CullError("authoring credits must declare licensed packs")
+    packs = list(packs)
+    if v3_pack is not None:
+        packs.append(v3_pack)
+    v3_catalog_sha = sha256((v3_authoring / "catalog.json").read_bytes()).hexdigest() \
+        if v3_authoring is not None else None
     output.mkdir(parents=True, exist_ok=True)
-    pages, asset_remap = _write_runtime_tiles(output, authoring, selected)
+    _clear_generated(output)
+    try:
+        pages, asset_remap = _write_runtime_tiles(output, authoring, v3_source, selected)
+        props_manifest = _write_runtime_props(
+            output, authoring, v3_authoring, v3_source, props
+        )
+    except modern_interiors_v3_source.ModernInteriorsV3Error as exc:
+        raise CullError(f"Modern Interiors v3 source failed: {exc}") from exc
     remap = {}
     tilesets = _map_tilesets(source)
     firstgids, by_firstgid = [item[0] for item in tilesets], dict(tilesets)
@@ -351,15 +462,6 @@ def cull_runtime_tilesets(
         atlas, tile_id = _source_gid(firstgids, by_firstgid, gid)
         record = tile_catalog[(atlas, tile_id)]
         remap[str(gid)] = asset_remap[record["asset_key"]]["runtime_gid"]
-    props_manifest = _write_runtime_props(
-        output, authoring, v3_authoring, v3_source, props
-    )
-    source_credits = _read_json(authoring / "credits.json", "authoring credits")
-    packs = source_credits.get("packs")
-    if not isinstance(packs, list) or not packs:
-        raise CullError("authoring credits must declare licensed packs")
-    if any(key.startswith("prop.interiors_v3.") for key in props):
-        packs.append(modern_interiors_v3_source.validate_pack(v3_source))
     _write_json(output / "credits.json", {
         "distribution_scope": "Only tiles and props referenced by this Claudeville map.",
         "generated_by": "tools/mapgen/tilemap_culler.py", "packs": packs, "schema_version": 1,
@@ -373,6 +475,8 @@ def cull_runtime_tilesets(
         "tile_gid_flip_mask": tiled_gid.ORTHOGONAL_FLIP_MASK,
         "tile_gid_remap": remap, "tile_size": TILE_SIZE, "tilesets": pages,
     }
+    if v3_catalog_sha is not None:
+        manifest["interiors_v3_catalog_sha256"] = v3_catalog_sha
     _write_json(output / "runtime_manifest.json", manifest)
     return manifest
 

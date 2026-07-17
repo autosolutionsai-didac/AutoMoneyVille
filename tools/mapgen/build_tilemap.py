@@ -47,6 +47,7 @@ TILE_LAYERS = (
 )
 OBJECT_LAYERS = ("Depth Props", "Overhead Props")
 MAP_LAYER_ORDER = (*TILE_LAYERS[:-1], *OBJECT_LAYERS, TILE_LAYERS[-1])
+V3_TILESETS = {"room_floors", "room_walls"}
 
 
 class TilemapError(ValueError): ...
@@ -177,19 +178,20 @@ def _validate_source(source: dict) -> dict[str, dict]:
         except tiled_authoring.TiledAuthoringError as exc:
             raise TilemapError(str(exc)) from exc
     tilesets = source.get("tilesets")
-    if not isinstance(tilesets, list) or len(tilesets) not in {4, 5}:
+    if not isinstance(tilesets, list) or not 4 <= len(tilesets) <= 7:
         raise TilemapError(
-            "TMJ must reference four base tilesets and at most the v3 prop collection"
+            "TMJ must reference four base tilesets and approved v3 sources only"
         )
     names = {Path(str(entry.get("source", ""))).stem for entry in tilesets if isinstance(entry, dict)}
     firstgids = [entry.get("firstgid") for entry in tilesets if isinstance(entry, dict)]
     required = {"terrain", "town", "office", "interiors"}
-    expected = required | ({"interiors_props"} if len(tilesets) == 5 else set())
-    if names != expected or (len(tilesets) == 5 and not has_authoring) or \
+    optional = names - required
+    if names & required != required or not optional <= {"interiors_props", *V3_TILESETS} \
+            or (optional and not has_authoring) or \
             len(firstgids) != len(tilesets) or \
             any(not isinstance(value, int) or value < 1 for value in firstgids) or \
             len(firstgids) != len(set(firstgids)):
-        raise TilemapError("TMJ must use unique approved base TSJs and the optional v3 prop TSJ")
+        raise TilemapError("TMJ must use unique approved base and v3 TSJs")
     return layers
 
 

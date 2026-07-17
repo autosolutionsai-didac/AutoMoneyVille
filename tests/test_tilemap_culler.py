@@ -7,6 +7,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from PIL import Image
 
@@ -107,6 +108,74 @@ class TilemapCullerTests(unittest.TestCase):
                     self._tmj(root, "prop.unlicensed.missing"), root / "runtime", authoring_root=authoring
                 )
             self.assertFalse((root / "runtime").exists())
+
+    def test_v2_only_map_does_not_require_local_v3_sources(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            manifest = tilemap_culler.cull_runtime_tilesets(
+                self._tmj(root), root / "runtime",
+                authoring_root=self._authoring_root(root),
+                interiors_v3_authoring_root=root / "missing-v3-authoring",
+                interiors_v3_source_root=root / "missing-moderninteriors-win",
+            )
+            self.assertNotIn("interiors_v3_catalog_sha256", manifest)
+
+    def test_v3_license_preflight_fails_before_creating_output(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            authoring = self._authoring_root(root)
+            source = self._tmj(root)
+            payload = json.loads(source.read_text(encoding="utf-8"))
+            payload["tilesets"].append({"firstgid": 3, "source": "room_floors.tsj"})
+            write_json(source, payload)
+            v3_authoring = root / "v3-authoring"
+            v3_source = root / "moderninteriors-win"
+            v3_authoring.mkdir()
+            v3_source.mkdir()
+            runtime = root / "runtime"
+            error = tilemap_culler.modern_interiors_v3_source.ModernInteriorsV3Error(
+                "license evidence changed"
+            )
+            with patch.object(
+                tilemap_culler.modern_interiors_v3_source,
+                "validate_pack",
+                side_effect=error,
+            ), self.assertRaisesRegex(tilemap_culler.CullError, "preflight failed"):
+                tilemap_culler.cull_runtime_tilesets(
+                    source, runtime, authoring_root=authoring,
+                    interiors_v3_authoring_root=v3_authoring,
+                    interiors_v3_source_root=v3_source,
+                )
+            self.assertFalse(runtime.exists())
+
+    def test_rebuild_removes_only_known_stale_runtime_assets(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            authoring = self._authoring_root(root)
+            source = self._tmj(root)
+            payload = json.loads(source.read_text(encoding="utf-8"))
+            payload["layers"][1]["objects"] = []
+            write_json(source, payload)
+            runtime = root / "runtime"
+            tiles = runtime / "tiles"
+            tiles.mkdir(parents=True)
+            stale = (
+                runtime / "props.png", runtime / "props.json",
+                tiles / "interiors_v3.png", tiles / "interiors_v3.tsj",
+                tiles / "town.png", tiles / "town.tsj",
+            )
+            for path in stale:
+                path.write_bytes(b"stale")
+            unrelated = runtime / "keep.txt"
+            unrelated.write_text("keep", encoding="utf-8")
+            manifest = tilemap_culler.cull_runtime_tilesets(
+                source, runtime, authoring_root=authoring,
+                interiors_v3_authoring_root=root / "missing-v3-authoring",
+                interiors_v3_source_root=root / "missing-moderninteriors-win",
+            )
+            self.assertIsNone(manifest["props"])
+            self.assertTrue(all(not path.exists() for path in stale))
+            self.assertEqual(unrelated.read_text(encoding="utf-8"), "keep")
 
     def test_rejects_non_native_map_dimensions(self):
         with TemporaryDirectory() as tmp:
