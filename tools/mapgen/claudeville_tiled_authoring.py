@@ -256,7 +256,25 @@ def _art_cells(layer: dict, item: AuthoredObject) -> set[Point]:
         x, y = art.get("x"), art.get("y")
         if isinstance(x, (int, float)) and isinstance(y, (int, float)):
             foot = int(x // PIXEL_SIZE), int(y // PIXEL_SIZE)
-            if any(abs(foot[0] - px) + abs(foot[1] - py) <= 1 for px, py in item.cells):
+            width, height = art.get("width", 0), art.get("height", 0)
+            scale = values.get("display_scale", 1)
+            anchor_x, anchor_y = values.get("anchor_x", 0.5), values.get("anchor_y", 1)
+            covered = {foot}
+            numeric = width, height, scale, anchor_x, anchor_y
+            if all(isinstance(value, (int, float)) and math.isfinite(value)
+                   for value in numeric) and width > 0 and height > 0 and scale > 0:
+                left, top = x - width * scale * anchor_x, y - height * scale * anchor_y
+                right, bottom = x + width * scale * (1 - anchor_x), \
+                    y + height * scale * (1 - anchor_y)
+                xs = range(math.floor(left / PIXEL_SIZE),
+                           math.floor((right - 1e-6) / PIXEL_SIZE) + 1)
+                ys = range(math.floor(top / PIXEL_SIZE),
+                           math.floor((bottom - 1e-6) / PIXEL_SIZE) + 1)
+                covered.update((cell_x, cell_y) for cell_y in ys for cell_x in xs)
+            if any(
+                abs(cell_x - px) + abs(cell_y - py) <= 1
+                for cell_x, cell_y in covered for px, py in item.cells
+            ):
                 result.add(foot)
     return result
 

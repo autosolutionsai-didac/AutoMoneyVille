@@ -177,14 +177,19 @@ def _validate_source(source: dict) -> dict[str, dict]:
         except tiled_authoring.TiledAuthoringError as exc:
             raise TilemapError(str(exc)) from exc
     tilesets = source.get("tilesets")
-    if not isinstance(tilesets, list) or len(tilesets) != 4:
-        raise TilemapError("TMJ must reference terrain, town, office, and interiors tilesets")
+    if not isinstance(tilesets, list) or len(tilesets) not in {4, 5}:
+        raise TilemapError(
+            "TMJ must reference four base tilesets and at most the v3 prop collection"
+        )
     names = {Path(str(entry.get("source", ""))).stem for entry in tilesets if isinstance(entry, dict)}
     firstgids = [entry.get("firstgid") for entry in tilesets if isinstance(entry, dict)]
-    if names != {"terrain", "town", "office", "interiors"} or len(firstgids) != 4 or \
+    required = {"terrain", "town", "office", "interiors"}
+    expected = required | ({"interiors_props"} if len(tilesets) == 5 else set())
+    if names != expected or (len(tilesets) == 5 and not has_authoring) or \
+            len(firstgids) != len(tilesets) or \
             any(not isinstance(value, int) or value < 1 for value in firstgids) or \
             len(firstgids) != len(set(firstgids)):
-        raise TilemapError("TMJ must use unique curated terrain, town, office, and interiors TSJs")
+        raise TilemapError("TMJ must use unique approved base TSJs and the optional v3 prop TSJ")
     return layers
 
 
@@ -281,6 +286,13 @@ def _remap_layers(source: dict, layers: dict[str, dict], runtime: dict, blocked:
                     raise TilemapError(f"runtime culler omitted source gid {source_gid}")
                 values.append((raw_gid & flip_bits_mask) | replacement)
             layer["data"] = values
+        elif name in OBJECT_LAYERS:
+            objects = []
+            for source_object in source_layer["objects"]:
+                item = dict(source_object)
+                item.pop("gid", None)
+                objects.append(item)
+            layer["objects"] = objects
         result.append(layer)
     expected = _collision_data(blocked, collision_gid)
     actual = next(layer["data"] for layer in result if layer["name"] == "Collisions")

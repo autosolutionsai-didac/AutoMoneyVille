@@ -14,8 +14,10 @@ from tools.mapgen import (
     curate_modern_interiors_v3,
     modern_interiors_v3_source,
     pack_modern_interiors_v3,
+    tilemap_culler,
 )
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOT = modern_interiors_v3_source.DEFAULT_SOURCE_ROOT
 HAS_PACK = SOURCE_ROOT.is_dir()
 
@@ -181,6 +183,58 @@ class ModernInteriorsV3Tests(unittest.TestCase):
                 request, output, source_root=SOURCE_ROOT, authoring_root=self.authoring
             )
         self.assertFalse(output.exists())
+
+    @unittest.skipUnless(
+        tilemap_culler.DEFAULT_OUTPUT_ROOT.is_dir(),
+        "base v15 authoring cache not generated",
+    )
+    def test_town_culler_merges_selected_v3_props_into_one_runtime_atlas(self):
+        source_path = (
+            REPO_ROOT
+            / "environment/frontend_server/static_dirs/assets/claudeville/visuals/"
+            / "claudeville_full_town_v2.tmj"
+        )
+        town = read_json(source_path)
+        record = next(
+            item for item in self.catalog["props"]
+            if item["asset_key"] == "prop.interiors_v3.living.0013"
+        )
+        layer = next(item for item in town["layers"] if item["name"] == "Depth Props")
+        layer["objects"].append({
+            "id": town["nextobjectid"],
+            "name": "v3-prop-test",
+            "type": "",
+            "x": 384,
+            "y": 384,
+            "width": record["native_size"][0],
+            "height": record["native_size"][1],
+            "rotation": 0,
+            "visible": True,
+            "properties": [
+                {"name": "anchor_x", "type": "float", "value": 0.5},
+                {"name": "anchor_y", "type": "float", "value": 1.0},
+                {"name": "asset_key", "type": "string", "value": record["asset_key"]},
+                {"name": "display_scale", "type": "float", "value": 1.0},
+            ],
+        })
+        tmj = self.root / "town-with-v3-prop.tmj"
+        write_json(tmj, town)
+        runtime = self.root / "town-runtime"
+        result = tilemap_culler.cull_runtime_tilesets(
+            tmj,
+            runtime,
+            interiors_v3_authoring_root=self.authoring,
+            interiors_v3_source_root=SOURCE_ROOT,
+        )
+        self.assertIn(record["asset_key"], result["props"]["asset_keys"])
+        self.assertIn(record["asset_key"], read_json(runtime / "props.json")["frames"])
+        with Image.open(runtime / "props.png") as atlas:
+            self.assertLessEqual(max(atlas.size), 4096)
+        credits = read_json(runtime / "credits.json")
+        self.assertIn(
+            "claudeville-modern-interiors-v3",
+            {item.get("profile") for item in credits["packs"]},
+        )
 
     def test_runtime_atlas_limit_is_enforced_before_allocation(self):
         with self.assertRaisesRegex(pack_modern_interiors_v3.RuntimePackError, "65,536"):

@@ -11,7 +11,10 @@ from pathlib import Path
 from PIL import Image
 
 try:
-    from tools.mapgen import tiled_gid
+    from tools.mapgen import modern_interiors_v3_source, tiled_gid
+    from tools.mapgen.curate_modern_interiors_v3 import (
+        DEFAULT_OUTPUT_ROOT as INTERIORS_V3_OUTPUT_ROOT,
+    )
     from tools.mapgen.curate_modern_pixels_v2 import (
         DEFAULT_OUTPUT_ROOT,
         MAX_ATLAS_SIZE,
@@ -20,7 +23,11 @@ try:
         atlas_dimensions,
     )
 except ModuleNotFoundError:  # Direct ``python tools/mapgen/cull_modern_pixels_v2.py``.
+    import modern_interiors_v3_source
     import tiled_gid
+    from curate_modern_interiors_v3 import (
+        DEFAULT_OUTPUT_ROOT as INTERIORS_V3_OUTPUT_ROOT,
+    )
     from curate_modern_pixels_v2 import (
         DEFAULT_OUTPUT_ROOT,
         MAX_ATLAS_SIZE,
@@ -87,13 +94,17 @@ def _map_tilesets(source: dict) -> list[tuple[int, str]]:
             raise CullError("TMJ tilesets need integer firstgid values")
         source_path = entry.get("source")
         key = Path(str(source_path)).stem if isinstance(source_path, str) else None
-        if key not in {"terrain", "town", "office", "interiors"}:
+        if key not in {"terrain", "town", "office", "interiors", "interiors_props"}:
             raise CullError(
-                "TMJ may reference only curated terrain, town, office, or interiors TSJs"
+                "TMJ may reference only curated v2 tiles or the v3 interiors prop collection"
             )
         result.append((entry["firstgid"], key))
     if len({firstgid for firstgid, _ in result}) != len(result):
         raise CullError("TMJ tileset firstgid values must be unique")
+    keys = [key for _, key in result]
+    if set(keys[:4]) != {"terrain", "town", "office", "interiors"} or \
+            keys.count("interiors_props") > 1 or len(keys) not in {4, 5}:
+        raise CullError("TMJ must retain four v2 tilesets and at most one v3 prop collection")
     return sorted(result)
 
 
@@ -187,13 +198,34 @@ def _pack_props(images: list[tuple[str, Image.Image]]):
     raise CullError("runtime prop atlas would exceed 4096x4096")
 
 
-def _validate_requested_props(authoring: Path, requested: list[str]) -> None:
+def _v3_props(authoring: Path) -> dict[str, dict]:
+    catalog = _read_json(authoring / "catalog.json", "Modern Interiors v3 catalog")
+    if catalog.get("profile") != modern_interiors_v3_source.PROFILE or \
+            catalog.get("schema_version") != 3:
+        raise CullError("Modern Interiors v3 catalog has the wrong profile")
+    records = catalog.get("props")
+    if not isinstance(records, list):
+        raise CullError("Modern Interiors v3 catalog is missing props")
+    result = {
+        item.get("asset_key"): item for item in records
+        if isinstance(item, dict) and isinstance(item.get("asset_key"), str)
+    }
+    if len(result) != len(records):
+        raise CullError("Modern Interiors v3 prop catalog contains malformed duplicates")
+    return result
+
+
+def _validate_requested_props(
+    authoring: Path, v3_authoring: Path, requested: list[str]
+) -> tuple[dict, dict]:
     frames = _read_json(authoring / "props.json", "authoring props metadata").get("frames")
     if not isinstance(frames, dict):
         raise CullError("authoring props metadata is missing frames")
-    missing = sorted(set(requested) - set(frames))
+    v3 = _v3_props(v3_authoring)
+    missing = sorted(set(requested) - set(frames) - set(v3))
     if missing:
-        raise CullError(f"TMJ object assets are missing from props catalog: {missing}")
+        raise CullError(f"TMJ object assets are missing from approved prop catalogs: {missing}")
+    return frames, v3
 
 
 def _write_runtime_tiles(output: Path, authoring: Path, selected: dict[str, dict]):
@@ -233,41 +265,71 @@ def _write_runtime_tiles(output: Path, authoring: Path, selected: dict[str, dict
     return runtime_pages, asset_remap
 
 
-def _write_runtime_props(output: Path, authoring: Path, requested: list[str]):
-    source_meta = _read_json(authoring / "props.json", "authoring props metadata")
-    frames = source_meta.get("frames")
-    if not isinstance(frames, dict):
-        raise CullError("authoring props metadata is missing frames")
-    missing = sorted(set(requested) - set(frames))
-    if missing:
-        raise CullError(f"TMJ object assets are missing from props catalog: {missing}")
-    with Image.open(authoring / "props.png") as opened:
-        source_image = opened.convert("RGBA")
+def _write_runtime_props(
+    output: Path, authoring: Path, v3_authoring: Path, v3_source: Path,
+    requested: list[str],
+):
+    frames, v3 = _validate_requested_props(authoring, v3_authoring, requested)
+    source_image = None
+    if any(key in frames for key in requested):
+        with Image.open(authoring / "props.png") as opened:
+            source_image = opened.convert("RGBA")
     images = []
-    for key in requested:
-        frame = frames[key].get("frame") if isinstance(frames[key], dict) else None
-        if not isinstance(frame, dict) or not all(isinstance(frame.get(axis), int) for axis in ("x", "y", "w", "h")):
-            raise CullError(f"authoring prop frame is malformed: {key}")
-        images.append((key, source_image.crop((frame["x"], frame["y"], frame["x"] + frame["w"], frame["y"] + frame["h"]))))
+    try:
+        for key in requested:
+            if key in frames:
+                frame = frames[key].get("frame") if isinstance(frames[key], dict) else None
+                if not isinstance(frame, dict) or not all(
+                    isinstance(frame.get(axis), int) for axis in ("x", "y", "w", "h")
+                ):
+                    raise CullError(f"authoring prop frame is malformed: {key}")
+                images.append((key, source_image.crop((
+                    frame["x"], frame["y"], frame["x"] + frame["w"],
+                    frame["y"] + frame["h"],
+                ))))
+                continue
+            record = v3[key]
+            path = modern_interiors_v3_source.validate_source_path(
+                v3_source, record.get("source")
+            )
+            if modern_interiors_v3_source.file_sha256(path) != record.get("source_sha256"):
+                raise CullError(f"Modern Interiors v3 prop hash changed: {key}")
+            images.append((key, modern_interiors_v3_source.open_png(path)))
+    finally:
+        if source_image is not None:
+            source_image.close()
     if not images:
         return None
-    width, height, placements = _pack_props(images)
-    image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-    frames_out = {}
-    for key, prop, x, y in placements:
-        image.alpha_composite(prop, (x, y))
-        frames_out[key] = {"frame": {"h": prop.height, "w": prop.width, "x": x, "y": y}, "rotated": False, "spriteSourceSize": {"h": prop.height, "w": prop.width, "x": 0, "y": 0}, "sourceSize": {"h": prop.height, "w": prop.width}, "trimmed": False}
-    _write_png(output / "props.png", image)
-    _write_json(output / "props.json", {"frames": frames_out, "meta": {"app": "Claudeville Modern Pixels v2 runtime", "format": "RGBA8888", "image": "props.png", "scale": "1", "size": {"h": height, "w": width}}})
+    try:
+        width, height, placements = _pack_props(images)
+        image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+        frames_out = {}
+        for key, prop, x, y in placements:
+            image.alpha_composite(prop, (x, y))
+            frames_out[key] = {"frame": {"h": prop.height, "w": prop.width, "x": x, "y": y}, "rotated": False, "spriteSourceSize": {"h": prop.height, "w": prop.width, "x": 0, "y": 0}, "sourceSize": {"h": prop.height, "w": prop.width}, "trimmed": False}
+        _write_png(output / "props.png", image)
+        _write_json(output / "props.json", {"frames": frames_out, "meta": {"app": "Claudeville Modern Pixels v3 runtime", "format": "RGBA8888", "image": "props.png", "scale": "1", "size": {"h": height, "w": width}}})
+        image.close()
+    finally:
+        for _, prop in images:
+            prop.close()
     return {"asset_keys": requested, "data": "props.json", "image": "props.png", "key": "claudeville-v2-props"}
 
 
-def cull_runtime_tilesets(source_tmj: Path, output_root: Path, *, authoring_root: Path = DEFAULT_OUTPUT_ROOT) -> dict:
+def cull_runtime_tilesets(
+    source_tmj: Path, output_root: Path, *, authoring_root: Path = DEFAULT_OUTPUT_ROOT,
+    interiors_v3_authoring_root: Path = INTERIORS_V3_OUTPUT_ROOT,
+    interiors_v3_source_root: Path = modern_interiors_v3_source.DEFAULT_SOURCE_ROOT,
+) -> dict:
     """Return a deterministic compact runtime asset manifest for one hand-authored TMJ."""
     source_path = Path(source_tmj).expanduser().resolve(strict=True)
     authoring = Path(authoring_root).expanduser().resolve(strict=True)
+    v3_authoring = Path(interiors_v3_authoring_root).expanduser().resolve(strict=True)
+    v3_source = Path(interiors_v3_source_root).expanduser().resolve(strict=True)
     output = Path(output_root).expanduser().resolve(strict=False)
-    if source_path.suffix.lower() != ".tmj" or not authoring.is_dir() or output == authoring or authoring in output.parents or output in authoring.parents:
+    protected = (authoring, v3_authoring, v3_source)
+    if source_path.suffix.lower() != ".tmj" or not all(path.is_dir() for path in protected) \
+            or any(output == path or path in output.parents or output in path.parents for path in protected):
         raise CullError("TMJ source and runtime output must be separate valid paths")
     source = _read_json(source_path, "TMJ source")
     if (source.get("width"), source.get("height"), source.get("tilewidth"), source.get("tileheight"), source.get("infinite")) != (*EXPECTED_SIZE, TILE_SIZE, TILE_SIZE, False):
@@ -279,7 +341,7 @@ def cull_runtime_tilesets(source_tmj: Path, output_root: Path, *, authoring_root
     selected, source_gids, props = _selected_assets(source, tile_catalog)
     if not selected:
         raise CullError("TMJ must reference at least one curated tile")
-    _validate_requested_props(authoring, props)
+    _validate_requested_props(authoring, v3_authoring, props)
     output.mkdir(parents=True, exist_ok=True)
     pages, asset_remap = _write_runtime_tiles(output, authoring, selected)
     remap = {}
@@ -289,11 +351,15 @@ def cull_runtime_tilesets(source_tmj: Path, output_root: Path, *, authoring_root
         atlas, tile_id = _source_gid(firstgids, by_firstgid, gid)
         record = tile_catalog[(atlas, tile_id)]
         remap[str(gid)] = asset_remap[record["asset_key"]]["runtime_gid"]
-    props_manifest = _write_runtime_props(output, authoring, props)
+    props_manifest = _write_runtime_props(
+        output, authoring, v3_authoring, v3_source, props
+    )
     source_credits = _read_json(authoring / "credits.json", "authoring credits")
     packs = source_credits.get("packs")
     if not isinstance(packs, list) or not packs:
         raise CullError("authoring credits must declare licensed packs")
+    if any(key.startswith("prop.interiors_v3.") for key in props):
+        packs.append(modern_interiors_v3_source.validate_pack(v3_source))
     _write_json(output / "credits.json", {
         "distribution_scope": "Only tiles and props referenced by this Claudeville map.",
         "generated_by": "tools/mapgen/tilemap_culler.py", "packs": packs, "schema_version": 1,

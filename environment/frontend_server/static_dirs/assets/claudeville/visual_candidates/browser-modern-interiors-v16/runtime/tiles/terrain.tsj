@@ -1,0 +1,12 @@
+{
+  "columns": 4,
+  "image": "terrain.png",
+  "imageheight": 64,
+  "imagewidth": 64,
+  "name": "claudeville_v2_runtime_terrain",
+  "tilecount": 15,
+  "tileheight": 16,
+  "tilewidth": 16,
+  "type": "tileset",
+  "version": "1.10"
+}

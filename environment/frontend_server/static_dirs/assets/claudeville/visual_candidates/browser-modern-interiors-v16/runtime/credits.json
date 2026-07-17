@@ -1,0 +1,78 @@
+{
+  "distribution_scope": "Only tiles and props referenced by this Claudeville map.",
+  "generated_by": "tools/mapgen/tilemap_culler.py",
+  "packs": [
+    {
+      "creator": "LimeZu",
+      "license_file": "modernexteriors-win/Modern_Exteriors_License.pdf",
+      "license_sha256": "64aae67044ccfc7e1e059a49b4a30de438e7834bbf7efdcd59bc9902457b6ec1",
+      "name": "Modern Exteriors",
+      "source_url": "https://limezu.itch.io/modernexteriors"
+    },
+    {
+      "creator": "LimeZu",
+      "license_file": "Modern_Office_Revamped_v1.2/LICENSE.txt",
+      "license_sha256": "ac9ae86ccbdb3a1e28433e8f6516968c18a1ad55bfea089de423afa4027a689f",
+      "name": "Modern Office Revamped",
+      "source_url": "https://limezu.itch.io/modernoffice"
+    },
+    {
+      "creator": "LimeZu",
+      "license_evidence": "Project-licensed source provided by the user",
+      "name": "Modern Interiors",
+      "source_url": "https://limezu.itch.io/moderninteriors",
+      "sources": [
+        {
+          "filename": "Interiors_32x32_full.png",
+          "sha256": "ec056b502696ca7989c9b072cc513192498e9f2c96486160cd45d2605bf3e582"
+        },
+        {
+          "filename": "Room_Builder_32x32.png",
+          "sha256": "a6bd5690110f94d8a431803b910423d2dd834ab5c9b42f04815d6ba2e056aa6f"
+        }
+      ]
+    },
+    {
+      "creator": "LimeZu",
+      "license_file": "LICENSE.txt",
+      "license_sha256": "e33effd51253bb90c0d83fb555405f300273e9772d5eb84105327b6fa3eab4c5",
+      "master_sources": [
+        {
+          "relative_path": "1_Interiors/16x16/Interiors_16x16.png",
+          "sha256": "a35b8ed8ef392657a9339e1ce0831a3efe7b4631bfff69835bb5ef3bc738550b",
+          "size": [
+            256,
+            17024
+          ]
+        },
+        {
+          "relative_path": "1_Interiors/16x16/Room_Builder_16x16.png",
+          "sha256": "f53d7cd04f275dfa4b3e1f410569d491275105e2710a0f86ec46edeff3ab576f",
+          "size": [
+            1216,
+            1808
+          ]
+        }
+      ],
+      "name": "Modern Interiors",
+      "pack_release": "41.4",
+      "profile": "claudeville-modern-interiors-v3",
+      "selected_fingerprints": {
+        "prop": {
+          "file_count": 2726,
+          "tree_sha256": "9bcad6efab4369046d913a3cd183737e23f9374b94b0b220980106e61a5c2851"
+        },
+        "room-builder": {
+          "file_count": 9,
+          "tree_sha256": "163877d468cf4c543d9d1443e9adfd430e97b14b3db0ea87e112959bc6bcd178"
+        },
+        "theme": {
+          "file_count": 16,
+          "tree_sha256": "b03f4a08dd7da6750efed60272807c91a99168e15ab29cebf31f39511c226baf"
+        }
+      },
+      "source_url": "https://limezu.itch.io/moderninteriors"
+    }
+  ],
+  "schema_version": 1
+}

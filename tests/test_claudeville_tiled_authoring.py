@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import json
 import unittest
+from collections import Counter
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 
+from tools.mapgen import author_claudeville_vertical_slices as slices
 from tools.mapgen import build_tilemap
 from tools.mapgen import claudeville_tiled_authoring as authoring
 from tools.mapgen import compile_claudeville_semantics as compiler
@@ -105,6 +107,72 @@ def _collision_csv(collision: list[list[bool]]) -> str:
 
 
 class TiledAuthoringTests(unittest.TestCase):
+    def test_candidate_contains_the_complete_revision_three_vertical_slices(self):
+        source = json.loads(slices.DEFAULT_MAP.read_text(encoding="utf-8"))
+        self.assertEqual(
+            authoring.properties(source.get("properties")).get(
+                "vertical_slice_revision"
+            ),
+            slices.SLICE_REVISION,
+        )
+
+        depth = next(
+            layer for layer in source["layers"] if layer["name"] == "Depth Props"
+        )
+        actual = Counter()
+        for item in depth["objects"]:
+            values = authoring.properties(item.get("properties"))
+            if values.get("sector") not in slices.TARGETS:
+                continue
+            actual[(
+                values["sector"], values["zone"], values["asset_key"],
+                item["x"], item["y"],
+            )] += 1
+        expected = Counter(
+            (sector, zone, key, x * 16, y * 16)
+            for sector, zone, _role, _cluster, key, x, y in slices.PLACEMENTS
+        )
+        self.assertEqual(actual, expected)
+
+        group = next(
+            layer for layer in source["layers"] if layer["name"] == authoring.GROUP_NAME
+        )
+        children = {layer["name"]: layer for layer in group["layers"]}
+        zones = {
+            authoring.properties(item.get("properties")).get("zone")
+            for item in children["Zones"]["objects"]
+        }
+        self.assertIn("home_5.bathroom", zones)
+
+        interactions = {
+            authoring.properties(item.get("properties")).get("interaction"): (
+                authoring.properties(item.get("properties"))
+            )
+            for item in children["Interactions"]["objects"]
+        }
+        bed_shapes = [
+            item for item in children["Interactions"]["objects"]
+            if authoring.properties(item.get("properties")).get("interaction")
+            == "home_5.bedroom.bed-001"
+        ]
+        self.assertEqual(len(bed_shapes), 1)
+        self.assertEqual(
+            authoring.properties(bed_shapes[0].get("properties"))["semantic_id"],
+            "home_5.bedroom.bed-001.shape-001",
+        )
+        toilet = interactions["home_5.bathroom.toilet-001"]
+        self.assertEqual((toilet["stance_x"], toilet["stance_y"]), (32, 43))
+        self.assertEqual(toilet["blocker_policy"], "require-blocked")
+        blocker_ids = {
+            authoring.properties(item.get("properties")).get("semantic_id")
+            for item in children["Blockers"]["objects"]
+        }
+        self.assertIn("home_5.bedroom.wardrobe-blocker.shape-001", blocker_ids)
+
+        compiled = compiler.compile_semantics(tmj_path=slices.DEFAULT_MAP)
+        self.assertEqual(compiled.stats["collision_mismatches"], 0)
+        self.assertGreaterEqual(compiled.stats["connectivity_pct"], 98)
+
     def test_compiles_without_changing_authoritative_collision(self):
         collision = _collision()
         result = authoring.compile_authoring(_candidate(), _spec(), collision)
@@ -168,6 +236,42 @@ class TiledAuthoringTests(unittest.TestCase):
         compiled = build_tilemap._remap_layers(source, layers, runtime, [False] * (88 * 48), 9)
         self.assertEqual([layer["name"] for layer in compiled], list(build_tilemap.MAP_LAYER_ORDER))
         self.assertNotIn(authoring.GROUP_NAME, {layer["name"] for layer in compiled})
+
+    def test_builder_accepts_v3_prop_collection_and_strips_authoring_gid(self):
+        source = _candidate()
+        source["tilesets"].append({
+            "firstgid": 5,
+            "source": "../../output/claudeville/modern_interiors_v3/collections/interiors_props.tsj",
+        })
+        depth = next(layer for layer in source["layers"] if layer["name"] == "Depth Props")
+        depth["objects"].append({
+            "id": 40,
+            "gid": 5,
+            "name": "test-prop",
+            "type": "",
+            "x": 64,
+            "y": 64,
+            "width": 16,
+            "height": 16,
+            "rotation": 0,
+            "visible": True,
+            "properties": [{
+                "name": "asset_key",
+                "type": "string",
+                "value": "prop.interiors_v3.living.0001",
+            }],
+        })
+        layers = build_tilemap._validate_source(source)
+        runtime = {
+            "tile_gid_remap": {"1": 7},
+            "tile_gid_flip_mask": 0xE0000000,
+            "tile_gid_clear_mask": 0xF0000000,
+        }
+        compiled = build_tilemap._remap_layers(
+            source, layers, runtime, [False] * (88 * 48), 9
+        )
+        runtime_depth = next(layer for layer in compiled if layer["name"] == "Depth Props")
+        self.assertNotIn("gid", runtime_depth["objects"][0])
 
     def test_legacy_composer_refuses_profile_before_writing(self):
         with TemporaryDirectory() as temporary:
