@@ -9,12 +9,12 @@ from pathlib import Path
 from typing import NamedTuple
 
 try:
-    from tools.mapgen import (
-        claudeville_tiled_authoring as tiled_authoring,
-    )
-    from tools.mapgen import (
-        tiled_gid,
-    )
+    import tools.mapgen.author_claudeville_vertical_slices as vertical_slices
+    import tools.mapgen.claudeville_middle_placements as middle
+    import tools.mapgen.claudeville_north_placements as north
+    import tools.mapgen.claudeville_south_placements as south
+    import tools.mapgen.claudeville_tiled_authoring as tiled_authoring
+    import tools.mapgen.tiled_gid as tiled_gid
     from tools.mapgen.claudeville_tilemap_preview import (
         render_preview as _render_preview,
     )
@@ -24,6 +24,10 @@ try:
         stable_source_sha256,
     )
 except ModuleNotFoundError:  # Direct ``python tools/mapgen/build_tilemap.py``.
+    import author_claudeville_vertical_slices as vertical_slices
+    import claudeville_middle_placements as middle
+    import claudeville_north_placements as north
+    import claudeville_south_placements as south
     import claudeville_tiled_authoring as tiled_authoring
     import tiled_gid
     from claudeville_tilemap_preview import render_preview as _render_preview
@@ -47,7 +51,15 @@ TILE_LAYERS = (
 )
 OBJECT_LAYERS = ("Depth Props", "Overhead Props")
 MAP_LAYER_ORDER = (*TILE_LAYERS[:-1], *OBJECT_LAYERS, TILE_LAYERS[-1])
-V3_TILESETS = {"room_floors", "room_walls"}
+V3_TILESETS = {"room_arched_entryways", "room_floors", "room_walls"}
+V3_AUTHORING_PROFILE = "claudeville-modern-interiors-v3"
+V3_AUTHORING_REVISIONS = {
+    "middle_district_revision": middle.REVISION,
+    "north_district_revision": north.REVISION,
+    "south_district_revision": south.REVISION,
+    "vertical_slice_revision": vertical_slices.SLICE_REVISION,
+}
+V3_SOURCE_TILESETS = {"terrain", "town", "office", "interiors_props", *V3_TILESETS}
 
 
 class TilemapError(ValueError): ...
@@ -166,6 +178,10 @@ def _validate_map_layers(source: dict) -> dict[str, dict]:
 
 def _validate_source(source: dict) -> dict[str, dict]:
     layers = _validate_map_layers(source)
+    properties = _properties(source.get("properties"))
+    profile = properties.get("authoring_profile")
+    if profile not in {None, V3_AUTHORING_PROFILE}:
+        raise TilemapError(f"unsupported Claudeville authoring profile: {profile}")
     has_authoring = any(
         item.get("name") == tiled_authoring.GROUP_NAME
         for item in source.get("layers", []) if isinstance(item, dict)
@@ -177,21 +193,27 @@ def _validate_source(source: dict) -> dict[str, dict]:
             tiled_authoring.validate_authoring_group(source)
         except tiled_authoring.TiledAuthoringError as exc:
             raise TilemapError(str(exc)) from exc
+    if profile == V3_AUTHORING_PROFILE:
+        if not has_authoring or any(
+            properties.get(name) != revision
+            for name, revision in V3_AUTHORING_REVISIONS.items()
+        ):
+            raise TilemapError("Modern Interiors v3 authoring revisions are incomplete")
     tilesets = source.get("tilesets")
-    if not isinstance(tilesets, list) or not 4 <= len(tilesets) <= 7:
-        raise TilemapError(
-            "TMJ must reference four base tilesets and approved v3 sources only"
-        )
+    if not isinstance(tilesets, list) or not tilesets:
+        raise TilemapError("TMJ must reference approved Claudeville tilesets")
     names = {Path(str(entry.get("source", ""))).stem for entry in tilesets if isinstance(entry, dict)}
     firstgids = [entry.get("firstgid") for entry in tilesets if isinstance(entry, dict)]
-    required = {"terrain", "town", "office", "interiors"}
-    optional = names - required
-    if names & required != required or not optional <= {"interiors_props", *V3_TILESETS} \
-            or (optional and not has_authoring) or \
-            len(firstgids) != len(tilesets) or \
-            any(not isinstance(value, int) or value < 1 for value in firstgids) or \
+    expected = V3_SOURCE_TILESETS if profile == V3_AUTHORING_PROFILE else {
+        "terrain", "town", "office", "interiors",
+    }
+    if names != expected or len(names) != len(tilesets) or \
+            len(firstgids) != len(tilesets) or any(
+                not isinstance(value, int) or isinstance(value, bool) or value < 1
+                for value in firstgids
+            ) or \
             len(firstgids) != len(set(firstgids)):
-        raise TilemapError("TMJ must use unique approved base and v3 TSJs")
+        raise TilemapError("TMJ must use the exact unique tilesets for its authoring profile")
     return layers
 
 
@@ -391,6 +413,7 @@ def promote_candidate(candidate_manifest_path: Path, *, approved_source_sha256: 
     source_path = _static_path(candidate.get("candidate_source_url"), "candidate source", container=WORLD_ROOT / "visuals")
     if stable_source_sha256(source_path) != source_hash:
         raise TilemapError("candidate source no longer matches its reviewed hash")
+    _validate_source(_read_json(source_path, "candidate source"))
     alias_path = _static_path(candidate.get("address_alias_manifest_url"), "alias manifest")
     aliases = _read_json(alias_path, "alias manifest")
     if (alias_path != ALIAS_MANIFEST_PATH.resolve() or "aliases" in candidate or aliases.get("schema_version") != 1

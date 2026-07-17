@@ -1,12 +1,10 @@
 {
   "authoring_root_sha256": "2b4135d69f6953441da6ebc155f793fd2aa5b56111c2b269762dc323f5aafdf8",
   "credits": "credits.json",
+  "interiors_v3_catalog_sha256": "cbdc0f0c71d6c1ac31d35f78067807ef78be24e19b266d0b2863df1d5693f8ed",
   "props": {
     "asset_keys": [
       "prop.community.stage_small",
-      "prop.facade.door_open",
-      "prop.facade.residential_door_open",
-      "prop.facade.window_shutter",
       "prop.garden.bench_horizontal",
       "prop.garden.bench_vertical",
       "prop.garden.flower_pink",
@@ -14,19 +12,65 @@
       "prop.garden.sunflower",
       "prop.interiors_v3.art.0023",
       "prop.interiors_v3.art.0024",
+      "prop.interiors_v3.art.0034",
+      "prop.interiors_v3.art.0043",
+      "prop.interiors_v3.bathroom.0002",
+      "prop.interiors_v3.bathroom.0003",
+      "prop.interiors_v3.bathroom.0005",
+      "prop.interiors_v3.bathroom.0006",
+      "prop.interiors_v3.bathroom.0009",
+      "prop.interiors_v3.bathroom.0010",
+      "prop.interiors_v3.bathroom.0012",
+      "prop.interiors_v3.bathroom.0013",
       "prop.interiors_v3.bathroom.0021",
       "prop.interiors_v3.bathroom.0035",
+      "prop.interiors_v3.bathroom.0036",
+      "prop.interiors_v3.bathroom.0038",
+      "prop.interiors_v3.bathroom.0042",
+      "prop.interiors_v3.bathroom.0045",
+      "prop.interiors_v3.bathroom.0050",
+      "prop.interiors_v3.bathroom.0053",
+      "prop.interiors_v3.bathroom.0054",
+      "prop.interiors_v3.bathroom.0061",
+      "prop.interiors_v3.bathroom.0062",
+      "prop.interiors_v3.bathroom.0063",
       "prop.interiors_v3.bathroom.0064",
+      "prop.interiors_v3.bathroom.0065",
       "prop.interiors_v3.bathroom.0083",
       "prop.interiors_v3.bathroom.0151",
-      "prop.interiors_v3.bedroom.0004",
-      "prop.interiors_v3.bedroom.0012",
       "prop.interiors_v3.bedroom.0088",
+      "prop.interiors_v3.bedroom.0090",
+      "prop.interiors_v3.bedroom.0092",
+      "prop.interiors_v3.bedroom.0097",
+      "prop.interiors_v3.bedroom.0103",
+      "prop.interiors_v3.bedroom.0108",
+      "prop.interiors_v3.bedroom.0111",
+      "prop.interiors_v3.bedroom.0118",
+      "prop.interiors_v3.bedroom.0135",
       "prop.interiors_v3.bedroom.0262",
       "prop.interiors_v3.bedroom.0263",
+      "prop.interiors_v3.bedroom.0265",
+      "prop.interiors_v3.bedroom.0266",
+      "prop.interiors_v3.bedroom.0267",
+      "prop.interiors_v3.bedroom.0268",
+      "prop.interiors_v3.bedroom.0269",
+      "prop.interiors_v3.bedroom.0270",
+      "prop.interiors_v3.bedroom.0302",
+      "prop.interiors_v3.bedroom.0383",
       "prop.interiors_v3.bedroom.0384",
+      "prop.interiors_v3.bedroom.0385",
       "prop.interiors_v3.bedroom.0386",
-      "prop.interiors_v3.classroom_library.0001",
+      "prop.interiors_v3.bedroom.0387",
+      "prop.interiors_v3.bedroom.0388",
+      "prop.interiors_v3.bedroom.0389",
+      "prop.interiors_v3.bedroom.0424",
+      "prop.interiors_v3.bedroom.0434",
+      "prop.interiors_v3.bedroom.0440",
+      "prop.interiors_v3.bedroom.0452",
+      "prop.interiors_v3.bedroom.0458",
+      "prop.interiors_v3.bedroom.0464",
+      "prop.interiors_v3.bedroom.0472",
+      "prop.interiors_v3.bedroom.0478",
       "prop.interiors_v3.classroom_library.0002",
       "prop.interiors_v3.classroom_library.0003",
       "prop.interiors_v3.classroom_library.0004",
@@ -42,72 +86,97 @@
       "prop.interiors_v3.classroom_library.0045",
       "prop.interiors_v3.classroom_library.0049",
       "prop.interiors_v3.classroom_library.0052",
-      "prop.interiors_v3.classroom_library.0054",
       "prop.interiors_v3.classroom_library.0055",
+      "prop.interiors_v3.classroom_library.0056",
       "prop.interiors_v3.classroom_library.0057",
       "prop.interiors_v3.classroom_library.0058",
       "prop.interiors_v3.classroom_library.0060",
       "prop.interiors_v3.classroom_library.0062",
       "prop.interiors_v3.classroom_library.0064",
-      "prop.interiors_v3.classroom_library.0067",
       "prop.interiors_v3.classroom_library.0069",
       "prop.interiors_v3.classroom_library.0071",
+      "prop.interiors_v3.classroom_library.0074",
+      "prop.interiors_v3.conference.0001",
+      "prop.interiors_v3.conference.0002",
+      "prop.interiors_v3.conference.0003",
+      "prop.interiors_v3.conference.0007",
+      "prop.interiors_v3.conference.0028",
+      "prop.interiors_v3.conference.0029",
+      "prop.interiors_v3.conference.0030",
+      "prop.interiors_v3.conference.0037",
+      "prop.interiors_v3.conference.0038",
+      "prop.interiors_v3.conference.0039",
+      "prop.interiors_v3.conference.0040",
       "prop.interiors_v3.grocery.0058",
       "prop.interiors_v3.grocery.0060",
       "prop.interiors_v3.grocery.0062",
       "prop.interiors_v3.grocery.0099",
       "prop.interiors_v3.grocery.0101",
-      "prop.interiors_v3.grocery.0158",
-      "prop.interiors_v3.grocery.0177",
-      "prop.interiors_v3.grocery.0203",
-      "prop.interiors_v3.grocery.0249",
-      "prop.interiors_v3.grocery.0251",
+      "prop.interiors_v3.grocery.0162",
+      "prop.interiors_v3.grocery.0166",
       "prop.interiors_v3.grocery.0371",
+      "prop.interiors_v3.grocery.0373",
       "prop.interiors_v3.grocery.0374",
-      "prop.interiors_v3.gym.0166",
+      "prop.interiors_v3.grocery.0413",
+      "prop.interiors_v3.grocery.0414",
       "prop.interiors_v3.gym.0176",
       "prop.interiors_v3.gym.0196",
-      "prop.interiors_v3.gym.0197",
-      "prop.interiors_v3.ice_cream.0001",
       "prop.interiors_v3.ice_cream.0002",
-      "prop.interiors_v3.ice_cream.0003",
-      "prop.interiors_v3.ice_cream.0004",
+      "prop.interiors_v3.ice_cream.0012",
+      "prop.interiors_v3.ice_cream.0015",
       "prop.interiors_v3.ice_cream.0020",
       "prop.interiors_v3.ice_cream.0023",
-      "prop.interiors_v3.ice_cream.0026",
-      "prop.interiors_v3.ice_cream.0080",
-      "prop.interiors_v3.ice_cream.0082",
-      "prop.interiors_v3.ice_cream.0084",
-      "prop.interiors_v3.ice_cream.0086",
-      "prop.interiors_v3.ice_cream.0090",
-      "prop.interiors_v3.ice_cream.0092",
-      "prop.interiors_v3.ice_cream.0094",
-      "prop.interiors_v3.ice_cream.0096",
+      "prop.interiors_v3.ice_cream.0100",
+      "prop.interiors_v3.ice_cream.0101",
       "prop.interiors_v3.ice_cream.0102",
       "prop.interiors_v3.kitchen.0121",
-      "prop.interiors_v3.kitchen.0126",
-      "prop.interiors_v3.kitchen.0127",
+      "prop.interiors_v3.kitchen.0122",
+      "prop.interiors_v3.kitchen.0130",
+      "prop.interiors_v3.kitchen.0141",
       "prop.interiors_v3.kitchen.0142",
+      "prop.interiors_v3.kitchen.0143",
+      "prop.interiors_v3.kitchen.0144",
+      "prop.interiors_v3.kitchen.0145",
+      "prop.interiors_v3.kitchen.0146",
+      "prop.interiors_v3.kitchen.0148",
+      "prop.interiors_v3.kitchen.0150",
+      "prop.interiors_v3.kitchen.0152",
+      "prop.interiors_v3.kitchen.0154",
+      "prop.interiors_v3.kitchen.0156",
       "prop.interiors_v3.kitchen.0160",
+      "prop.interiors_v3.kitchen.0169",
       "prop.interiors_v3.kitchen.0195",
-      "prop.interiors_v3.kitchen.0208",
+      "prop.interiors_v3.kitchen.0369",
+      "prop.interiors_v3.kitchen.0372",
       "prop.interiors_v3.living.0003",
       "prop.interiors_v3.living.0004",
       "prop.interiors_v3.living.0005",
+      "prop.interiors_v3.living.0007",
+      "prop.interiors_v3.living.0008",
+      "prop.interiors_v3.living.0012",
       "prop.interiors_v3.living.0013",
+      "prop.interiors_v3.living.0015",
       "prop.interiors_v3.living.0016",
       "prop.interiors_v3.living.0017",
+      "prop.interiors_v3.living.0018",
       "prop.interiors_v3.living.0019",
-      "prop.interiors_v3.living.0023",
-      "prop.interiors_v3.living.0029",
       "prop.interiors_v3.living.0037",
       "prop.interiors_v3.living.0038",
+      "prop.interiors_v3.living.0040",
       "prop.interiors_v3.living.0051",
+      "prop.interiors_v3.living.0052",
+      "prop.interiors_v3.living.0053",
+      "prop.interiors_v3.living.0063",
+      "prop.interiors_v3.living.0064",
       "prop.interiors_v3.living.0065",
-      "prop.interiors_v3.living.0079",
+      "prop.interiors_v3.living.0067",
+      "prop.interiors_v3.living.0069",
+      "prop.interiors_v3.living.0073",
+      "prop.interiors_v3.living.0074",
+      "prop.interiors_v3.living.0085",
       "prop.interiors_v3.music_sport.0043",
-      "prop.interiors_v3.music_sport.0062",
-      "prop.interiors_v3.music_sport.0066",
+      "prop.interiors_v3.music_sport.0057",
+      "prop.interiors_v3.music_sport.0058",
       "prop.interiors_v3.shooting_range.0011",
       "prop.interiors_v3.shooting_range.0012",
       "prop.interiors_v3.shooting_range.0015",
@@ -119,7 +188,11 @@
       "prop.landscape.tree_05",
       "prop.landscape.tree_07",
       "prop.landscape.tree_09",
+      "prop.library.shelf_dark_1",
+      "prop.library.shelf_dark_2",
+      "prop.library.shelf_dark_3",
       "prop.office.armchair_dark",
+      "prop.office.armchair_ice",
       "prop.office.armchair_mustard",
       "prop.office.cash_register",
       "prop.office.chair_blue",
@@ -136,20 +209,17 @@
       "prop.office.counter_walnut_middle",
       "prop.office.counter_walnut_right",
       "prop.office.display_cabinet",
-      "prop.office.dual_monitors",
       "prop.office.filing_cabinet",
       "prop.office.manager_chair",
       "prop.office.monitor_blue",
       "prop.office.notice_board",
       "prop.office.paper_stack",
       "prop.office.phone",
-      "prop.office.printer",
       "prop.office.printer_station",
       "prop.office.side_table",
       "prop.office.sofa_dark",
       "prop.office.table_light",
       "prop.office.table_walnut",
-      "prop.office.table_walnut_long",
       "prop.office.table_walnut_medium",
       "prop.office.town_map",
       "prop.office.training_station",
@@ -157,7 +227,6 @@
       "prop.office.wall_chart",
       "prop.office.waste_bin",
       "prop.office.water_cooler",
-      "prop.office.whiteboard",
       "prop.plaza.fountain_blue",
       "prop.post.package_large",
       "prop.post.package_small",
@@ -171,7 +240,7 @@
     "key": "claudeville-v2-props"
   },
   "schema_version": 1,
-  "source_tmj_sha256": "19feeb63ab7fedd3aaffa5bdd6bac7b6620cc8efe98ca0cdd9aea6a52fb71fde",
+  "source_tmj_sha256": "32250517db2539865c3962e90503432f4dd02ca0dc8b5180f3dce5701916c27c",
   "tile_asset_remap": {
     "tile.exteriors_city.0016.0016": {
       "atlas": "terrain",
@@ -200,518 +269,103 @@
     },
     "tile.exteriors_garden.0256.0000": {
       "atlas": "town",
-      "runtime_gid": 177,
-      "tile_id": 161
+      "runtime_gid": 101,
+      "tile_id": 85
     },
     "tile.exteriors_garden.0256.0016": {
       "atlas": "town",
-      "runtime_gid": 179,
-      "tile_id": 163
+      "runtime_gid": 103,
+      "tile_id": 87
     },
     "tile.exteriors_garden.0256.0064": {
       "atlas": "town",
-      "runtime_gid": 187,
-      "tile_id": 171
+      "runtime_gid": 111,
+      "tile_id": 95
     },
     "tile.exteriors_garden.0256.0080": {
       "atlas": "town",
-      "runtime_gid": 189,
-      "tile_id": 173
+      "runtime_gid": 113,
+      "tile_id": 97
     },
     "tile.exteriors_garden.0272.0000": {
       "atlas": "town",
-      "runtime_gid": 178,
-      "tile_id": 162
+      "runtime_gid": 102,
+      "tile_id": 86
     },
     "tile.exteriors_garden.0272.0016": {
       "atlas": "town",
-      "runtime_gid": 180,
-      "tile_id": 164
+      "runtime_gid": 104,
+      "tile_id": 88
     },
     "tile.exteriors_garden.0272.0064": {
       "atlas": "town",
-      "runtime_gid": 188,
-      "tile_id": 172
+      "runtime_gid": 112,
+      "tile_id": 96
     },
     "tile.exteriors_garden.0272.0080": {
       "atlas": "town",
-      "runtime_gid": 190,
-      "tile_id": 174
+      "runtime_gid": 114,
+      "tile_id": 98
     },
     "tile.exteriors_garden.0288.0032": {
       "atlas": "town",
-      "runtime_gid": 181,
-      "tile_id": 165
+      "runtime_gid": 105,
+      "tile_id": 89
     },
     "tile.exteriors_garden.0288.0048": {
       "atlas": "town",
-      "runtime_gid": 184,
-      "tile_id": 168
+      "runtime_gid": 108,
+      "tile_id": 92
     },
     "tile.exteriors_garden.0288.0096": {
       "atlas": "town",
-      "runtime_gid": 191,
-      "tile_id": 175
+      "runtime_gid": 115,
+      "tile_id": 99
     },
     "tile.exteriors_garden.0288.0112": {
       "atlas": "town",
-      "runtime_gid": 194,
-      "tile_id": 178
+      "runtime_gid": 118,
+      "tile_id": 102
     },
     "tile.exteriors_garden.0304.0032": {
       "atlas": "town",
-      "runtime_gid": 182,
-      "tile_id": 166
+      "runtime_gid": 106,
+      "tile_id": 90
     },
     "tile.exteriors_garden.0304.0048": {
       "atlas": "town",
-      "runtime_gid": 185,
-      "tile_id": 169
+      "runtime_gid": 109,
+      "tile_id": 93
     },
     "tile.exteriors_garden.0304.0096": {
       "atlas": "town",
-      "runtime_gid": 192,
-      "tile_id": 176
+      "runtime_gid": 116,
+      "tile_id": 100
     },
     "tile.exteriors_garden.0304.0112": {
       "atlas": "town",
-      "runtime_gid": 195,
-      "tile_id": 179
+      "runtime_gid": 119,
+      "tile_id": 103
     },
     "tile.exteriors_garden.0320.0032": {
       "atlas": "town",
-      "runtime_gid": 183,
-      "tile_id": 167
+      "runtime_gid": 107,
+      "tile_id": 91
     },
     "tile.exteriors_garden.0320.0048": {
       "atlas": "town",
-      "runtime_gid": 186,
-      "tile_id": 170
+      "runtime_gid": 110,
+      "tile_id": 94
     },
     "tile.exteriors_garden.0320.0096": {
       "atlas": "town",
-      "runtime_gid": 193,
-      "tile_id": 177
+      "runtime_gid": 117,
+      "tile_id": 101
     },
     "tile.exteriors_garden.0320.0112": {
       "atlas": "town",
-      "runtime_gid": 196,
-      "tile_id": 180
-    },
-    "tile.exteriors_generic.0016.0160": {
-      "atlas": "town",
-      "runtime_gid": 16,
-      "tile_id": 0
-    },
-    "tile.exteriors_generic.0016.0176": {
-      "atlas": "town",
-      "runtime_gid": 25,
-      "tile_id": 9
-    },
-    "tile.exteriors_generic.0016.0192": {
-      "atlas": "town",
-      "runtime_gid": 33,
-      "tile_id": 17
-    },
-    "tile.exteriors_generic.0032.0176": {
-      "atlas": "town",
-      "runtime_gid": 26,
-      "tile_id": 10
-    },
-    "tile.exteriors_generic.0032.0192": {
-      "atlas": "town",
-      "runtime_gid": 34,
-      "tile_id": 18
-    },
-    "tile.exteriors_generic.0048.0160": {
-      "atlas": "town",
-      "runtime_gid": 17,
-      "tile_id": 1
-    },
-    "tile.exteriors_generic.0080.0160": {
-      "atlas": "town",
-      "runtime_gid": 18,
-      "tile_id": 2
-    },
-    "tile.exteriors_generic.0208.0160": {
-      "atlas": "town",
-      "runtime_gid": 19,
-      "tile_id": 3
-    },
-    "tile.exteriors_generic.0208.0176": {
-      "atlas": "town",
-      "runtime_gid": 27,
-      "tile_id": 11
-    },
-    "tile.exteriors_generic.0224.0160": {
-      "atlas": "town",
-      "runtime_gid": 20,
-      "tile_id": 4
-    },
-    "tile.exteriors_generic.0224.0176": {
-      "atlas": "town",
-      "runtime_gid": 28,
-      "tile_id": 12
-    },
-    "tile.exteriors_generic.0224.0192": {
-      "atlas": "town",
-      "runtime_gid": 35,
-      "tile_id": 19
-    },
-    "tile.exteriors_generic.0240.0160": {
-      "atlas": "town",
-      "runtime_gid": 21,
-      "tile_id": 5
-    },
-    "tile.exteriors_generic.0240.0176": {
-      "atlas": "town",
-      "runtime_gid": 29,
-      "tile_id": 13
-    },
-    "tile.exteriors_generic.0240.0192": {
-      "atlas": "town",
-      "runtime_gid": 36,
-      "tile_id": 20
-    },
-    "tile.exteriors_generic.0256.0160": {
-      "atlas": "town",
-      "runtime_gid": 22,
-      "tile_id": 6
-    },
-    "tile.exteriors_generic.0256.0176": {
-      "atlas": "town",
-      "runtime_gid": 30,
-      "tile_id": 14
-    },
-    "tile.exteriors_generic.0272.0160": {
-      "atlas": "town",
-      "runtime_gid": 23,
-      "tile_id": 7
-    },
-    "tile.exteriors_generic.0272.0176": {
-      "atlas": "town",
-      "runtime_gid": 31,
-      "tile_id": 15
-    },
-    "tile.exteriors_generic.0288.0160": {
-      "atlas": "town",
-      "runtime_gid": 24,
-      "tile_id": 8
-    },
-    "tile.exteriors_generic.0288.0176": {
-      "atlas": "town",
-      "runtime_gid": 32,
-      "tile_id": 16
-    },
-    "tile.exteriors_market.0016.0800": {
-      "atlas": "town",
-      "runtime_gid": 131,
-      "tile_id": 115
-    },
-    "tile.exteriors_market.0016.0816": {
-      "atlas": "town",
-      "runtime_gid": 135,
-      "tile_id": 119
-    },
-    "tile.exteriors_market.0032.0800": {
-      "atlas": "town",
-      "runtime_gid": 132,
-      "tile_id": 116
-    },
-    "tile.exteriors_market.0032.0816": {
-      "atlas": "town",
-      "runtime_gid": 136,
-      "tile_id": 120
-    },
-    "tile.exteriors_market.0048.0800": {
-      "atlas": "town",
-      "runtime_gid": 133,
-      "tile_id": 117
-    },
-    "tile.exteriors_market.0048.0816": {
-      "atlas": "town",
-      "runtime_gid": 137,
-      "tile_id": 121
-    },
-    "tile.exteriors_market.0064.0800": {
-      "atlas": "town",
-      "runtime_gid": 134,
-      "tile_id": 118
-    },
-    "tile.exteriors_market.0064.0816": {
-      "atlas": "town",
-      "runtime_gid": 138,
-      "tile_id": 122
-    },
-    "tile.exteriors_market.0336.0992": {
-      "atlas": "town",
-      "runtime_gid": 139,
-      "tile_id": 123
-    },
-    "tile.exteriors_market.0336.1008": {
-      "atlas": "town",
-      "runtime_gid": 143,
-      "tile_id": 127
-    },
-    "tile.exteriors_market.0352.0992": {
-      "atlas": "town",
-      "runtime_gid": 140,
-      "tile_id": 124
-    },
-    "tile.exteriors_market.0352.1008": {
-      "atlas": "town",
-      "runtime_gid": 144,
-      "tile_id": 128
-    },
-    "tile.exteriors_market.0368.0992": {
-      "atlas": "town",
-      "runtime_gid": 141,
-      "tile_id": 125
-    },
-    "tile.exteriors_market.0368.1008": {
-      "atlas": "town",
-      "runtime_gid": 145,
-      "tile_id": 129
-    },
-    "tile.exteriors_market.0384.0992": {
-      "atlas": "town",
-      "runtime_gid": 142,
-      "tile_id": 126
-    },
-    "tile.exteriors_market.0384.1008": {
-      "atlas": "town",
-      "runtime_gid": 146,
-      "tile_id": 130
-    },
-    "tile.exteriors_office.0160.0064": {
-      "atlas": "town",
-      "runtime_gid": 173,
-      "tile_id": 157
-    },
-    "tile.exteriors_office.0160.0080": {
-      "atlas": "town",
-      "runtime_gid": 175,
-      "tile_id": 159
-    },
-    "tile.exteriors_office.0176.0064": {
-      "atlas": "town",
-      "runtime_gid": 174,
-      "tile_id": 158
-    },
-    "tile.exteriors_office.0176.0080": {
-      "atlas": "town",
-      "runtime_gid": 176,
-      "tile_id": 160
-    },
-    "tile.exteriors_office.0208.0016": {
-      "atlas": "town",
-      "runtime_gid": 167,
-      "tile_id": 151
-    },
-    "tile.exteriors_office.0208.0032": {
-      "atlas": "town",
-      "runtime_gid": 170,
-      "tile_id": 154
-    },
-    "tile.exteriors_office.0224.0016": {
-      "atlas": "town",
-      "runtime_gid": 168,
-      "tile_id": 152
-    },
-    "tile.exteriors_office.0224.0032": {
-      "atlas": "town",
-      "runtime_gid": 171,
-      "tile_id": 155
-    },
-    "tile.exteriors_office.0240.0016": {
-      "atlas": "town",
-      "runtime_gid": 169,
-      "tile_id": 153
-    },
-    "tile.exteriors_office.0240.0032": {
-      "atlas": "town",
-      "runtime_gid": 172,
-      "tile_id": 156
-    },
-    "tile.exteriors_post.0384.0224": {
-      "atlas": "town",
-      "runtime_gid": 197,
-      "tile_id": 181
-    },
-    "tile.exteriors_post.0384.0240": {
-      "atlas": "town",
-      "runtime_gid": 205,
-      "tile_id": 189
-    },
-    "tile.exteriors_post.0400.0224": {
-      "atlas": "town",
-      "runtime_gid": 198,
-      "tile_id": 182
-    },
-    "tile.exteriors_post.0400.0240": {
-      "atlas": "town",
-      "runtime_gid": 206,
-      "tile_id": 190
-    },
-    "tile.exteriors_post.0416.0224": {
-      "atlas": "town",
-      "runtime_gid": 199,
-      "tile_id": 183
-    },
-    "tile.exteriors_post.0416.0240": {
-      "atlas": "town",
-      "runtime_gid": 207,
-      "tile_id": 191
-    },
-    "tile.exteriors_post.0432.0224": {
-      "atlas": "town",
-      "runtime_gid": 200,
-      "tile_id": 184
-    },
-    "tile.exteriors_post.0432.0240": {
-      "atlas": "town",
-      "runtime_gid": 208,
-      "tile_id": 192
-    },
-    "tile.exteriors_post.0448.0224": {
-      "atlas": "town",
-      "runtime_gid": 201,
-      "tile_id": 185
-    },
-    "tile.exteriors_post.0448.0240": {
-      "atlas": "town",
-      "runtime_gid": 209,
-      "tile_id": 193
-    },
-    "tile.exteriors_post.0464.0224": {
-      "atlas": "town",
-      "runtime_gid": 202,
-      "tile_id": 186
-    },
-    "tile.exteriors_post.0464.0240": {
-      "atlas": "town",
-      "runtime_gid": 210,
-      "tile_id": 194
-    },
-    "tile.exteriors_post.0480.0224": {
-      "atlas": "town",
-      "runtime_gid": 203,
-      "tile_id": 187
-    },
-    "tile.exteriors_post.0480.0240": {
-      "atlas": "town",
-      "runtime_gid": 211,
-      "tile_id": 195
-    },
-    "tile.exteriors_post.0496.0224": {
-      "atlas": "town",
-      "runtime_gid": 204,
-      "tile_id": 188
-    },
-    "tile.exteriors_post.0496.0240": {
-      "atlas": "town",
-      "runtime_gid": 212,
-      "tile_id": 196
-    },
-    "tile.exteriors_school.0112.0272": {
-      "atlas": "town",
-      "runtime_gid": 147,
-      "tile_id": 131
-    },
-    "tile.exteriors_school.0112.0288": {
-      "atlas": "town",
-      "runtime_gid": 152,
-      "tile_id": 136
-    },
-    "tile.exteriors_school.0112.0304": {
-      "atlas": "town",
-      "runtime_gid": 157,
-      "tile_id": 141
-    },
-    "tile.exteriors_school.0112.0320": {
-      "atlas": "town",
-      "runtime_gid": 162,
-      "tile_id": 146
-    },
-    "tile.exteriors_school.0128.0272": {
-      "atlas": "town",
-      "runtime_gid": 148,
-      "tile_id": 132
-    },
-    "tile.exteriors_school.0128.0288": {
-      "atlas": "town",
-      "runtime_gid": 153,
-      "tile_id": 137
-    },
-    "tile.exteriors_school.0128.0304": {
-      "atlas": "town",
-      "runtime_gid": 158,
-      "tile_id": 142
-    },
-    "tile.exteriors_school.0128.0320": {
-      "atlas": "town",
-      "runtime_gid": 163,
-      "tile_id": 147
-    },
-    "tile.exteriors_school.0144.0272": {
-      "atlas": "town",
-      "runtime_gid": 149,
-      "tile_id": 133
-    },
-    "tile.exteriors_school.0144.0288": {
-      "atlas": "town",
-      "runtime_gid": 154,
-      "tile_id": 138
-    },
-    "tile.exteriors_school.0144.0304": {
-      "atlas": "town",
-      "runtime_gid": 159,
-      "tile_id": 143
-    },
-    "tile.exteriors_school.0144.0320": {
-      "atlas": "town",
-      "runtime_gid": 164,
-      "tile_id": 148
-    },
-    "tile.exteriors_school.0160.0272": {
-      "atlas": "town",
-      "runtime_gid": 150,
-      "tile_id": 134
-    },
-    "tile.exteriors_school.0160.0288": {
-      "atlas": "town",
-      "runtime_gid": 155,
-      "tile_id": 139
-    },
-    "tile.exteriors_school.0160.0304": {
-      "atlas": "town",
-      "runtime_gid": 160,
-      "tile_id": 144
-    },
-    "tile.exteriors_school.0160.0320": {
-      "atlas": "town",
-      "runtime_gid": 165,
-      "tile_id": 149
-    },
-    "tile.exteriors_school.0176.0272": {
-      "atlas": "town",
-      "runtime_gid": 151,
-      "tile_id": 135
-    },
-    "tile.exteriors_school.0176.0288": {
-      "atlas": "town",
-      "runtime_gid": 156,
-      "tile_id": 140
-    },
-    "tile.exteriors_school.0176.0304": {
-      "atlas": "town",
-      "runtime_gid": 161,
-      "tile_id": 145
-    },
-    "tile.exteriors_school.0176.0320": {
-      "atlas": "town",
-      "runtime_gid": 166,
-      "tile_id": 150
+      "runtime_gid": 120,
+      "tile_id": 104
     },
     "tile.exteriors_terrain.0128.0096": {
       "atlas": "terrain",
@@ -763,1945 +417,650 @@
       "runtime_gid": 4,
       "tile_id": 3
     },
-    "tile.exteriors_villas.0160.0368": {
-      "atlas": "town",
-      "runtime_gid": 37,
-      "tile_id": 21
-    },
-    "tile.exteriors_villas.0176.0368": {
-      "atlas": "town",
-      "runtime_gid": 38,
-      "tile_id": 22
-    },
-    "tile.exteriors_villas.0192.0368": {
-      "atlas": "town",
-      "runtime_gid": 39,
-      "tile_id": 23
-    },
-    "tile.exteriors_villas.0208.0368": {
-      "atlas": "town",
-      "runtime_gid": 40,
-      "tile_id": 24
-    },
-    "tile.exteriors_villas.0224.0368": {
-      "atlas": "town",
-      "runtime_gid": 41,
-      "tile_id": 25
-    },
-    "tile.exteriors_villas.0240.0368": {
-      "atlas": "town",
-      "runtime_gid": 42,
-      "tile_id": 26
-    },
-    "tile.exteriors_villas.0256.0368": {
-      "atlas": "town",
-      "runtime_gid": 43,
-      "tile_id": 27
-    },
-    "tile.exteriors_villas.0272.0368": {
-      "atlas": "town",
-      "runtime_gid": 44,
-      "tile_id": 28
-    },
-    "tile.exteriors_villas.0288.0368": {
-      "atlas": "town",
-      "runtime_gid": 45,
-      "tile_id": 29
-    },
     "tile.exteriors_worksite.0048.0208": {
-      "atlas": "town",
-      "runtime_gid": 87,
-      "tile_id": 71
-    },
-    "tile.exteriors_worksite.0048.0224": {
-      "atlas": "town",
-      "runtime_gid": 96,
-      "tile_id": 80
-    },
-    "tile.exteriors_worksite.0048.0240": {
-      "atlas": "town",
-      "runtime_gid": 103,
-      "tile_id": 87
-    },
-    "tile.exteriors_worksite.0048.0256": {
-      "atlas": "town",
-      "runtime_gid": 110,
-      "tile_id": 94
-    },
-    "tile.exteriors_worksite.0048.0272": {
-      "atlas": "town",
-      "runtime_gid": 117,
-      "tile_id": 101
-    },
-    "tile.exteriors_worksite.0048.0288": {
-      "atlas": "town",
-      "runtime_gid": 124,
-      "tile_id": 108
-    },
-    "tile.exteriors_worksite.0064.0208": {
-      "atlas": "town",
-      "runtime_gid": 88,
-      "tile_id": 72
-    },
-    "tile.exteriors_worksite.0064.0224": {
-      "atlas": "town",
-      "runtime_gid": 97,
-      "tile_id": 81
-    },
-    "tile.exteriors_worksite.0064.0240": {
-      "atlas": "town",
-      "runtime_gid": 104,
-      "tile_id": 88
-    },
-    "tile.exteriors_worksite.0064.0256": {
-      "atlas": "town",
-      "runtime_gid": 111,
-      "tile_id": 95
-    },
-    "tile.exteriors_worksite.0064.0272": {
-      "atlas": "town",
-      "runtime_gid": 118,
-      "tile_id": 102
-    },
-    "tile.exteriors_worksite.0064.0288": {
-      "atlas": "town",
-      "runtime_gid": 125,
-      "tile_id": 109
-    },
-    "tile.exteriors_worksite.0080.0208": {
-      "atlas": "town",
-      "runtime_gid": 89,
-      "tile_id": 73
-    },
-    "tile.exteriors_worksite.0080.0224": {
-      "atlas": "town",
-      "runtime_gid": 98,
-      "tile_id": 82
-    },
-    "tile.exteriors_worksite.0080.0240": {
-      "atlas": "town",
-      "runtime_gid": 105,
-      "tile_id": 89
-    },
-    "tile.exteriors_worksite.0080.0256": {
-      "atlas": "town",
-      "runtime_gid": 112,
-      "tile_id": 96
-    },
-    "tile.exteriors_worksite.0080.0272": {
-      "atlas": "town",
-      "runtime_gid": 119,
-      "tile_id": 103
-    },
-    "tile.exteriors_worksite.0080.0288": {
-      "atlas": "town",
-      "runtime_gid": 126,
-      "tile_id": 110
-    },
-    "tile.exteriors_worksite.0096.0208": {
-      "atlas": "town",
-      "runtime_gid": 90,
-      "tile_id": 74
-    },
-    "tile.exteriors_worksite.0096.0224": {
-      "atlas": "town",
-      "runtime_gid": 99,
-      "tile_id": 83
-    },
-    "tile.exteriors_worksite.0096.0240": {
-      "atlas": "town",
-      "runtime_gid": 106,
-      "tile_id": 90
-    },
-    "tile.exteriors_worksite.0096.0256": {
-      "atlas": "town",
-      "runtime_gid": 113,
-      "tile_id": 97
-    },
-    "tile.exteriors_worksite.0096.0272": {
-      "atlas": "town",
-      "runtime_gid": 120,
-      "tile_id": 104
-    },
-    "tile.exteriors_worksite.0096.0288": {
-      "atlas": "town",
-      "runtime_gid": 127,
-      "tile_id": 111
-    },
-    "tile.exteriors_worksite.0112.0112": {
-      "atlas": "town",
-      "runtime_gid": 49,
-      "tile_id": 33
-    },
-    "tile.exteriors_worksite.0112.0128": {
       "atlas": "town",
       "runtime_gid": 57,
       "tile_id": 41
     },
-    "tile.exteriors_worksite.0112.0208": {
-      "atlas": "town",
-      "runtime_gid": 91,
-      "tile_id": 75
-    },
-    "tile.exteriors_worksite.0112.0224": {
-      "atlas": "town",
-      "runtime_gid": 100,
-      "tile_id": 84
-    },
-    "tile.exteriors_worksite.0112.0240": {
-      "atlas": "town",
-      "runtime_gid": 107,
-      "tile_id": 91
-    },
-    "tile.exteriors_worksite.0112.0256": {
-      "atlas": "town",
-      "runtime_gid": 114,
-      "tile_id": 98
-    },
-    "tile.exteriors_worksite.0112.0272": {
-      "atlas": "town",
-      "runtime_gid": 121,
-      "tile_id": 105
-    },
-    "tile.exteriors_worksite.0112.0288": {
-      "atlas": "town",
-      "runtime_gid": 128,
-      "tile_id": 112
-    },
-    "tile.exteriors_worksite.0128.0112": {
-      "atlas": "town",
-      "runtime_gid": 50,
-      "tile_id": 34
-    },
-    "tile.exteriors_worksite.0128.0128": {
-      "atlas": "town",
-      "runtime_gid": 58,
-      "tile_id": 42
-    },
-    "tile.exteriors_worksite.0128.0192": {
-      "atlas": "town",
-      "runtime_gid": 83,
-      "tile_id": 67
-    },
-    "tile.exteriors_worksite.0128.0208": {
-      "atlas": "town",
-      "runtime_gid": 92,
-      "tile_id": 76
-    },
-    "tile.exteriors_worksite.0128.0224": {
-      "atlas": "town",
-      "runtime_gid": 101,
-      "tile_id": 85
-    },
-    "tile.exteriors_worksite.0128.0240": {
-      "atlas": "town",
-      "runtime_gid": 108,
-      "tile_id": 92
-    },
-    "tile.exteriors_worksite.0128.0256": {
-      "atlas": "town",
-      "runtime_gid": 115,
-      "tile_id": 99
-    },
-    "tile.exteriors_worksite.0128.0272": {
-      "atlas": "town",
-      "runtime_gid": 122,
-      "tile_id": 106
-    },
-    "tile.exteriors_worksite.0128.0288": {
-      "atlas": "town",
-      "runtime_gid": 129,
-      "tile_id": 113
-    },
-    "tile.exteriors_worksite.0144.0192": {
-      "atlas": "town",
-      "runtime_gid": 84,
-      "tile_id": 68
-    },
-    "tile.exteriors_worksite.0144.0208": {
-      "atlas": "town",
-      "runtime_gid": 93,
-      "tile_id": 77
-    },
-    "tile.exteriors_worksite.0144.0224": {
-      "atlas": "town",
-      "runtime_gid": 102,
-      "tile_id": 86
-    },
-    "tile.exteriors_worksite.0144.0240": {
-      "atlas": "town",
-      "runtime_gid": 109,
-      "tile_id": 93
-    },
-    "tile.exteriors_worksite.0144.0256": {
-      "atlas": "town",
-      "runtime_gid": 116,
-      "tile_id": 100
-    },
-    "tile.exteriors_worksite.0144.0272": {
-      "atlas": "town",
-      "runtime_gid": 123,
-      "tile_id": 107
-    },
-    "tile.exteriors_worksite.0144.0288": {
-      "atlas": "town",
-      "runtime_gid": 130,
-      "tile_id": 114
-    },
-    "tile.exteriors_worksite.0224.0096": {
-      "atlas": "town",
-      "runtime_gid": 46,
-      "tile_id": 30
-    },
-    "tile.exteriors_worksite.0224.0112": {
-      "atlas": "town",
-      "runtime_gid": 51,
-      "tile_id": 35
-    },
-    "tile.exteriors_worksite.0224.0128": {
-      "atlas": "town",
-      "runtime_gid": 59,
-      "tile_id": 43
-    },
-    "tile.exteriors_worksite.0224.0144": {
-      "atlas": "town",
-      "runtime_gid": 65,
-      "tile_id": 49
-    },
-    "tile.exteriors_worksite.0224.0160": {
-      "atlas": "town",
-      "runtime_gid": 71,
-      "tile_id": 55
-    },
-    "tile.exteriors_worksite.0224.0176": {
-      "atlas": "town",
-      "runtime_gid": 77,
-      "tile_id": 61
-    },
-    "tile.exteriors_worksite.0240.0096": {
-      "atlas": "town",
-      "runtime_gid": 47,
-      "tile_id": 31
-    },
-    "tile.exteriors_worksite.0240.0112": {
-      "atlas": "town",
-      "runtime_gid": 52,
-      "tile_id": 36
-    },
-    "tile.exteriors_worksite.0240.0128": {
-      "atlas": "town",
-      "runtime_gid": 60,
-      "tile_id": 44
-    },
-    "tile.exteriors_worksite.0240.0144": {
+    "tile.exteriors_worksite.0048.0224": {
       "atlas": "town",
       "runtime_gid": 66,
       "tile_id": 50
     },
-    "tile.exteriors_worksite.0240.0160": {
-      "atlas": "town",
-      "runtime_gid": 72,
-      "tile_id": 56
-    },
-    "tile.exteriors_worksite.0240.0176": {
-      "atlas": "town",
-      "runtime_gid": 78,
-      "tile_id": 62
-    },
-    "tile.exteriors_worksite.0256.0096": {
-      "atlas": "town",
-      "runtime_gid": 48,
-      "tile_id": 32
-    },
-    "tile.exteriors_worksite.0256.0112": {
-      "atlas": "town",
-      "runtime_gid": 53,
-      "tile_id": 37
-    },
-    "tile.exteriors_worksite.0256.0128": {
-      "atlas": "town",
-      "runtime_gid": 61,
-      "tile_id": 45
-    },
-    "tile.exteriors_worksite.0256.0144": {
-      "atlas": "town",
-      "runtime_gid": 67,
-      "tile_id": 51
-    },
-    "tile.exteriors_worksite.0256.0160": {
+    "tile.exteriors_worksite.0048.0240": {
       "atlas": "town",
       "runtime_gid": 73,
       "tile_id": 57
     },
-    "tile.exteriors_worksite.0256.0176": {
-      "atlas": "town",
-      "runtime_gid": 79,
-      "tile_id": 63
-    },
-    "tile.exteriors_worksite.0464.0112": {
-      "atlas": "town",
-      "runtime_gid": 54,
-      "tile_id": 38
-    },
-    "tile.exteriors_worksite.0464.0128": {
-      "atlas": "town",
-      "runtime_gid": 62,
-      "tile_id": 46
-    },
-    "tile.exteriors_worksite.0464.0144": {
-      "atlas": "town",
-      "runtime_gid": 68,
-      "tile_id": 52
-    },
-    "tile.exteriors_worksite.0464.0160": {
-      "atlas": "town",
-      "runtime_gid": 74,
-      "tile_id": 58
-    },
-    "tile.exteriors_worksite.0464.0176": {
+    "tile.exteriors_worksite.0048.0256": {
       "atlas": "town",
       "runtime_gid": 80,
       "tile_id": 64
     },
-    "tile.exteriors_worksite.0464.0192": {
+    "tile.exteriors_worksite.0048.0272": {
       "atlas": "town",
-      "runtime_gid": 85,
-      "tile_id": 69
+      "runtime_gid": 87,
+      "tile_id": 71
     },
-    "tile.exteriors_worksite.0464.0208": {
+    "tile.exteriors_worksite.0048.0288": {
       "atlas": "town",
       "runtime_gid": 94,
       "tile_id": 78
     },
-    "tile.exteriors_worksite.0480.0112": {
+    "tile.exteriors_worksite.0064.0208": {
       "atlas": "town",
-      "runtime_gid": 55,
-      "tile_id": 39
+      "runtime_gid": 58,
+      "tile_id": 42
     },
-    "tile.exteriors_worksite.0480.0128": {
+    "tile.exteriors_worksite.0064.0224": {
       "atlas": "town",
-      "runtime_gid": 63,
-      "tile_id": 47
+      "runtime_gid": 67,
+      "tile_id": 51
     },
-    "tile.exteriors_worksite.0480.0144": {
+    "tile.exteriors_worksite.0064.0240": {
       "atlas": "town",
-      "runtime_gid": 69,
-      "tile_id": 53
+      "runtime_gid": 74,
+      "tile_id": 58
     },
-    "tile.exteriors_worksite.0480.0160": {
-      "atlas": "town",
-      "runtime_gid": 75,
-      "tile_id": 59
-    },
-    "tile.exteriors_worksite.0480.0176": {
+    "tile.exteriors_worksite.0064.0256": {
       "atlas": "town",
       "runtime_gid": 81,
       "tile_id": 65
     },
-    "tile.exteriors_worksite.0480.0192": {
+    "tile.exteriors_worksite.0064.0272": {
       "atlas": "town",
-      "runtime_gid": 86,
-      "tile_id": 70
+      "runtime_gid": 88,
+      "tile_id": 72
     },
-    "tile.exteriors_worksite.0480.0208": {
+    "tile.exteriors_worksite.0064.0288": {
       "atlas": "town",
       "runtime_gid": 95,
       "tile_id": 79
     },
-    "tile.exteriors_worksite.0496.0112": {
+    "tile.exteriors_worksite.0080.0208": {
       "atlas": "town",
-      "runtime_gid": 56,
-      "tile_id": 40
+      "runtime_gid": 59,
+      "tile_id": 43
     },
-    "tile.exteriors_worksite.0496.0128": {
+    "tile.exteriors_worksite.0080.0224": {
       "atlas": "town",
-      "runtime_gid": 64,
-      "tile_id": 48
+      "runtime_gid": 68,
+      "tile_id": 52
     },
-    "tile.exteriors_worksite.0496.0144": {
+    "tile.exteriors_worksite.0080.0240": {
       "atlas": "town",
-      "runtime_gid": 70,
-      "tile_id": 54
+      "runtime_gid": 75,
+      "tile_id": 59
     },
-    "tile.exteriors_worksite.0496.0160": {
-      "atlas": "town",
-      "runtime_gid": 76,
-      "tile_id": 60
-    },
-    "tile.exteriors_worksite.0496.0176": {
+    "tile.exteriors_worksite.0080.0256": {
       "atlas": "town",
       "runtime_gid": 82,
       "tile_id": 66
     },
-    "tile.interiors.full.r0100.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 223,
-      "tile_id": 0
-    },
-    "tile.interiors.full.r0101.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 224,
-      "tile_id": 1
-    },
-    "tile.interiors.full.r0102.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 225,
-      "tile_id": 2
-    },
-    "tile.interiors.full.r0103.c07": {
-      "atlas": "interiors",
-      "runtime_gid": 226,
-      "tile_id": 3
-    },
-    "tile.interiors.full.r0104.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 227,
-      "tile_id": 4
-    },
-    "tile.interiors.full.r0105.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 228,
-      "tile_id": 5
-    },
-    "tile.interiors.full.r0106.c07": {
-      "atlas": "interiors",
-      "runtime_gid": 229,
-      "tile_id": 6
-    },
-    "tile.interiors.full.r0106.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 230,
-      "tile_id": 7
-    },
-    "tile.interiors.full.r0106.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 231,
-      "tile_id": 8
-    },
-    "tile.interiors.full.r0106.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 232,
-      "tile_id": 9
-    },
-    "tile.interiors.full.r0107.c07": {
-      "atlas": "interiors",
-      "runtime_gid": 233,
-      "tile_id": 10
-    },
-    "tile.interiors.full.r0107.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 234,
-      "tile_id": 11
-    },
-    "tile.interiors.full.r0107.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 235,
-      "tile_id": 12
-    },
-    "tile.interiors.full.r0107.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 236,
-      "tile_id": 13
-    },
-    "tile.interiors.full.r0107.c11": {
-      "atlas": "interiors",
-      "runtime_gid": 237,
-      "tile_id": 14
-    },
-    "tile.interiors.full.r0107.c12": {
-      "atlas": "interiors",
-      "runtime_gid": 238,
-      "tile_id": 15
-    },
-    "tile.interiors.full.r0108.c11": {
-      "atlas": "interiors",
-      "runtime_gid": 239,
-      "tile_id": 16
-    },
-    "tile.interiors.full.r0108.c12": {
-      "atlas": "interiors",
-      "runtime_gid": 240,
-      "tile_id": 17
-    },
-    "tile.interiors.full.r0127.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 241,
-      "tile_id": 18
-    },
-    "tile.interiors.full.r0128.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 242,
-      "tile_id": 19
-    },
-    "tile.interiors.full.r0129.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 243,
-      "tile_id": 20
-    },
-    "tile.interiors.full.r0139.c12": {
-      "atlas": "interiors",
-      "runtime_gid": 244,
-      "tile_id": 21
-    },
-    "tile.interiors.full.r0139.c13": {
-      "atlas": "interiors",
-      "runtime_gid": 245,
-      "tile_id": 22
-    },
-    "tile.interiors.full.r0139.c14": {
-      "atlas": "interiors",
-      "runtime_gid": 246,
-      "tile_id": 23
-    },
-    "tile.interiors.full.r0140.c12": {
-      "atlas": "interiors",
-      "runtime_gid": 247,
-      "tile_id": 24
-    },
-    "tile.interiors.full.r0140.c13": {
-      "atlas": "interiors",
-      "runtime_gid": 248,
-      "tile_id": 25
-    },
-    "tile.interiors.full.r0141.c13": {
-      "atlas": "interiors",
-      "runtime_gid": 249,
-      "tile_id": 26
-    },
-    "tile.interiors.full.r0146.c14": {
-      "atlas": "interiors",
-      "runtime_gid": 250,
-      "tile_id": 27
-    },
-    "tile.interiors.full.r0160.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 251,
-      "tile_id": 28
-    },
-    "tile.interiors.full.r0160.c05": {
-      "atlas": "interiors",
-      "runtime_gid": 252,
-      "tile_id": 29
-    },
-    "tile.interiors.full.r0161.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 253,
-      "tile_id": 30
-    },
-    "tile.interiors.full.r0161.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 254,
-      "tile_id": 31
-    },
-    "tile.interiors.full.r0161.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 255,
-      "tile_id": 32
-    },
-    "tile.interiors.full.r0161.c05": {
-      "atlas": "interiors",
-      "runtime_gid": 256,
-      "tile_id": 33
-    },
-    "tile.interiors.full.r0162.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 257,
-      "tile_id": 34
-    },
-    "tile.interiors.full.r0162.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 258,
-      "tile_id": 35
-    },
-    "tile.interiors.full.r0162.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 259,
-      "tile_id": 36
-    },
-    "tile.interiors.full.r0163.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 260,
-      "tile_id": 37
-    },
-    "tile.interiors.full.r0163.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 261,
-      "tile_id": 38
-    },
-    "tile.interiors.full.r0163.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 262,
-      "tile_id": 39
-    },
-    "tile.interiors.full.r0164.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 263,
-      "tile_id": 40
-    },
-    "tile.interiors.full.r0164.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 264,
-      "tile_id": 41
-    },
-    "tile.interiors.full.r0164.c05": {
-      "atlas": "interiors",
-      "runtime_gid": 265,
-      "tile_id": 42
-    },
-    "tile.interiors.full.r0165.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 266,
-      "tile_id": 43
-    },
-    "tile.interiors.full.r0165.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 267,
-      "tile_id": 44
-    },
-    "tile.interiors.full.r0165.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 268,
-      "tile_id": 45
-    },
-    "tile.interiors.full.r0165.c05": {
-      "atlas": "interiors",
-      "runtime_gid": 269,
-      "tile_id": 46
-    },
-    "tile.interiors.full.r0168.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 270,
-      "tile_id": 47
-    },
-    "tile.interiors.full.r0168.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 271,
-      "tile_id": 48
-    },
-    "tile.interiors.full.r0169.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 272,
-      "tile_id": 49
-    },
-    "tile.interiors.full.r0169.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 273,
-      "tile_id": 50
-    },
-    "tile.interiors.full.r0169.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 274,
-      "tile_id": 51
-    },
-    "tile.interiors.full.r0169.c11": {
-      "atlas": "interiors",
-      "runtime_gid": 275,
-      "tile_id": 52
-    },
-    "tile.interiors.full.r0169.c14": {
-      "atlas": "interiors",
-      "runtime_gid": 276,
-      "tile_id": 53
-    },
-    "tile.interiors.full.r0169.c15": {
-      "atlas": "interiors",
-      "runtime_gid": 277,
-      "tile_id": 54
-    },
-    "tile.interiors.full.r0170.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 278,
-      "tile_id": 55
-    },
-    "tile.interiors.full.r0170.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 279,
-      "tile_id": 56
-    },
-    "tile.interiors.full.r0170.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 280,
-      "tile_id": 57
-    },
-    "tile.interiors.full.r0170.c11": {
-      "atlas": "interiors",
-      "runtime_gid": 281,
-      "tile_id": 58
-    },
-    "tile.interiors.full.r0170.c12": {
-      "atlas": "interiors",
-      "runtime_gid": 282,
-      "tile_id": 59
-    },
-    "tile.interiors.full.r0170.c13": {
-      "atlas": "interiors",
-      "runtime_gid": 283,
-      "tile_id": 60
-    },
-    "tile.interiors.full.r0170.c14": {
-      "atlas": "interiors",
-      "runtime_gid": 284,
-      "tile_id": 61
-    },
-    "tile.interiors.full.r0170.c15": {
-      "atlas": "interiors",
-      "runtime_gid": 285,
-      "tile_id": 62
-    },
-    "tile.interiors.full.r0171.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 286,
-      "tile_id": 63
-    },
-    "tile.interiors.full.r0171.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 287,
-      "tile_id": 64
-    },
-    "tile.interiors.full.r0171.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 288,
-      "tile_id": 65
-    },
-    "tile.interiors.full.r0171.c11": {
-      "atlas": "interiors",
-      "runtime_gid": 289,
-      "tile_id": 66
-    },
-    "tile.interiors.full.r0179.c00": {
-      "atlas": "interiors",
-      "runtime_gid": 290,
-      "tile_id": 67
-    },
-    "tile.interiors.full.r0179.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 291,
-      "tile_id": 68
-    },
-    "tile.interiors.full.r0180.c00": {
-      "atlas": "interiors",
-      "runtime_gid": 292,
-      "tile_id": 69
-    },
-    "tile.interiors.full.r0180.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 293,
-      "tile_id": 70
-    },
-    "tile.interiors.full.r0183.c00": {
-      "atlas": "interiors",
-      "runtime_gid": 294,
-      "tile_id": 71
-    },
-    "tile.interiors.full.r0183.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 295,
-      "tile_id": 72
-    },
-    "tile.interiors.full.r0184.c00": {
-      "atlas": "interiors",
-      "runtime_gid": 296,
+    "tile.exteriors_worksite.0080.0272": {
+      "atlas": "town",
+      "runtime_gid": 89,
       "tile_id": 73
     },
-    "tile.interiors.full.r0184.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 297,
-      "tile_id": 74
-    },
-    "tile.interiors.full.r0207.c05": {
-      "atlas": "interiors",
-      "runtime_gid": 298,
-      "tile_id": 75
-    },
-    "tile.interiors.full.r0208.c05": {
-      "atlas": "interiors",
-      "runtime_gid": 299,
-      "tile_id": 76
-    },
-    "tile.interiors.full.r0208.c06": {
-      "atlas": "interiors",
-      "runtime_gid": 300,
-      "tile_id": 77
-    },
-    "tile.interiors.full.r0209.c05": {
-      "atlas": "interiors",
-      "runtime_gid": 301,
-      "tile_id": 78
-    },
-    "tile.interiors.full.r0209.c06": {
-      "atlas": "interiors",
-      "runtime_gid": 302,
-      "tile_id": 79
-    },
-    "tile.interiors.full.r0210.c05": {
-      "atlas": "interiors",
-      "runtime_gid": 303,
+    "tile.exteriors_worksite.0080.0288": {
+      "atlas": "town",
+      "runtime_gid": 96,
       "tile_id": 80
     },
-    "tile.interiors.full.r0210.c06": {
-      "atlas": "interiors",
-      "runtime_gid": 304,
+    "tile.exteriors_worksite.0096.0208": {
+      "atlas": "town",
+      "runtime_gid": 60,
+      "tile_id": 44
+    },
+    "tile.exteriors_worksite.0096.0224": {
+      "atlas": "town",
+      "runtime_gid": 69,
+      "tile_id": 53
+    },
+    "tile.exteriors_worksite.0096.0240": {
+      "atlas": "town",
+      "runtime_gid": 76,
+      "tile_id": 60
+    },
+    "tile.exteriors_worksite.0096.0256": {
+      "atlas": "town",
+      "runtime_gid": 83,
+      "tile_id": 67
+    },
+    "tile.exteriors_worksite.0096.0272": {
+      "atlas": "town",
+      "runtime_gid": 90,
+      "tile_id": 74
+    },
+    "tile.exteriors_worksite.0096.0288": {
+      "atlas": "town",
+      "runtime_gid": 97,
       "tile_id": 81
     },
-    "tile.interiors.full.r0235.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 305,
+    "tile.exteriors_worksite.0112.0112": {
+      "atlas": "town",
+      "runtime_gid": 19,
+      "tile_id": 3
+    },
+    "tile.exteriors_worksite.0112.0128": {
+      "atlas": "town",
+      "runtime_gid": 27,
+      "tile_id": 11
+    },
+    "tile.exteriors_worksite.0112.0208": {
+      "atlas": "town",
+      "runtime_gid": 61,
+      "tile_id": 45
+    },
+    "tile.exteriors_worksite.0112.0224": {
+      "atlas": "town",
+      "runtime_gid": 70,
+      "tile_id": 54
+    },
+    "tile.exteriors_worksite.0112.0240": {
+      "atlas": "town",
+      "runtime_gid": 77,
+      "tile_id": 61
+    },
+    "tile.exteriors_worksite.0112.0256": {
+      "atlas": "town",
+      "runtime_gid": 84,
+      "tile_id": 68
+    },
+    "tile.exteriors_worksite.0112.0272": {
+      "atlas": "town",
+      "runtime_gid": 91,
+      "tile_id": 75
+    },
+    "tile.exteriors_worksite.0112.0288": {
+      "atlas": "town",
+      "runtime_gid": 98,
       "tile_id": 82
     },
-    "tile.interiors.full.r0239.c07": {
-      "atlas": "interiors",
-      "runtime_gid": 306,
+    "tile.exteriors_worksite.0128.0112": {
+      "atlas": "town",
+      "runtime_gid": 20,
+      "tile_id": 4
+    },
+    "tile.exteriors_worksite.0128.0128": {
+      "atlas": "town",
+      "runtime_gid": 28,
+      "tile_id": 12
+    },
+    "tile.exteriors_worksite.0128.0192": {
+      "atlas": "town",
+      "runtime_gid": 53,
+      "tile_id": 37
+    },
+    "tile.exteriors_worksite.0128.0208": {
+      "atlas": "town",
+      "runtime_gid": 62,
+      "tile_id": 46
+    },
+    "tile.exteriors_worksite.0128.0224": {
+      "atlas": "town",
+      "runtime_gid": 71,
+      "tile_id": 55
+    },
+    "tile.exteriors_worksite.0128.0240": {
+      "atlas": "town",
+      "runtime_gid": 78,
+      "tile_id": 62
+    },
+    "tile.exteriors_worksite.0128.0256": {
+      "atlas": "town",
+      "runtime_gid": 85,
+      "tile_id": 69
+    },
+    "tile.exteriors_worksite.0128.0272": {
+      "atlas": "town",
+      "runtime_gid": 92,
+      "tile_id": 76
+    },
+    "tile.exteriors_worksite.0128.0288": {
+      "atlas": "town",
+      "runtime_gid": 99,
       "tile_id": 83
     },
-    "tile.interiors.full.r0239.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 307,
+    "tile.exteriors_worksite.0144.0192": {
+      "atlas": "town",
+      "runtime_gid": 54,
+      "tile_id": 38
+    },
+    "tile.exteriors_worksite.0144.0208": {
+      "atlas": "town",
+      "runtime_gid": 63,
+      "tile_id": 47
+    },
+    "tile.exteriors_worksite.0144.0224": {
+      "atlas": "town",
+      "runtime_gid": 72,
+      "tile_id": 56
+    },
+    "tile.exteriors_worksite.0144.0240": {
+      "atlas": "town",
+      "runtime_gid": 79,
+      "tile_id": 63
+    },
+    "tile.exteriors_worksite.0144.0256": {
+      "atlas": "town",
+      "runtime_gid": 86,
+      "tile_id": 70
+    },
+    "tile.exteriors_worksite.0144.0272": {
+      "atlas": "town",
+      "runtime_gid": 93,
+      "tile_id": 77
+    },
+    "tile.exteriors_worksite.0144.0288": {
+      "atlas": "town",
+      "runtime_gid": 100,
       "tile_id": 84
     },
-    "tile.interiors.full.r0264.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 308,
-      "tile_id": 85
-    },
-    "tile.interiors.full.r0264.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 309,
-      "tile_id": 86
-    },
-    "tile.interiors.full.r0274.c00": {
-      "atlas": "interiors",
-      "runtime_gid": 310,
-      "tile_id": 87
-    },
-    "tile.interiors.full.r0274.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 311,
-      "tile_id": 88
-    },
-    "tile.interiors.full.r0275.c00": {
-      "atlas": "interiors",
-      "runtime_gid": 312,
-      "tile_id": 89
-    },
-    "tile.interiors.full.r0275.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 313,
-      "tile_id": 90
-    },
-    "tile.interiors.full.r0302.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 314,
-      "tile_id": 91
-    },
-    "tile.interiors.full.r0303.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 315,
-      "tile_id": 92
-    },
-    "tile.interiors.full.r0304.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 316,
-      "tile_id": 93
-    },
-    "tile.interiors.full.r0305.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 317,
-      "tile_id": 94
-    },
-    "tile.interiors.full.r0307.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 318,
-      "tile_id": 95
-    },
-    "tile.interiors.full.r0327.c06": {
-      "atlas": "interiors",
-      "runtime_gid": 319,
-      "tile_id": 96
-    },
-    "tile.interiors.full.r0328.c06": {
-      "atlas": "interiors",
-      "runtime_gid": 320,
-      "tile_id": 97
-    },
-    "tile.interiors.full.r0331.c06": {
-      "atlas": "interiors",
-      "runtime_gid": 321,
-      "tile_id": 98
-    },
-    "tile.interiors.full.r0331.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 322,
-      "tile_id": 99
-    },
-    "tile.interiors.full.r0332.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 323,
-      "tile_id": 100
-    },
-    "tile.interiors.full.r0332.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 324,
-      "tile_id": 101
-    },
-    "tile.interiors.full.r0332.c11": {
-      "atlas": "interiors",
-      "runtime_gid": 325,
-      "tile_id": 102
-    },
-    "tile.interiors.full.r0333.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 326,
-      "tile_id": 103
-    },
-    "tile.interiors.full.r0333.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 327,
-      "tile_id": 104
-    },
-    "tile.interiors.full.r0333.c11": {
-      "atlas": "interiors",
-      "runtime_gid": 328,
-      "tile_id": 105
-    },
-    "tile.interiors.full.r0334.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 329,
-      "tile_id": 106
-    },
-    "tile.interiors.full.r0334.c11": {
-      "atlas": "interiors",
-      "runtime_gid": 330,
-      "tile_id": 107
-    },
-    "tile.interiors.full.r0335.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 331,
-      "tile_id": 108
-    },
-    "tile.interiors.full.r0335.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 332,
-      "tile_id": 109
-    },
-    "tile.interiors.full.r0336.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 333,
-      "tile_id": 110
-    },
-    "tile.interiors.full.r0336.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 334,
-      "tile_id": 111
-    },
-    "tile.interiors.full.r0337.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 335,
-      "tile_id": 112
-    },
-    "tile.interiors.full.r0337.c05": {
-      "atlas": "interiors",
-      "runtime_gid": 336,
-      "tile_id": 113
-    },
-    "tile.interiors.full.r0338.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 337,
-      "tile_id": 114
-    },
-    "tile.interiors.full.r0338.c05": {
-      "atlas": "interiors",
-      "runtime_gid": 338,
-      "tile_id": 115
-    },
-    "tile.interiors.full.r0339.c00": {
-      "atlas": "interiors",
-      "runtime_gid": 339,
-      "tile_id": 116
-    },
-    "tile.interiors.full.r0339.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 340,
-      "tile_id": 117
-    },
-    "tile.interiors.full.r0339.c06": {
-      "atlas": "interiors",
-      "runtime_gid": 341,
-      "tile_id": 118
-    },
-    "tile.interiors.full.r0339.c07": {
-      "atlas": "interiors",
-      "runtime_gid": 342,
-      "tile_id": 119
-    },
-    "tile.interiors.full.r0340.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 343,
-      "tile_id": 120
-    },
-    "tile.interiors.full.r0340.c05": {
-      "atlas": "interiors",
-      "runtime_gid": 344,
-      "tile_id": 121
-    },
-    "tile.interiors.full.r0374.c06": {
-      "atlas": "interiors",
-      "runtime_gid": 345,
-      "tile_id": 122
-    },
-    "tile.interiors.full.r0374.c07": {
-      "atlas": "interiors",
-      "runtime_gid": 346,
-      "tile_id": 123
-    },
-    "tile.interiors.full.r0376.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 347,
-      "tile_id": 124
-    },
-    "tile.interiors.full.r0376.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 348,
-      "tile_id": 125
-    },
-    "tile.interiors.full.r0377.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 349,
-      "tile_id": 126
-    },
-    "tile.interiors.full.r0377.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 350,
-      "tile_id": 127
-    },
-    "tile.interiors.full.r0426.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 351,
-      "tile_id": 128
-    },
-    "tile.interiors.full.r0427.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 352,
-      "tile_id": 129
-    },
-    "tile.interiors.full.r0428.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 353,
-      "tile_id": 130
-    },
-    "tile.interiors.full.r0442.c12": {
-      "atlas": "interiors",
-      "runtime_gid": 354,
-      "tile_id": 131
-    },
-    "tile.interiors.full.r0442.c13": {
-      "atlas": "interiors",
-      "runtime_gid": 355,
-      "tile_id": 132
-    },
-    "tile.interiors.full.r0443.c12": {
-      "atlas": "interiors",
-      "runtime_gid": 356,
-      "tile_id": 133
-    },
-    "tile.interiors.full.r0443.c13": {
-      "atlas": "interiors",
-      "runtime_gid": 357,
-      "tile_id": 134
-    },
-    "tile.interiors.full.r0444.c12": {
-      "atlas": "interiors",
-      "runtime_gid": 358,
-      "tile_id": 135
-    },
-    "tile.interiors.full.r0444.c13": {
-      "atlas": "interiors",
-      "runtime_gid": 359,
-      "tile_id": 136
-    },
-    "tile.interiors.full.r0499.c12": {
-      "atlas": "interiors",
-      "runtime_gid": 360,
-      "tile_id": 137
-    },
-    "tile.interiors.full.r0499.c13": {
-      "atlas": "interiors",
-      "runtime_gid": 361,
-      "tile_id": 138
-    },
-    "tile.interiors.full.r0533.c14": {
-      "atlas": "interiors",
-      "runtime_gid": 362,
-      "tile_id": 139
-    },
-    "tile.interiors.full.r0535.c14": {
-      "atlas": "interiors",
-      "runtime_gid": 363,
-      "tile_id": 140
-    },
-    "tile.interiors.full.r0536.c12": {
-      "atlas": "interiors",
-      "runtime_gid": 364,
-      "tile_id": 141
-    },
-    "tile.interiors.full.r0547.c06": {
-      "atlas": "interiors",
-      "runtime_gid": 365,
-      "tile_id": 142
-    },
-    "tile.interiors.full.r0559.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 366,
-      "tile_id": 143
-    },
-    "tile.interiors.full.r0559.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 367,
-      "tile_id": 144
-    },
-    "tile.interiors.full.r0579.c00": {
-      "atlas": "interiors",
-      "runtime_gid": 368,
-      "tile_id": 145
-    },
-    "tile.interiors.full.r0579.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 369,
-      "tile_id": 146
-    },
-    "tile.interiors.full.r0580.c00": {
-      "atlas": "interiors",
-      "runtime_gid": 370,
-      "tile_id": 147
-    },
-    "tile.interiors.full.r0580.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 371,
-      "tile_id": 148
-    },
-    "tile.interiors.full.r0581.c00": {
-      "atlas": "interiors",
-      "runtime_gid": 372,
-      "tile_id": 149
-    },
-    "tile.interiors.full.r0581.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 373,
-      "tile_id": 150
-    },
-    "tile.interiors.full.r0597.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 374,
-      "tile_id": 151
-    },
-    "tile.interiors.full.r0598.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 375,
-      "tile_id": 152
-    },
-    "tile.interiors.full.r0599.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 376,
-      "tile_id": 153
-    },
-    "tile.interiors.full.r0807.c00": {
-      "atlas": "interiors",
-      "runtime_gid": 377,
-      "tile_id": 154
-    },
-    "tile.interiors.full.r0808.c00": {
-      "atlas": "interiors",
-      "runtime_gid": 378,
-      "tile_id": 155
-    },
-    "tile.interiors.full.r0809.c00": {
-      "atlas": "interiors",
-      "runtime_gid": 379,
-      "tile_id": 156
-    },
-    "tile.interiors.room_builder.r0015.c27": {
-      "atlas": "interiors",
-      "runtime_gid": 380,
-      "tile_id": 157
-    },
-    "tile.interiors.room_builder.r0029.c27": {
-      "atlas": "interiors",
-      "runtime_gid": 381,
-      "tile_id": 158
-    },
-    "tile.interiors.room_builder.r0031.c05": {
-      "atlas": "interiors",
-      "runtime_gid": 382,
-      "tile_id": 159
-    },
-    "tile.interiors.room_builder.r0043.c05": {
-      "atlas": "interiors",
-      "runtime_gid": 383,
-      "tile_id": 160
-    },
-    "tile.interiors.room_builder.r0054.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 384,
-      "tile_id": 161
-    },
-    "tile.interiors.room_builder.r0054.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 385,
-      "tile_id": 162
-    },
-    "tile.interiors.room_builder.r0054.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 386,
-      "tile_id": 163
-    },
-    "tile.interiors.room_builder.r0054.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 387,
-      "tile_id": 164
-    },
-    "tile.interiors.room_builder.r0054.c07": {
-      "atlas": "interiors",
-      "runtime_gid": 388,
-      "tile_id": 165
-    },
-    "tile.interiors.room_builder.r0054.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 389,
-      "tile_id": 166
-    },
-    "tile.interiors.room_builder.r0054.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 390,
-      "tile_id": 167
-    },
-    "tile.interiors.room_builder.r0054.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 391,
-      "tile_id": 168
-    },
-    "tile.interiors.room_builder.r0054.c25": {
-      "atlas": "interiors",
-      "runtime_gid": 392,
-      "tile_id": 169
-    },
-    "tile.interiors.room_builder.r0054.c28": {
-      "atlas": "interiors",
-      "runtime_gid": 393,
-      "tile_id": 170
-    },
-    "tile.interiors.room_builder.r0054.c60": {
-      "atlas": "interiors",
-      "runtime_gid": 394,
-      "tile_id": 171
-    },
-    "tile.interiors.room_builder.r0054.c65": {
-      "atlas": "interiors",
-      "runtime_gid": 395,
-      "tile_id": 172
-    },
-    "tile.interiors.room_builder.r0055.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 396,
-      "tile_id": 173
-    },
-    "tile.interiors.room_builder.r0055.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 397,
-      "tile_id": 174
-    },
-    "tile.interiors.room_builder.r0055.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 398,
-      "tile_id": 175
-    },
-    "tile.interiors.room_builder.r0055.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 399,
-      "tile_id": 176
-    },
-    "tile.interiors.room_builder.r0055.c07": {
-      "atlas": "interiors",
-      "runtime_gid": 400,
-      "tile_id": 177
-    },
-    "tile.interiors.room_builder.r0055.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 401,
-      "tile_id": 178
-    },
-    "tile.interiors.room_builder.r0055.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 402,
-      "tile_id": 179
-    },
-    "tile.interiors.room_builder.r0055.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 403,
-      "tile_id": 180
-    },
-    "tile.interiors.room_builder.r0055.c26": {
-      "atlas": "interiors",
-      "runtime_gid": 404,
-      "tile_id": 181
-    },
-    "tile.interiors.room_builder.r0055.c27": {
-      "atlas": "interiors",
-      "runtime_gid": 405,
-      "tile_id": 182
-    },
-    "tile.interiors.room_builder.r0055.c28": {
-      "atlas": "interiors",
-      "runtime_gid": 406,
-      "tile_id": 183
-    },
-    "tile.interiors.room_builder.r0055.c60": {
-      "atlas": "interiors",
-      "runtime_gid": 407,
-      "tile_id": 184
-    },
-    "tile.interiors.room_builder.r0055.c62": {
-      "atlas": "interiors",
-      "runtime_gid": 408,
-      "tile_id": 185
-    },
-    "tile.interiors.room_builder.r0055.c65": {
-      "atlas": "interiors",
-      "runtime_gid": 409,
-      "tile_id": 186
-    },
-    "tile.interiors.room_builder.r0056.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 410,
-      "tile_id": 187
-    },
-    "tile.interiors.room_builder.r0056.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 411,
-      "tile_id": 188
-    },
-    "tile.interiors.room_builder.r0056.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 412,
-      "tile_id": 189
-    },
-    "tile.interiors.room_builder.r0056.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 413,
-      "tile_id": 190
-    },
-    "tile.interiors.room_builder.r0056.c07": {
-      "atlas": "interiors",
-      "runtime_gid": 414,
-      "tile_id": 191
-    },
-    "tile.interiors.room_builder.r0056.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 415,
-      "tile_id": 192
-    },
-    "tile.interiors.room_builder.r0056.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 416,
-      "tile_id": 193
-    },
-    "tile.interiors.room_builder.r0056.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 417,
-      "tile_id": 194
-    },
-    "tile.interiors.room_builder.r0056.c25": {
-      "atlas": "interiors",
-      "runtime_gid": 418,
-      "tile_id": 195
-    },
-    "tile.interiors.room_builder.r0056.c26": {
-      "atlas": "interiors",
-      "runtime_gid": 419,
-      "tile_id": 196
-    },
-    "tile.interiors.room_builder.r0056.c27": {
-      "atlas": "interiors",
-      "runtime_gid": 420,
-      "tile_id": 197
-    },
-    "tile.interiors.room_builder.r0056.c28": {
-      "atlas": "interiors",
-      "runtime_gid": 421,
-      "tile_id": 198
-    },
-    "tile.interiors.room_builder.r0056.c62": {
-      "atlas": "interiors",
-      "runtime_gid": 422,
-      "tile_id": 199
-    },
-    "tile.interiors.room_builder.r0056.c63": {
-      "atlas": "interiors",
-      "runtime_gid": 423,
-      "tile_id": 200
-    },
-    "tile.interiors.room_builder.r0056.c64": {
-      "atlas": "interiors",
-      "runtime_gid": 424,
-      "tile_id": 201
-    },
-    "tile.interiors.room_builder.r0056.c65": {
-      "atlas": "interiors",
-      "runtime_gid": 425,
-      "tile_id": 202
-    },
-    "tile.interiors.room_builder.r0057.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 426,
-      "tile_id": 203
-    },
-    "tile.interiors.room_builder.r0057.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 427,
-      "tile_id": 204
-    },
-    "tile.interiors.room_builder.r0057.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 428,
-      "tile_id": 205
-    },
-    "tile.interiors.room_builder.r0057.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 429,
-      "tile_id": 206
-    },
-    "tile.interiors.room_builder.r0057.c07": {
-      "atlas": "interiors",
-      "runtime_gid": 430,
-      "tile_id": 207
-    },
-    "tile.interiors.room_builder.r0057.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 431,
-      "tile_id": 208
-    },
-    "tile.interiors.room_builder.r0057.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 432,
-      "tile_id": 209
-    },
-    "tile.interiors.room_builder.r0057.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 433,
-      "tile_id": 210
-    },
-    "tile.interiors.room_builder.r0057.c25": {
-      "atlas": "interiors",
-      "runtime_gid": 434,
-      "tile_id": 211
-    },
-    "tile.interiors.room_builder.r0057.c26": {
-      "atlas": "interiors",
-      "runtime_gid": 435,
-      "tile_id": 212
-    },
-    "tile.interiors.room_builder.r0057.c27": {
-      "atlas": "interiors",
-      "runtime_gid": 436,
-      "tile_id": 213
-    },
-    "tile.interiors.room_builder.r0057.c28": {
-      "atlas": "interiors",
-      "runtime_gid": 437,
-      "tile_id": 214
-    },
-    "tile.interiors.room_builder.r0057.c60": {
-      "atlas": "interiors",
-      "runtime_gid": 438,
-      "tile_id": 215
-    },
-    "tile.interiors.room_builder.r0057.c63": {
-      "atlas": "interiors",
-      "runtime_gid": 439,
-      "tile_id": 216
-    },
-    "tile.interiors.room_builder.r0057.c64": {
-      "atlas": "interiors",
-      "runtime_gid": 440,
-      "tile_id": 217
-    },
-    "tile.interiors.room_builder.r0058.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 441,
-      "tile_id": 218
-    },
-    "tile.interiors.room_builder.r0058.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 442,
-      "tile_id": 219
-    },
-    "tile.interiors.room_builder.r0058.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 443,
-      "tile_id": 220
-    },
-    "tile.interiors.room_builder.r0058.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 444,
-      "tile_id": 221
-    },
-    "tile.interiors.room_builder.r0058.c07": {
-      "atlas": "interiors",
-      "runtime_gid": 445,
-      "tile_id": 222
-    },
-    "tile.interiors.room_builder.r0058.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 446,
-      "tile_id": 223
-    },
-    "tile.interiors.room_builder.r0058.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 447,
-      "tile_id": 224
-    },
-    "tile.interiors.room_builder.r0058.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 448,
-      "tile_id": 225
-    },
-    "tile.interiors.room_builder.r0058.c26": {
-      "atlas": "interiors",
-      "runtime_gid": 449,
-      "tile_id": 226
-    },
-    "tile.interiors.room_builder.r0058.c27": {
-      "atlas": "interiors",
-      "runtime_gid": 450,
-      "tile_id": 227
-    },
-    "tile.interiors.room_builder.r0058.c28": {
-      "atlas": "interiors",
-      "runtime_gid": 451,
-      "tile_id": 228
-    },
-    "tile.interiors.room_builder.r0058.c60": {
-      "atlas": "interiors",
-      "runtime_gid": 452,
-      "tile_id": 229
-    },
-    "tile.interiors.room_builder.r0059.c01": {
-      "atlas": "interiors",
-      "runtime_gid": 453,
-      "tile_id": 230
-    },
-    "tile.interiors.room_builder.r0059.c02": {
-      "atlas": "interiors",
-      "runtime_gid": 454,
-      "tile_id": 231
-    },
-    "tile.interiors.room_builder.r0059.c03": {
-      "atlas": "interiors",
-      "runtime_gid": 455,
-      "tile_id": 232
-    },
-    "tile.interiors.room_builder.r0059.c04": {
-      "atlas": "interiors",
-      "runtime_gid": 456,
-      "tile_id": 233
-    },
-    "tile.interiors.room_builder.r0059.c07": {
-      "atlas": "interiors",
-      "runtime_gid": 457,
-      "tile_id": 234
-    },
-    "tile.interiors.room_builder.r0059.c08": {
-      "atlas": "interiors",
-      "runtime_gid": 458,
-      "tile_id": 235
-    },
-    "tile.interiors.room_builder.r0059.c09": {
-      "atlas": "interiors",
-      "runtime_gid": 459,
-      "tile_id": 236
-    },
-    "tile.interiors.room_builder.r0059.c10": {
-      "atlas": "interiors",
-      "runtime_gid": 460,
-      "tile_id": 237
-    },
-    "tile.interiors.room_builder.r0059.c25": {
-      "atlas": "interiors",
-      "runtime_gid": 461,
-      "tile_id": 238
-    },
-    "tile.interiors.room_builder.r0059.c26": {
-      "atlas": "interiors",
-      "runtime_gid": 462,
-      "tile_id": 239
-    },
-    "tile.interiors.room_builder.r0059.c27": {
-      "atlas": "interiors",
-      "runtime_gid": 463,
-      "tile_id": 240
-    },
-    "tile.interiors.room_builder.r0059.c28": {
-      "atlas": "interiors",
-      "runtime_gid": 464,
-      "tile_id": 241
-    },
-    "tile.interiors.room_builder.r0059.c62": {
-      "atlas": "interiors",
-      "runtime_gid": 465,
-      "tile_id": 242
-    },
-    "tile.interiors.room_builder.r0059.c63": {
-      "atlas": "interiors",
-      "runtime_gid": 466,
-      "tile_id": 243
-    },
-    "tile.interiors.room_builder.r0059.c64": {
-      "atlas": "interiors",
-      "runtime_gid": 467,
-      "tile_id": 244
-    },
-    "tile.interiors.room_builder.r0059.c65": {
-      "atlas": "interiors",
-      "runtime_gid": 468,
-      "tile_id": 245
-    },
-    "tile.interiors.room_builder.r0060.c19": {
-      "atlas": "interiors",
-      "runtime_gid": 469,
-      "tile_id": 246
-    },
-    "tile.interiors.room_builder.r0060.c20": {
-      "atlas": "interiors",
-      "runtime_gid": 470,
-      "tile_id": 247
-    },
-    "tile.interiors.room_builder.r0060.c21": {
-      "atlas": "interiors",
-      "runtime_gid": 471,
-      "tile_id": 248
-    },
-    "tile.interiors.room_builder.r0060.c22": {
-      "atlas": "interiors",
-      "runtime_gid": 472,
-      "tile_id": 249
-    },
-    "tile.interiors.room_builder.r0061.c19": {
-      "atlas": "interiors",
-      "runtime_gid": 473,
-      "tile_id": 250
-    },
-    "tile.interiors.room_builder.r0061.c20": {
-      "atlas": "interiors",
-      "runtime_gid": 474,
-      "tile_id": 251
-    },
-    "tile.interiors.room_builder.r0061.c21": {
-      "atlas": "interiors",
-      "runtime_gid": 475,
-      "tile_id": 252
-    },
-    "tile.interiors.room_builder.r0061.c22": {
-      "atlas": "interiors",
-      "runtime_gid": 476,
-      "tile_id": 253
-    },
-    "tile.interiors.room_builder.r0062.c19": {
-      "atlas": "interiors",
-      "runtime_gid": 477,
-      "tile_id": 254
-    },
-    "tile.interiors.room_builder.r0062.c20": {
-      "atlas": "interiors",
-      "runtime_gid": 478,
-      "tile_id": 255
-    },
-    "tile.interiors.room_builder.r0062.c21": {
-      "atlas": "interiors",
-      "runtime_gid": 479,
-      "tile_id": 256
-    },
-    "tile.interiors.room_builder.r0062.c22": {
-      "atlas": "interiors",
-      "runtime_gid": 480,
-      "tile_id": 257
-    },
-    "tile.interiors.room_builder.r0063.c19": {
-      "atlas": "interiors",
-      "runtime_gid": 481,
-      "tile_id": 258
-    },
-    "tile.interiors.room_builder.r0063.c20": {
-      "atlas": "interiors",
-      "runtime_gid": 482,
-      "tile_id": 259
-    },
-    "tile.interiors.room_builder.r0063.c21": {
-      "atlas": "interiors",
-      "runtime_gid": 483,
-      "tile_id": 260
-    },
-    "tile.interiors.room_builder.r0063.c22": {
-      "atlas": "interiors",
-      "runtime_gid": 484,
-      "tile_id": 261
-    },
-    "tile.interiors.room_builder.r0064.c19": {
-      "atlas": "interiors",
-      "runtime_gid": 485,
-      "tile_id": 262
-    },
-    "tile.interiors.room_builder.r0064.c20": {
-      "atlas": "interiors",
-      "runtime_gid": 486,
-      "tile_id": 263
-    },
-    "tile.interiors.room_builder.r0064.c21": {
-      "atlas": "interiors",
-      "runtime_gid": 487,
-      "tile_id": 264
-    },
-    "tile.interiors.room_builder.r0064.c22": {
-      "atlas": "interiors",
-      "runtime_gid": 488,
-      "tile_id": 265
-    },
-    "tile.interiors.room_builder.r0065.c19": {
-      "atlas": "interiors",
-      "runtime_gid": 489,
-      "tile_id": 266
-    },
-    "tile.interiors.room_builder.r0065.c20": {
-      "atlas": "interiors",
-      "runtime_gid": 490,
-      "tile_id": 267
-    },
-    "tile.interiors.room_builder.r0065.c21": {
-      "atlas": "interiors",
-      "runtime_gid": 491,
-      "tile_id": 268
-    },
-    "tile.interiors.room_builder.r0065.c22": {
-      "atlas": "interiors",
-      "runtime_gid": 492,
-      "tile_id": 269
-    },
-    "tile.interiors.room_builder.r0068.c44": {
-      "atlas": "interiors",
-      "runtime_gid": 493,
-      "tile_id": 270
-    },
-    "tile.interiors.room_builder.r0068.c46": {
-      "atlas": "interiors",
-      "runtime_gid": 494,
-      "tile_id": 271
-    },
-    "tile.interiors.room_builder.r0068.c49": {
-      "atlas": "interiors",
-      "runtime_gid": 495,
-      "tile_id": 272
-    },
-    "tile.interiors.room_builder.r0069.c44": {
-      "atlas": "interiors",
-      "runtime_gid": 496,
-      "tile_id": 273
-    },
-    "tile.interiors.room_builder.r0069.c46": {
-      "atlas": "interiors",
-      "runtime_gid": 497,
-      "tile_id": 274
-    },
-    "tile.interiors.room_builder.r0069.c49": {
-      "atlas": "interiors",
-      "runtime_gid": 498,
-      "tile_id": 275
-    },
-    "tile.interiors.room_builder.r0070.c46": {
-      "atlas": "interiors",
-      "runtime_gid": 499,
-      "tile_id": 276
-    },
-    "tile.interiors.room_builder.r0070.c47": {
-      "atlas": "interiors",
-      "runtime_gid": 500,
-      "tile_id": 277
-    },
-    "tile.interiors.room_builder.r0070.c49": {
-      "atlas": "interiors",
-      "runtime_gid": 501,
-      "tile_id": 278
-    },
-    "tile.interiors.room_builder.r0071.c44": {
-      "atlas": "interiors",
-      "runtime_gid": 502,
-      "tile_id": 279
-    },
-    "tile.interiors.room_builder.r0071.c47": {
-      "atlas": "interiors",
-      "runtime_gid": 503,
-      "tile_id": 280
-    },
-    "tile.interiors.room_builder.r0072.c44": {
-      "atlas": "interiors",
-      "runtime_gid": 504,
-      "tile_id": 281
-    },
-    "tile.interiors.room_builder.r0080.c46": {
-      "atlas": "interiors",
-      "runtime_gid": 505,
-      "tile_id": 282
-    },
-    "tile.interiors.room_builder.r0080.c49": {
-      "atlas": "interiors",
-      "runtime_gid": 506,
-      "tile_id": 283
+    "tile.exteriors_worksite.0224.0096": {
+      "atlas": "town",
+      "runtime_gid": 16,
+      "tile_id": 0
+    },
+    "tile.exteriors_worksite.0224.0112": {
+      "atlas": "town",
+      "runtime_gid": 21,
+      "tile_id": 5
+    },
+    "tile.exteriors_worksite.0224.0128": {
+      "atlas": "town",
+      "runtime_gid": 29,
+      "tile_id": 13
+    },
+    "tile.exteriors_worksite.0224.0144": {
+      "atlas": "town",
+      "runtime_gid": 35,
+      "tile_id": 19
+    },
+    "tile.exteriors_worksite.0224.0160": {
+      "atlas": "town",
+      "runtime_gid": 41,
+      "tile_id": 25
+    },
+    "tile.exteriors_worksite.0224.0176": {
+      "atlas": "town",
+      "runtime_gid": 47,
+      "tile_id": 31
+    },
+    "tile.exteriors_worksite.0240.0096": {
+      "atlas": "town",
+      "runtime_gid": 17,
+      "tile_id": 1
+    },
+    "tile.exteriors_worksite.0240.0112": {
+      "atlas": "town",
+      "runtime_gid": 22,
+      "tile_id": 6
+    },
+    "tile.exteriors_worksite.0240.0128": {
+      "atlas": "town",
+      "runtime_gid": 30,
+      "tile_id": 14
+    },
+    "tile.exteriors_worksite.0240.0144": {
+      "atlas": "town",
+      "runtime_gid": 36,
+      "tile_id": 20
+    },
+    "tile.exteriors_worksite.0240.0160": {
+      "atlas": "town",
+      "runtime_gid": 42,
+      "tile_id": 26
+    },
+    "tile.exteriors_worksite.0240.0176": {
+      "atlas": "town",
+      "runtime_gid": 48,
+      "tile_id": 32
+    },
+    "tile.exteriors_worksite.0256.0096": {
+      "atlas": "town",
+      "runtime_gid": 18,
+      "tile_id": 2
+    },
+    "tile.exteriors_worksite.0256.0112": {
+      "atlas": "town",
+      "runtime_gid": 23,
+      "tile_id": 7
+    },
+    "tile.exteriors_worksite.0256.0128": {
+      "atlas": "town",
+      "runtime_gid": 31,
+      "tile_id": 15
+    },
+    "tile.exteriors_worksite.0256.0144": {
+      "atlas": "town",
+      "runtime_gid": 37,
+      "tile_id": 21
+    },
+    "tile.exteriors_worksite.0256.0160": {
+      "atlas": "town",
+      "runtime_gid": 43,
+      "tile_id": 27
+    },
+    "tile.exteriors_worksite.0256.0176": {
+      "atlas": "town",
+      "runtime_gid": 49,
+      "tile_id": 33
+    },
+    "tile.exteriors_worksite.0464.0112": {
+      "atlas": "town",
+      "runtime_gid": 24,
+      "tile_id": 8
+    },
+    "tile.exteriors_worksite.0464.0128": {
+      "atlas": "town",
+      "runtime_gid": 32,
+      "tile_id": 16
+    },
+    "tile.exteriors_worksite.0464.0144": {
+      "atlas": "town",
+      "runtime_gid": 38,
+      "tile_id": 22
+    },
+    "tile.exteriors_worksite.0464.0160": {
+      "atlas": "town",
+      "runtime_gid": 44,
+      "tile_id": 28
+    },
+    "tile.exteriors_worksite.0464.0176": {
+      "atlas": "town",
+      "runtime_gid": 50,
+      "tile_id": 34
+    },
+    "tile.exteriors_worksite.0464.0192": {
+      "atlas": "town",
+      "runtime_gid": 55,
+      "tile_id": 39
+    },
+    "tile.exteriors_worksite.0464.0208": {
+      "atlas": "town",
+      "runtime_gid": 64,
+      "tile_id": 48
+    },
+    "tile.exteriors_worksite.0480.0112": {
+      "atlas": "town",
+      "runtime_gid": 25,
+      "tile_id": 9
+    },
+    "tile.exteriors_worksite.0480.0128": {
+      "atlas": "town",
+      "runtime_gid": 33,
+      "tile_id": 17
+    },
+    "tile.exteriors_worksite.0480.0144": {
+      "atlas": "town",
+      "runtime_gid": 39,
+      "tile_id": 23
+    },
+    "tile.exteriors_worksite.0480.0160": {
+      "atlas": "town",
+      "runtime_gid": 45,
+      "tile_id": 29
+    },
+    "tile.exteriors_worksite.0480.0176": {
+      "atlas": "town",
+      "runtime_gid": 51,
+      "tile_id": 35
+    },
+    "tile.exteriors_worksite.0480.0192": {
+      "atlas": "town",
+      "runtime_gid": 56,
+      "tile_id": 40
+    },
+    "tile.exteriors_worksite.0480.0208": {
+      "atlas": "town",
+      "runtime_gid": 65,
+      "tile_id": 49
+    },
+    "tile.exteriors_worksite.0496.0112": {
+      "atlas": "town",
+      "runtime_gid": 26,
+      "tile_id": 10
+    },
+    "tile.exteriors_worksite.0496.0128": {
+      "atlas": "town",
+      "runtime_gid": 34,
+      "tile_id": 18
+    },
+    "tile.exteriors_worksite.0496.0144": {
+      "atlas": "town",
+      "runtime_gid": 40,
+      "tile_id": 24
+    },
+    "tile.exteriors_worksite.0496.0160": {
+      "atlas": "town",
+      "runtime_gid": 46,
+      "tile_id": 30
+    },
+    "tile.exteriors_worksite.0496.0176": {
+      "atlas": "town",
+      "runtime_gid": 52,
+      "tile_id": 36
+    },
+    "tile.interiors_v3.room.arched_entryways.r010.c04": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 129,
+      "tile_id": 0
+    },
+    "tile.interiors_v3.room.arched_entryways.r010.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 130,
+      "tile_id": 1
+    },
+    "tile.interiors_v3.room.arched_entryways.r011.c04": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 131,
+      "tile_id": 2
+    },
+    "tile.interiors_v3.room.arched_entryways.r011.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 132,
+      "tile_id": 3
+    },
+    "tile.interiors_v3.room.arched_entryways.r018.c02": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 133,
+      "tile_id": 4
+    },
+    "tile.interiors_v3.room.arched_entryways.r018.c03": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 134,
+      "tile_id": 5
+    },
+    "tile.interiors_v3.room.arched_entryways.r019.c02": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 135,
+      "tile_id": 6
+    },
+    "tile.interiors_v3.room.arched_entryways.r019.c03": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 136,
+      "tile_id": 7
+    },
+    "tile.interiors_v3.room.arched_entryways.r022.c04": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 137,
+      "tile_id": 8
+    },
+    "tile.interiors_v3.room.arched_entryways.r022.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 138,
+      "tile_id": 9
+    },
+    "tile.interiors_v3.room.arched_entryways.r023.c04": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 139,
+      "tile_id": 10
+    },
+    "tile.interiors_v3.room.arched_entryways.r023.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 140,
+      "tile_id": 11
+    },
+    "tile.interiors_v3.room.floors.r008.c13": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 141,
+      "tile_id": 12
+    },
+    "tile.interiors_v3.room.floors.r009.c13": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 142,
+      "tile_id": 13
+    },
+    "tile.interiors_v3.room.floors.r010.c01": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 143,
+      "tile_id": 14
+    },
+    "tile.interiors_v3.room.floors.r010.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 144,
+      "tile_id": 15
+    },
+    "tile.interiors_v3.room.floors.r010.c09": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 145,
+      "tile_id": 16
+    },
+    "tile.interiors_v3.room.floors.r010.c13": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 146,
+      "tile_id": 17
+    },
+    "tile.interiors_v3.room.floors.r011.c01": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 147,
+      "tile_id": 18
+    },
+    "tile.interiors_v3.room.floors.r012.c01": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 148,
+      "tile_id": 19
+    },
+    "tile.interiors_v3.room.floors.r012.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 149,
+      "tile_id": 20
+    },
+    "tile.interiors_v3.room.floors.r025.c01": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 150,
+      "tile_id": 21
+    },
+    "tile.interiors_v3.room.floors.r025.c09": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 151,
+      "tile_id": 22
+    },
+    "tile.interiors_v3.room.floors.r028.c01": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 152,
+      "tile_id": 23
+    },
+    "tile.interiors_v3.room.floors.r029.c09": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 153,
+      "tile_id": 24
+    },
+    "tile.interiors_v3.room.floors.r029.c13": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 154,
+      "tile_id": 25
+    },
+    "tile.interiors_v3.room.floors.r031.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 155,
+      "tile_id": 26
+    },
+    "tile.interiors_v3.room.floors.r031.c09": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 156,
+      "tile_id": 27
+    },
+    "tile.interiors_v3.room.floors.r032.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 157,
+      "tile_id": 28
+    },
+    "tile.interiors_v3.room.floors.r032.c09": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 158,
+      "tile_id": 29
+    },
+    "tile.interiors_v3.room.floors.r032.c13": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 159,
+      "tile_id": 30
+    },
+    "tile.interiors_v3.room.floors.r033.c13": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 160,
+      "tile_id": 31
+    },
+    "tile.interiors_v3.room.walls.r000.c11": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 161,
+      "tile_id": 32
+    },
+    "tile.interiors_v3.room.walls.r000.c12": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 162,
+      "tile_id": 33
+    },
+    "tile.interiors_v3.room.walls.r000.c14": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 163,
+      "tile_id": 34
+    },
+    "tile.interiors_v3.room.walls.r001.c16": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 164,
+      "tile_id": 35
     },
     "tile.office_room_builder.0032.0016": {
       "atlas": "office",
-      "runtime_gid": 213,
+      "runtime_gid": 121,
       "tile_id": 0
     },
     "tile.office_room_builder.0080.0016": {
       "atlas": "office",
-      "runtime_gid": 214,
+      "runtime_gid": 122,
       "tile_id": 1
     },
     "tile.office_room_builder.0096.0016": {
       "atlas": "office",
-      "runtime_gid": 215,
+      "runtime_gid": 123,
       "tile_id": 2
     },
     "tile.office_room_builder.0112.0016": {
       "atlas": "office",
-      "runtime_gid": 216,
+      "runtime_gid": 124,
       "tile_id": 3
     },
     "tile.office_room_builder.0144.0016": {
       "atlas": "office",
-      "runtime_gid": 217,
+      "runtime_gid": 125,
       "tile_id": 4
     },
     "tile.office_room_builder.0160.0080": {
       "atlas": "office",
-      "runtime_gid": 218,
+      "runtime_gid": 126,
       "tile_id": 5
     },
     "tile.office_room_builder.0160.0176": {
       "atlas": "office",
-      "runtime_gid": 222,
-      "tile_id": 9
+      "runtime_gid": 128,
+      "tile_id": 7
     },
     "tile.office_room_builder.0176.0080": {
       "atlas": "office",
-      "runtime_gid": 219,
+      "runtime_gid": 127,
       "tile_id": 6
-    },
-    "tile.office_room_builder.0208.0112": {
-      "atlas": "office",
-      "runtime_gid": 220,
-      "tile_id": 7
-    },
-    "tile.office_room_builder.0208.0144": {
-      "atlas": "office",
-      "runtime_gid": 221,
-      "tile_id": 8
     }
   },
   "tile_gid_clear_mask": 4026531840,
@@ -2710,508 +1069,166 @@
     "105": 10,
     "1328": 11,
     "1517": 12,
-    "19154": 37,
-    "19155": 38,
-    "19156": 39,
-    "19157": 40,
-    "19158": 41,
-    "19159": 42,
-    "19160": 43,
-    "19161": 44,
-    "19162": 45,
-    "20073": 46,
-    "20074": 47,
-    "20075": 48,
-    "20095": 49,
-    "20096": 50,
-    "20101": 51,
-    "20102": 52,
-    "20103": 53,
-    "20114": 54,
-    "20115": 55,
-    "20116": 56,
-    "20124": 57,
-    "20125": 58,
-    "20127": 59,
-    "20128": 60,
-    "20129": 61,
-    "20139": 62,
-    "20140": 63,
-    "20141": 64,
-    "20149": 65,
-    "20150": 66,
-    "20151": 67,
-    "20161": 68,
-    "20162": 69,
-    "20163": 70,
-    "20169": 71,
-    "20170": 72,
-    "20171": 73,
-    "20181": 74,
-    "20182": 75,
-    "20183": 76,
-    "20193": 77,
-    "20194": 78,
-    "20195": 79,
-    "20205": 80,
-    "20206": 81,
-    "20207": 82,
-    "20215": 83,
-    "20216": 84,
-    "20223": 85,
-    "20224": 86,
-    "20228": 87,
-    "20229": 88,
-    "20230": 89,
-    "20231": 90,
-    "20232": 91,
-    "20233": 92,
-    "20234": 93,
-    "20242": 94,
-    "20243": 95,
-    "20247": 96,
-    "20248": 97,
-    "20249": 98,
-    "20250": 99,
-    "20251": 100,
-    "20252": 101,
-    "20253": 102,
-    "20264": 103,
-    "20265": 104,
-    "20266": 105,
-    "20267": 106,
-    "20268": 107,
-    "20269": 108,
-    "20270": 109,
-    "20281": 110,
-    "20282": 111,
-    "20283": 112,
-    "20284": 113,
-    "20285": 114,
-    "20286": 115,
-    "20287": 116,
-    "20300": 117,
-    "20301": 118,
-    "20302": 119,
-    "20303": 120,
-    "20304": 121,
-    "20305": 122,
-    "20306": 123,
-    "20319": 124,
-    "20320": 125,
-    "20321": 126,
-    "20322": 127,
-    "20323": 128,
-    "20324": 129,
-    "20325": 130,
-    "21449": 131,
-    "21450": 132,
-    "21451": 133,
-    "21452": 134,
-    "21477": 135,
-    "21478": 136,
-    "21479": 137,
-    "21480": 138,
-    "21804": 139,
-    "21805": 140,
-    "21806": 141,
-    "21807": 142,
-    "21832": 143,
-    "21833": 144,
-    "21834": 145,
-    "21835": 146,
-    "22367": 147,
-    "22368": 148,
-    "22369": 149,
-    "22370": 150,
-    "22371": 151,
-    "22399": 152,
-    "22400": 153,
-    "22401": 154,
-    "22402": 155,
-    "22403": 156,
-    "22431": 157,
-    "22432": 158,
-    "22433": 159,
-    "22434": 160,
-    "22435": 161,
-    "22463": 162,
-    "22464": 163,
-    "22465": 164,
-    "22466": 165,
-    "22467": 166,
-    "24457": 167,
-    "24458": 168,
-    "24459": 169,
-    "24476": 170,
-    "24477": 171,
-    "24478": 172,
-    "24512": 173,
-    "24513": 174,
-    "24533": 175,
-    "24534": 176,
-    "26042": 177,
-    "26043": 178,
-    "26066": 179,
-    "26067": 180,
-    "26094": 181,
-    "26095": 182,
-    "26096": 183,
-    "26124": 184,
-    "26125": 185,
-    "26126": 186,
-    "26145": 187,
-    "26146": 188,
-    "26172": 189,
-    "26173": 190,
-    "26198": 191,
-    "26199": 192,
-    "26200": 193,
-    "26222": 194,
-    "26223": 195,
-    "26224": 196,
-    "30329": 197,
-    "30330": 198,
-    "30331": 199,
-    "30332": 200,
-    "30333": 201,
-    "30334": 202,
-    "30335": 203,
-    "30336": 204,
-    "30361": 205,
-    "30362": 206,
-    "30363": 207,
-    "30364": 208,
-    "30365": 209,
-    "30366": 210,
-    "30367": 211,
-    "30368": 212,
-    "38062": 213,
-    "38065": 214,
-    "38066": 215,
-    "38067": 216,
-    "38069": 217,
-    "38108": 218,
-    "38109": 219,
-    "38140": 220,
-    "38169": 221,
-    "38195": 222,
-    "39597": 223,
-    "39612": 224,
-    "39626": 225,
-    "39639": 226,
-    "39658": 227,
-    "39672": 228,
-    "39685": 229,
-    "39686": 230,
-    "39687": 231,
-    "39688": 232,
-    "39698": 233,
-    "39699": 234,
-    "39700": 235,
-    "39701": 236,
-    "39702": 237,
-    "39703": 238,
-    "39717": 239,
-    "39718": 240,
-    "39998": 241,
-    "40014": 242,
-    "40026": 243,
-    "40176": 244,
-    "40177": 245,
-    "40178": 246,
-    "40191": 247,
-    "40192": 248,
-    "40204": 249,
-    "40273": 250,
-    "40457": 251,
-    "40458": 252,
-    "40470": 253,
-    "40471": 254,
-    "40472": 255,
-    "40473": 256,
-    "40485": 257,
-    "40486": 258,
-    "40487": 259,
-    "40500": 260,
-    "40501": 261,
-    "40502": 262,
-    "40516": 263,
-    "40517": 264,
-    "40518": 265,
-    "40531": 266,
-    "40532": 267,
-    "40533": 268,
-    "40534": 269,
-    "40578": 270,
-    "40579": 271,
-    "40592": 272,
-    "40593": 273,
-    "40594": 274,
-    "40595": 275,
-    "40598": 276,
-    "40599": 277,
-    "40608": 278,
-    "40609": 279,
-    "40610": 280,
-    "40611": 281,
-    "40612": 282,
-    "40613": 283,
-    "40614": 284,
-    "40615": 285,
-    "40624": 286,
-    "40625": 287,
-    "40626": 288,
-    "40627": 289,
-    "40730": 290,
-    "40731": 291,
-    "40744": 292,
-    "40745": 293,
-    "40786": 294,
-    "40787": 295,
-    "40800": 296,
-    "40801": 297,
-    "41135": 298,
-    "41150": 299,
-    "41151": 300,
-    "41165": 301,
-    "41166": 302,
-    "41181": 303,
-    "41182": 304,
-    "41538": 305,
-    "41597": 306,
-    "41599": 307,
-    "41961": 308,
-    "41962": 309,
-    "42111": 310,
-    "42112": 311,
-    "42127": 312,
-    "42128": 313,
-    "42539": 314,
-    "42555": 315,
-    "42571": 316,
-    "42587": 317,
-    "42622": 318,
-    "42909": 319,
-    "42925": 320,
-    "42964": 321,
-    "42967": 322,
-    "42972": 323,
-    "42973": 324,
-    "42975": 325,
-    "42985": 326,
-    "42986": 327,
-    "42988": 328,
-    "43000": 329,
-    "43001": 330,
-    "43007": 331,
-    "43008": 332,
-    "43020": 333,
-    "43021": 334,
-    "43034": 335,
-    "43036": 336,
-    "43047": 337,
-    "43048": 338,
-    "43055": 339,
-    "43056": 340,
-    "43061": 341,
-    "43062": 342,
-    "43074": 343,
-    "43075": 344,
-    "43580": 345,
-    "43581": 346,
-    "43607": 347,
-    "43608": 348,
-    "43623": 349,
-    "43624": 350,
+    "20073": 16,
+    "20074": 17,
+    "20075": 18,
+    "20095": 19,
+    "20096": 20,
+    "20101": 21,
+    "20102": 22,
+    "20103": 23,
+    "20114": 24,
+    "20115": 25,
+    "20116": 26,
+    "20124": 27,
+    "20125": 28,
+    "20127": 29,
+    "20128": 30,
+    "20129": 31,
+    "20139": 32,
+    "20140": 33,
+    "20141": 34,
+    "20149": 35,
+    "20150": 36,
+    "20151": 37,
+    "20161": 38,
+    "20162": 39,
+    "20163": 40,
+    "20169": 41,
+    "20170": 42,
+    "20171": 43,
+    "20181": 44,
+    "20182": 45,
+    "20183": 46,
+    "20193": 47,
+    "20194": 48,
+    "20195": 49,
+    "20205": 50,
+    "20206": 51,
+    "20207": 52,
+    "20215": 53,
+    "20216": 54,
+    "20223": 55,
+    "20224": 56,
+    "20228": 57,
+    "20229": 58,
+    "20230": 59,
+    "20231": 60,
+    "20232": 61,
+    "20233": 62,
+    "20234": 63,
+    "20242": 64,
+    "20243": 65,
+    "20247": 66,
+    "20248": 67,
+    "20249": 68,
+    "20250": 69,
+    "20251": 70,
+    "20252": 71,
+    "20253": 72,
+    "20264": 73,
+    "20265": 74,
+    "20266": 75,
+    "20267": 76,
+    "20268": 77,
+    "20269": 78,
+    "20270": 79,
+    "20281": 80,
+    "20282": 81,
+    "20283": 82,
+    "20284": 83,
+    "20285": 84,
+    "20286": 85,
+    "20287": 86,
+    "20300": 87,
+    "20301": 88,
+    "20302": 89,
+    "20303": 90,
+    "20304": 91,
+    "20305": 92,
+    "20306": 93,
+    "20319": 94,
+    "20320": 95,
+    "20321": 96,
+    "20322": 97,
+    "20323": 98,
+    "20324": 99,
+    "20325": 100,
+    "26042": 101,
+    "26043": 102,
+    "26066": 103,
+    "26067": 104,
+    "26094": 105,
+    "26095": 106,
+    "26096": 107,
+    "26124": 108,
+    "26125": 109,
+    "26126": 110,
+    "26145": 111,
+    "26146": 112,
+    "26172": 113,
+    "26173": 114,
+    "26198": 115,
+    "26199": 116,
+    "26200": 117,
+    "26222": 118,
+    "26223": 119,
+    "26224": 120,
+    "38062": 121,
+    "38065": 122,
+    "38066": 123,
+    "38067": 124,
+    "38069": 125,
+    "38108": 126,
+    "38109": 127,
+    "38195": 128,
     "4386": 13,
     "4387": 14,
     "4388": 15,
-    "44308": 351,
-    "44322": 352,
-    "44338": 353,
-    "44543": 354,
-    "44544": 355,
-    "44559": 356,
-    "44560": 357,
-    "44574": 358,
-    "44575": 359,
-    "45358": 360,
-    "45359": 361,
-    "45846": 362,
-    "45878": 363,
-    "45892": 364,
-    "46038": 365,
-    "46178": 366,
-    "46179": 367,
-    "46466": 368,
-    "46467": 369,
-    "46482": 370,
-    "46483": 371,
-    "46495": 372,
-    "46496": 373,
-    "46696": 374,
-    "46711": 375,
-    "46726": 376,
-    "49619": 377,
-    "49634": 378,
-    "49650": 379,
-    "53796": 380,
-    "54544": 381,
-    "54626": 382,
-    "55219": 383,
-    "55413": 384,
-    "55414": 385,
-    "55415": 386,
-    "55416": 387,
-    "55419": 388,
-    "55420": 389,
-    "55421": 390,
-    "55422": 391,
-    "55437": 392,
-    "55440": 393,
-    "55470": 394,
-    "55475": 395,
-    "55479": 396,
-    "55480": 397,
-    "55481": 398,
-    "55482": 399,
-    "55485": 400,
-    "55486": 401,
-    "55487": 402,
-    "55488": 403,
-    "55504": 404,
-    "55505": 405,
-    "55506": 406,
-    "55536": 407,
-    "55538": 408,
-    "55541": 409,
-    "55545": 410,
-    "55546": 411,
-    "55547": 412,
-    "55548": 413,
-    "55550": 414,
-    "55551": 415,
-    "55552": 416,
-    "55553": 417,
-    "55565": 418,
-    "55566": 419,
-    "55567": 420,
-    "55568": 421,
-    "55597": 422,
-    "55598": 423,
-    "55599": 424,
-    "55600": 425,
-    "55603": 426,
-    "55604": 427,
-    "55605": 428,
-    "55606": 429,
-    "55607": 430,
-    "55608": 431,
-    "55609": 432,
-    "55610": 433,
-    "55619": 434,
-    "55620": 435,
-    "55621": 436,
-    "55622": 437,
-    "55647": 438,
-    "55650": 439,
-    "55651": 440,
-    "55655": 441,
-    "55656": 442,
-    "55657": 443,
-    "55658": 444,
-    "55659": 445,
-    "55660": 446,
-    "55661": 447,
-    "55662": 448,
-    "55672": 449,
-    "55673": 450,
-    "55674": 451,
-    "55699": 452,
-    "55707": 453,
-    "55708": 454,
-    "55709": 455,
-    "55710": 456,
-    "55711": 457,
-    "55712": 458,
-    "55713": 459,
-    "55714": 460,
-    "55723": 461,
-    "55724": 462,
-    "55725": 463,
-    "55726": 464,
-    "55753": 465,
-    "55754": 466,
-    "55755": 467,
-    "55756": 468,
-    "55778": 469,
-    "55779": 470,
-    "55780": 471,
-    "55781": 472,
-    "55802": 473,
-    "55803": 474,
-    "55804": 475,
-    "55805": 476,
-    "55847": 477,
-    "55848": 478,
-    "55849": 479,
-    "55850": 480,
-    "55892": 481,
-    "55893": 482,
-    "55894": 483,
-    "55895": 484,
-    "55936": 485,
-    "55937": 486,
-    "55938": 487,
-    "55939": 488,
-    "55977": 489,
-    "55978": 490,
-    "55979": 491,
-    "55980": 492,
-    "56029": 493,
-    "56031": 494,
-    "56034": 495,
-    "56053": 496,
-    "56055": 497,
-    "56058": 498,
-    "56079": 499,
-    "56080": 500,
-    "56082": 501,
-    "56101": 502,
-    "56104": 503,
-    "56125": 504,
-    "56295": 505,
-    "56298": 506,
     "59": 1,
+    "59779": 141,
+    "59794": 142,
+    "59797": 143,
+    "59801": 144,
+    "59805": 145,
+    "59809": 146,
+    "59812": 147,
+    "59827": 148,
+    "59831": 149,
+    "60022": 150,
+    "60030": 151,
+    "60067": 152,
+    "60090": 153,
+    "60094": 154,
+    "60116": 155,
+    "60120": 156,
+    "60131": 157,
+    "60135": 158,
+    "60139": 159,
+    "60154": 160,
+    "60257": 161,
+    "60258": 162,
+    "60260": 163,
+    "60294": 164,
     "61": 2,
+    "61630": 129,
+    "61631": 130,
+    "61640": 131,
+    "61641": 132,
+    "61708": 133,
+    "61709": 134,
+    "61718": 135,
+    "61719": 136,
+    "61750": 137,
+    "61751": 138,
+    "61760": 139,
+    "61761": 140,
     "62": 3,
     "63": 4,
     "71": 5,
     "72": 6,
     "73": 7,
-    "9697": 16,
-    "9699": 17,
     "97": 8,
-    "9701": 18,
-    "9706": 19,
-    "9707": 20,
-    "9708": 21,
-    "9709": 22,
-    "9710": 23,
-    "9711": 24,
-    "9723": 25,
-    "9724": 26,
-    "9732": 27,
-    "9733": 28,
-    "9734": 29,
-    "9735": 30,
-    "9736": 31,
-    "9737": 32,
-    "9749": 33,
-    "9750": 34,
-    "9759": 35,
-    "9760": 36,
     "99": 9
   },
   "tile_size": 16,
@@ -3227,22 +1244,22 @@
       "firstgid": 16,
       "image": "tiles/town.png",
       "key": "town",
-      "tile_count": 197,
+      "tile_count": 105,
       "tileset": "tiles/town.tsj"
     },
     {
-      "firstgid": 213,
+      "firstgid": 121,
       "image": "tiles/office.png",
       "key": "office",
-      "tile_count": 10,
+      "tile_count": 8,
       "tileset": "tiles/office.tsj"
     },
     {
-      "firstgid": 223,
-      "image": "tiles/interiors.png",
-      "key": "interiors",
-      "tile_count": 284,
-      "tileset": "tiles/interiors.tsj"
+      "firstgid": 129,
+      "image": "tiles/interiors_v3.png",
+      "key": "interiors_v3",
+      "tile_count": 36,
+      "tileset": "tiles/interiors_v3.tsj"
     }
   ]
 }

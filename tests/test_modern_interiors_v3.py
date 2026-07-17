@@ -236,6 +236,38 @@ class ModernInteriorsV3Tests(unittest.TestCase):
             {item.get("profile") for item in credits["packs"]},
         )
 
+    def test_complete_candidate_runtime_rebuild_is_deterministic_and_used_only(self):
+        source = (
+            REPO_ROOT
+            / "environment/frontend_server/static_dirs/assets/claudeville/visuals/"
+            / "claudeville_modern_interiors_v3.tmj"
+        )
+        payload = read_json(source)
+        self.assertNotIn(
+            "interiors",
+            {Path(item["source"]).stem for item in payload["tilesets"]},
+        )
+        first, second = self.root / "candidate-runtime-a", self.root / "candidate-runtime-b"
+        kwargs = {
+            "interiors_v3_authoring_root": self.authoring,
+            "interiors_v3_source_root": SOURCE_ROOT,
+        }
+        manifest = tilemap_culler.cull_runtime_tilesets(source, first, **kwargs)
+        tilemap_culler.cull_runtime_tilesets(source, second, **kwargs)
+        self.assertEqual(tree_hashes(first), tree_hashes(second))
+        self.assertEqual(
+            [item["key"] for item in manifest["tilesets"]],
+            ["terrain", "town", "office", "interiors_v3"],
+        )
+        credits = read_json(first / "credits.json")
+        serialized = json.dumps(credits)
+        self.assertNotIn("Interiors_32x32_full.png", serialized)
+        self.assertEqual(
+            sum(item.get("profile") == modern_interiors_v3_source.PROFILE
+                for item in credits["packs"]),
+            1,
+        )
+
     def test_runtime_atlas_limit_is_enforced_before_allocation(self):
         with self.assertRaisesRegex(pack_modern_interiors_v3.RuntimePackError, "65,536"):
             pack_modern_interiors_v3._atlas_dimensions(

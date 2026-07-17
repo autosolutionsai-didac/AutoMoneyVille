@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -62,6 +63,33 @@ class BuildTilemapValidationTests(unittest.TestCase):
 
         with self.assertRaisesRegex(build_tilemap.TilemapError, "in-bounds"):
             build_tilemap._validate_source(authored_source(x=2817))
+
+    def test_v3_profile_requires_exact_revisions_and_excludes_legacy_tiles(self):
+        path = (
+            build_tilemap.WORLD_ROOT
+            / "visuals/claudeville_modern_interiors_v3.tmj"
+        )
+        source = json.loads(path.read_text(encoding="utf-8"))
+        properties = {
+            item.get("name"): item for item in source.get("properties", [])
+            if isinstance(item, dict)
+        }
+        for name, revision in build_tilemap.V3_AUTHORING_REVISIONS.items():
+            properties[name]["value"] = revision
+        build_tilemap._validate_source(source)
+
+        missing_revision = json.loads(json.dumps(source))
+        missing_revision["properties"] = [
+            item for item in missing_revision["properties"]
+            if item.get("name") != "south_district_revision"
+        ]
+        with self.assertRaisesRegex(build_tilemap.TilemapError, "revisions"):
+            build_tilemap._validate_source(missing_revision)
+
+        legacy = json.loads(json.dumps(source))
+        legacy["tilesets"].append({"firstgid": 999999, "source": "interiors.tsj"})
+        with self.assertRaisesRegex(build_tilemap.TilemapError, "exact unique"):
+            build_tilemap._validate_source(legacy)
 
     def test_review_preview_renders_tiled_flip_flags(self):
         with TemporaryDirectory() as temporary:

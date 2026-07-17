@@ -6,7 +6,68 @@ TARGET_BOUNDS = {
     "Library": (112, 42, 131, 64),
 }
 TARGETS = frozenset(TARGET_BOUNDS)
-REVISION = 2
+STRUCTURE_TARGETS = frozenset({"Community Center", "Library"})
+REVISION = 5
+
+V3_TILE_SOURCES = ("room.floors", "room.walls", "room.arched_entryways")
+FLOOR_PATTERNS = {
+    "community-maple": ((("room.floors", 25, 1),),),
+    "library-wood": ((("room.floors", 12, 1),),),
+}
+WALL_TILE_STYLE = {
+    "horizontal": ("room.walls", 0, 12),
+    "top_left": ("room.walls", 0, 11),
+    "top_right": ("room.walls", 0, 14),
+    "left": ("room.walls", 1, 16),
+    "right": ("room.walls", 1, 16),
+}
+VISUAL_SHELLS = (
+    ("Community Center", 46, 44, 64, 62, 51, 52, "community-maple", "bottom"),
+    ("Library", 113, 43, 130, 63, 118, 119, "library-wood", "bottom"),
+)
+FLOOR_STAMPS = ()
+FLOOR_PATCHES = ()
+ROOM_FLOOR_RECTS = (
+    ("Community Center", 59, 57, 63, 61, ("room.floors", 9, 13)),
+)
+WALL_RUNS = (
+    ("Community Center", "horizontal", 56, 46, 64, (51, 52, 60, 61)),
+    ("Community Center", "vertical", 58, 56, 62, (59, 60)),
+    ("Library", "horizontal", 56, 113, 130, (120, 121)),
+)
+
+# Remove only the detached legacy facade strips above the new cutaway shells.
+TILE_FILLS = (
+    ("Foreground L1", 48, 41, 64, 43, 0),
+    ("Foreground L1", 116, 40, 127, 42, 0),
+)
+
+# Native 2x2 thresholds replace the oversized exterior door sprites.
+VISUAL_TILE_EDITS = (
+    ("Wall", 18, 61, ("room.arched_entryways", 10, 4)),
+    ("Wall", 19, 61, ("room.arched_entryways", 10, 5)),
+    ("Wall", 18, 62, ("room.arched_entryways", 11, 4)),
+    ("Wall", 19, 62, ("room.arched_entryways", 11, 5)),
+    ("Wall", 51, 61, ("room.arched_entryways", 22, 4)),
+    ("Wall", 52, 61, ("room.arched_entryways", 22, 5)),
+    ("Wall", 51, 62, ("room.arched_entryways", 23, 4)),
+    ("Wall", 52, 62, ("room.arched_entryways", 23, 5)),
+    ("Wall", 118, 62, ("room.arched_entryways", 22, 4)),
+    ("Wall", 119, 62, ("room.arched_entryways", 22, 5)),
+    ("Wall", 118, 63, ("room.arched_entryways", 23, 4)),
+    ("Wall", 119, 63, ("room.arched_entryways", 23, 5)),
+)
+
+# The existing exterior plaza is already a purposeful four-quadrant composition.
+# Keep it outside TARGETS so a district re-author never clears its fountain or trees.
+PRESERVED_PLAZA_BOUNDS = (68, 42, 90, 63)
+PRESERVED_PLAZA_ASSETS = frozenset({
+    "prop.plaza.fountain_blue",
+    "prop.garden.bench_horizontal",
+    "prop.garden.bench_vertical",
+    "prop.street.lamp_01",
+    "prop.street.lamp_03",
+})
 
 # source atlas/key, source rect (x, y, width, height), destination (x, y), layer
 WORKSHOP_TILE_STAMPS = (
@@ -31,63 +92,70 @@ PLACEMENTS = (
     ("Workshop", "workshop.intake", "job-board", "intake-line", "prop.office.notice_board", 10, 55),
     ("Workshop", "workshop.intake", "paperwork", "intake-line", "prop.office.paper_stack", 15, 55),
     ("Workshop", "workshop.intake", "client-phone", "intake-line", "prop.office.phone", 17, 55),
-    ("Workshop", "workshop.circulation", "entrance", "threshold", "prop.facade.door_open", 18, 63),
-
-    # Community Center: a usable stage, two activity tables, lounge, and help point.
-    # Chairs stay above/below tables so stance cell (25, 26) remains open.
-    ("Community Center", "community.event_hall", "presentation-area", "stage", "prop.community.stage_small", 55, 49),
-    ("Community Center", "community.event_hall", "stage-speaker", "stage", "prop.interiors_v3.music_sport.0043", 50, 49),
-    ("Community Center", "community.event_hall", "stage-speaker", "stage", "prop.interiors_v3.music_sport.0043", 60, 49),
-    ("Community Center", "community.event_hall", "stage-microphone", "stage", "prop.interiors_v3.music_sport.0062", 55, 50),
-    ("Community Center", "community.event_hall", "stage-keyboard", "stage", "prop.interiors_v3.music_sport.0066", 52, 49),
+    # Community Center: the stage remains interaction-linked, but its podium,
+    # presentation display, and speakers sort in front of it instead of being
+    # hidden underneath the large stage sprite. Two aligned seating banks leave
+    # a continuous two-tile aisle between the entrance and presentation area.
+    ("Community Center", "community.event_hall", "presentation-area", "stage", "prop.community.stage_small", 55, 51),
+    ("Community Center", "community.event_hall", "stage-speaker", "stage", "prop.interiors_v3.music_sport.0043", 52, 52),
+    ("Community Center", "community.event_hall", "stage-podium", "stage", "prop.interiors_v3.conference.0028", 54, 52),
+    ("Community Center", "community.event_hall", "presentation-display", "stage", "prop.interiors_v3.conference.0030", 56, 52),
+    ("Community Center", "community.event_hall", "stage-speaker", "stage", "prop.interiors_v3.music_sport.0043", 58, 52),
     ("Community Center", "community.event_hall", "event-table", "west-activity-table", "prop.interiors_v3.art.0023", 52, 53),
     ("Community Center", "community.event_hall", "event-table", "east-activity-table", "prop.interiors_v3.art.0024", 58, 53),
-    ("Community Center", "community.event_hall", "event-chair", "west-activity-table", "prop.interiors_v3.classroom_library.0002", 52, 51),
-    ("Community Center", "community.event_hall", "event-chair", "east-activity-table", "prop.interiors_v3.classroom_library.0002", 58, 51),
-    ("Community Center", "community.event_hall", "event-chair", "west-activity-table", "prop.interiors_v3.classroom_library.0001", 52, 55),
-    ("Community Center", "community.event_hall", "event-chair", "east-activity-table", "prop.interiors_v3.classroom_library.0001", 58, 55),
+    ("Community Center", "community.event_hall", "audience-seat", "west-front-row", "prop.interiors_v3.conference.0037", 48, 53),
+    ("Community Center", "community.event_hall", "audience-seat", "west-front-row", "prop.interiors_v3.conference.0037", 50, 53),
+    ("Community Center", "community.event_hall", "audience-seat", "east-front-row", "prop.interiors_v3.conference.0037", 60, 53),
+    ("Community Center", "community.event_hall", "audience-seat", "east-front-row", "prop.interiors_v3.conference.0037", 62, 53),
+    ("Community Center", "community.event_hall", "audience-seat", "west-rear-row", "prop.interiors_v3.conference.0037", 48, 55),
+    ("Community Center", "community.event_hall", "audience-seat", "west-rear-row", "prop.interiors_v3.conference.0037", 50, 55),
+    ("Community Center", "community.event_hall", "audience-seat", "west-rear-row", "prop.interiors_v3.conference.0037", 52, 55),
+    ("Community Center", "community.event_hall", "audience-seat", "east-rear-row", "prop.interiors_v3.conference.0037", 58, 55),
+    ("Community Center", "community.event_hall", "audience-seat", "east-rear-row", "prop.interiors_v3.conference.0037", 60, 55),
+    ("Community Center", "community.event_hall", "audience-seat", "east-rear-row", "prop.interiors_v3.conference.0037", 62, 55),
+    # The lower west room combines a compact lounge with a staffed activity
+    # table while keeping the entrance lane at visual x=51-52 unobstructed.
     ("Community Center", "community.lounge", "lounge-seating", "west-lounge", "prop.interiors_v3.living.0003", 49, 59),
-    ("Community Center", "community.lounge", "lounge-seating", "east-lounge", "prop.interiors_v3.living.0003", 53, 59),
-    ("Community Center", "community.lounge", "lounge-seating", "east-lounge", "prop.interiors_v3.living.0005", 55, 59),
-    ("Community Center", "community.lounge", "lounge-table", "west-lounge", "prop.interiors_v3.living.0065", 51, 59),
-    ("Community Center", "community.lounge", "planter", "west-lounge", "prop.interiors_v3.living.0016", 47, 59),
-    ("Community Center", "community.reception", "help-desk", "help-point", "prop.office.counter_walnut_left", 59, 61),
-    ("Community Center", "community.reception", "help-desk", "help-point", "prop.office.counter_walnut_middle", 61, 61),
-    ("Community Center", "community.reception", "help-desk", "help-point", "prop.office.counter_walnut_right", 63, 61),
-    ("Community Center", "community.reception", "service-terminal", "help-point", "prop.office.cash_register", 61, 59),
-    ("Community Center", "community.reception", "community-notice", "help-point", "prop.office.notice_board", 59, 57),
-    ("Community Center", "community.reception", "town-map", "help-point", "prop.office.town_map", 62, 57),
-    ("Community Center", "community_center.circulation", "entrance", "threshold", "prop.facade.door_open", 52, 63),
-
-    # Library: warm shelf rows at y=45 and y=49 frame open logical aisles.
-    # Logical aisle row y=23 and cross-aisle y=26 remain clear; x=122-123 is a reading stance.
-    ("Library", "library.stacks", "bookshelf", "west-north-stacks", "prop.interiors_v3.classroom_library.0069", 116, 45),
-    ("Library", "library.stacks", "bookshelf", "west-north-stacks", "prop.interiors_v3.classroom_library.0071", 119, 45),
-    ("Library", "library.stacks", "bookshelf", "west-lower-stacks", "prop.interiors_v3.classroom_library.0055", 114, 49),
-    ("Library", "library.stacks", "bookshelf", "west-lower-stacks", "prop.interiors_v3.classroom_library.0057", 118, 49),
-    ("Library", "library.stacks", "east-bookshelf", "east-north-stacks", "prop.interiors_v3.classroom_library.0043", 122, 45),
-    ("Library", "library.stacks", "east-bookshelf", "east-north-stacks", "prop.interiors_v3.classroom_library.0045", 125, 45),
-    ("Library", "library.stacks", "east-bookshelf", "east-lower-stacks", "prop.interiors_v3.classroom_library.0060", 122, 49),
-    ("Library", "library.stacks", "east-bookshelf", "east-lower-stacks", "prop.interiors_v3.classroom_library.0062", 125, 49),
-    ("Library", "library.stacks", "east-bookshelf", "east-lower-stacks", "prop.interiors_v3.classroom_library.0064", 128, 49),
-    ("Library", "library.reading", "reading-table", "west-study", "prop.interiors_v3.classroom_library.0025", 120, 59),
-    ("Library", "library.reading", "reading-table", "east-study", "prop.interiors_v3.classroom_library.0025", 125, 59),
-    ("Library", "library.reading", "reading-chair", "west-study", "prop.interiors_v3.classroom_library.0002", 120, 57),
-    ("Library", "library.reading", "reading-chair", "east-study", "prop.interiors_v3.classroom_library.0002", 125, 57),
-    ("Library", "library.reading", "reading-chair", "west-study", "prop.interiors_v3.classroom_library.0001", 120, 60),
-    ("Library", "library.reading", "reading-chair", "east-study", "prop.interiors_v3.classroom_library.0001", 125, 60),
-    ("Library", "library.circulation", "circulation-desk", "checkout", "prop.interiors_v3.classroom_library.0049", 115, 59),
-    ("Library", "library.circulation", "circulation-desk", "checkout", "prop.interiors_v3.classroom_library.0052", 115, 61),
-    ("Library", "library.circulation", "checkout-terminal", "checkout", "prop.interiors_v3.classroom_library.0054", 117, 58),
-    ("Library", "library.reading", "library-schedule", "reading-support", "prop.interiors_v3.classroom_library.0032", 118, 55),
-    ("Library", "library.reading", "learning-globe", "reading-support", "prop.interiors_v3.classroom_library.0034", 129, 55),
-    ("Library", "library.reading", "periodical-shelf", "west-periodicals", "prop.interiors_v3.classroom_library.0043", 114, 55),
-    ("Library", "library.reading", "periodical-shelf", "east-periodicals", "prop.interiors_v3.classroom_library.0045", 129, 59),
-    ("Library", "library.reading", "lounge-seating", "central-reading-lounge", "prop.interiors_v3.living.0003", 123, 55),
-    ("Library", "library.reading", "lounge-seating", "central-reading-lounge", "prop.interiors_v3.living.0004", 120, 57),
-    ("Library", "library.reading", "lounge-seating", "central-reading-lounge", "prop.interiors_v3.living.0004", 126, 57),
-    ("Library", "library.reading", "lounge-table", "central-reading-lounge", "prop.interiors_v3.living.0051", 123, 57),
-    ("Library", "library.reading", "plant", "west-periodicals", "prop.interiors_v3.living.0016", 114, 61),
-    ("Library", "library.reading", "plant", "east-periodicals", "prop.interiors_v3.living.0013", 129, 61),
-    ("Library", "library.circulation", "entrance", "threshold", "prop.facade.door_open", 119, 64),
+    ("Community Center", "community.lounge", "lounge-seating", "west-lounge", "prop.interiors_v3.living.0005", 47, 61),
+    ("Community Center", "community.lounge", "lounge-seating", "west-lounge", "prop.interiors_v3.living.0007", 55, 58),
+    ("Community Center", "community.lounge", "lounge-table", "west-lounge", "prop.interiors_v3.living.0008", 50, 61),
+    ("Community Center", "community.lounge", "planter", "west-lounge", "prop.interiors_v3.living.0016", 47, 58),
+    ("Community Center", "community.lounge", "activity-table", "community-workshop", "prop.interiors_v3.art.0023", 55, 60),
+    ("Community Center", "community.lounge", "activity-seat", "community-workshop", "prop.interiors_v3.classroom_library.0003", 53, 60),
+    ("Community Center", "community.lounge", "activity-seat", "community-workshop", "prop.interiors_v3.classroom_library.0004", 57, 60),
+    # The east room is a compact reception: two counter sections, one terminal,
+    # and wall-mounted notice/map support rather than a wall-to-wall desk row.
+    ("Community Center", "community.reception", "community-notice", "help-point", "prop.office.notice_board", 60, 58),
+    ("Community Center", "community.reception", "town-map", "help-point", "prop.office.town_map", 62, 58),
+    ("Community Center", "community.reception", "service-terminal", "help-point", "prop.office.monitor_blue", 61, 60),
+    ("Community Center", "community.reception", "help-desk", "help-point", "prop.office.counter_walnut_left", 60, 61),
+    ("Community Center", "community.reception", "help-desk", "help-point", "prop.office.counter_walnut_right", 62, 61),
+    # Library: two continuous shelf banks have a two-tile cross aisle and a
+    # two-tile central spine. The lower room is a compact checkout/study zone.
+    ("Library", "library.stacks", "bookshelf", "west-north-bank", "prop.interiors_v3.classroom_library.0069", 115, 47),
+    ("Library", "library.stacks", "bookshelf", "west-north-bank", "prop.interiors_v3.classroom_library.0071", 117, 47),
+    ("Library", "library.stacks", "bookshelf", "west-north-bank", "prop.interiors_v3.classroom_library.0069", 119, 47),
+    ("Library", "library.stacks", "bookshelf", "west-south-bank", "prop.interiors_v3.classroom_library.0055", 115, 53),
+    ("Library", "library.stacks", "bookshelf", "west-south-bank", "prop.interiors_v3.classroom_library.0057", 117, 53),
+    ("Library", "library.stacks", "bookshelf", "west-south-bank", "prop.interiors_v3.classroom_library.0055", 119, 53),
+    ("Library", "library.stacks", "east-bookshelf", "east-north-bank", "prop.interiors_v3.classroom_library.0043", 123, 47),
+    ("Library", "library.stacks", "east-bookshelf", "east-north-bank", "prop.interiors_v3.classroom_library.0045", 125, 47),
+    ("Library", "library.stacks", "east-bookshelf", "east-north-bank", "prop.interiors_v3.classroom_library.0043", 127, 47),
+    ("Library", "library.stacks", "east-bookshelf", "east-north-bank", "prop.interiors_v3.classroom_library.0045", 129, 47),
+    ("Library", "library.stacks", "east-bookshelf", "east-south-bank", "prop.interiors_v3.classroom_library.0060", 123, 53),
+    ("Library", "library.stacks", "east-bookshelf", "east-south-bank", "prop.interiors_v3.classroom_library.0062", 125, 53),
+    ("Library", "library.stacks", "east-bookshelf", "east-south-bank", "prop.interiors_v3.classroom_library.0064", 127, 53),
+    ("Library", "library.stacks", "east-bookshelf", "east-south-bank", "prop.interiors_v3.classroom_library.0062", 129, 53),
+    ("Library", "library.circulation", "circulation-desk", "checkout", "prop.interiors_v3.classroom_library.0049", 115, 61),
+    ("Library", "library.circulation", "circulation-desk", "checkout", "prop.interiors_v3.classroom_library.0052", 117, 61),
+    ("Library", "library.circulation", "checkout-terminal", "checkout", "prop.office.monitor_blue", 117, 59),
+    ("Library", "library.reading", "reading-table", "west-study", "prop.interiors_v3.classroom_library.0025", 124, 61),
+    ("Library", "library.reading", "reading-table", "east-study", "prop.interiors_v3.classroom_library.0025", 128, 61),
+    ("Library", "library.reading", "reading-chair", "west-study", "prop.interiors_v3.classroom_library.0003", 122, 61),
+    ("Library", "library.reading", "reading-chair", "shared-study", "prop.interiors_v3.classroom_library.0004", 126, 61),
+    ("Library", "library.reading", "reading-chair", "east-study", "prop.interiors_v3.classroom_library.0004", 129, 61),
+    ("Library", "library.reading", "library-schedule", "reading-support", "prop.interiors_v3.classroom_library.0032", 123, 58),
+    ("Library", "library.reading", "learning-globe", "reading-support", "prop.interiors_v3.classroom_library.0034", 129, 58),
+    ("Library", "library.reading", "plant", "checkout", "prop.interiors_v3.living.0016", 114, 62),
+    ("Library", "library.reading", "plant", "east-study", "prop.interiors_v3.living.0013", 129, 62),
 )

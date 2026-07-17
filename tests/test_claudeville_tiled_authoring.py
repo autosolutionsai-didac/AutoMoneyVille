@@ -71,14 +71,24 @@ def _candidate() -> dict:
     return {
         "width": 176, "height": 96, "tilewidth": 16, "tileheight": 16,
         "infinite": False, "orientation": "orthogonal", "layers": layers,
-        "properties": [{
-            "name": "authoring_profile", "type": "string", "value": authoring.PROFILE,
-        }],
+        "properties": [
+            {
+                "name": "authoring_profile", "type": "string",
+                "value": authoring.PROFILE,
+            },
+            *(
+                {"name": name, "type": "int", "value": revision}
+                for name, revision in build_tilemap.V3_AUTHORING_REVISIONS.items()
+            ),
+        ],
         "tilesets": [
             {"firstgid": 1, "source": "terrain.tsj"},
             {"firstgid": 2, "source": "town.tsj"},
             {"firstgid": 3, "source": "office.tsj"},
-            {"firstgid": 4, "source": "interiors.tsj"},
+            {"firstgid": 4, "source": "interiors_props.tsj"},
+            {"firstgid": 5, "source": "room_arched_entryways.tsj"},
+            {"firstgid": 6, "source": "room_floors.tsj"},
+            {"firstgid": 7, "source": "room_walls.tsj"},
         ],
     }
 
@@ -163,6 +173,11 @@ class TiledAuthoringTests(unittest.TestCase):
         toilet = interactions["home_5.bathroom.toilet-001"]
         self.assertEqual((toilet["stance_x"], toilet["stance_y"]), (32, 43))
         self.assertEqual(toilet["blocker_policy"], "require-blocked")
+        cafe_counter = interactions["cafe.service.service-counter-001"]
+        self.assertEqual(
+            (cafe_counter["stance_x"], cafe_counter["stance_y"]),
+            (49, 24),
+        )
         blocker_ids = {
             authoring.properties(item.get("properties")).get("semantic_id")
             for item in children["Blockers"]["objects"]
@@ -239,14 +254,10 @@ class TiledAuthoringTests(unittest.TestCase):
 
     def test_builder_accepts_v3_prop_collection_and_strips_authoring_gid(self):
         source = _candidate()
-        source["tilesets"].append({
-            "firstgid": 5,
-            "source": "../../output/claudeville/modern_interiors_v3/collections/interiors_props.tsj",
-        })
         depth = next(layer for layer in source["layers"] if layer["name"] == "Depth Props")
         depth["objects"].append({
             "id": 40,
-            "gid": 5,
+            "gid": 4,
             "name": "test-prop",
             "type": "",
             "x": 64,

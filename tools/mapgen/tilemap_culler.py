@@ -14,11 +14,13 @@ try:
     from tools.mapgen import curate_modern_interiors_v3 as interiors_v3_curator
     from tools.mapgen import curate_modern_pixels_v2 as v2_curator
     from tools.mapgen import modern_interiors_v3_source, tiled_gid
+    from tools.mapgen import tilemap_runtime_support as runtime_support
 except ModuleNotFoundError:  # Direct ``python tools/mapgen/cull_modern_pixels_v2.py``.
     import curate_modern_interiors_v3 as interiors_v3_curator
     import curate_modern_pixels_v2 as v2_curator
     import modern_interiors_v3_source
     import tiled_gid
+    import tilemap_runtime_support as runtime_support
 
 INTERIORS_V3_OUTPUT_ROOT, DEFAULT_OUTPUT_ROOT, MAX_ATLAS_SIZE, TILE_SIZE = interiors_v3_curator.DEFAULT_OUTPUT_ROOT, v2_curator.DEFAULT_OUTPUT_ROOT, v2_curator.MAX_ATLAS_SIZE, v2_curator.TILE_SIZE
 CurationError, atlas_dimensions = v2_curator.CurationError, v2_curator.atlas_dimensions
@@ -27,9 +29,12 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_SIZE = (176, 96)
 FLIP_MASK = tiled_gid.GID_MASK
 BASE_TILESETS = ("terrain", "town", "office", "interiors")
-V3_TILESETS = {"room_floors", "room_walls"}
+V3_TILESETS = {"room_arched_entryways", "room_floors", "room_walls"}
+V3_PROFILE = "claudeville-modern-interiors-v3"
 GENERATED_ROOT_FILES = ("credits.json", "props.json", "props.png", "runtime_manifest.json")
 GENERATED_TILESETS = (*BASE_TILESETS, "interiors_v3")
+GENERATED_PATHS = (*GENERATED_ROOT_FILES, *(f"tiles/{key}.{suffix}"
+    for key in GENERATED_TILESETS for suffix in ("png", "tsj")))
 
 
 class CullError(CurationError):
@@ -65,19 +70,6 @@ def _write_png(path: Path, image: Image.Image) -> None:
     temporary.replace(path)
 
 
-def _clear_generated(output: Path) -> None:
-    """Remove only known generated files so a rebuild cannot retain stale assets."""
-    paths = [output / name for name in GENERATED_ROOT_FILES] + [
-        output / "tiles" / f"{key}.{suffix}"
-        for key in GENERATED_TILESETS for suffix in ("png", "tsj")
-    ]
-    for path in paths:
-        if path.is_file():
-            path.unlink()
-        elif path.exists():
-            raise CullError(f"generated runtime path is not a file: {path}")
-
-
 def _contained_file(root: Path, relative: object, label: str) -> Path:
     if not isinstance(relative, str) or not relative or "\\" in relative:
         raise CullError(f"{label} path is malformed")
@@ -106,6 +98,9 @@ def _map_tilesets(source: dict) -> list[tuple[int, str]]:
     keys = [key for _, key in result]
     if len(keys) != len(set(keys)):
         raise CullError("TMJ may reference each approved tileset only once")
+    if _property_value(source.get("properties"), "authoring_profile") == V3_PROFILE \
+            and "interiors" in keys:
+        raise CullError("Modern Interiors v3 maps may not reference the legacy interiors tileset")
     return sorted(result)
 
 
@@ -121,16 +116,19 @@ def _walk_layers(layers: list[dict]):
             yield from _walk_layers(nested)
 
 
-def _object_asset_key(properties) -> str | None:
+def _property_value(properties, name: str):
     if isinstance(properties, dict):
-        value = properties.get("asset_key")
-        return value if isinstance(value, str) and value else None
+        return properties.get(name)
     if isinstance(properties, list):
         for item in properties:
-            if isinstance(item, dict) and item.get("name") == "asset_key":
-                value = item.get("value")
-                return value if isinstance(value, str) and value else None
+            if isinstance(item, dict) and item.get("name") == name:
+                return item.get("value")
     return None
+
+
+def _object_asset_key(properties) -> str | None:
+    value = _property_value(properties, "asset_key")
+    return value if isinstance(value, str) and value else None
 
 
 def _source_gid(firstgids: list[int], tilesets: dict[int, str], gid: int) -> tuple[str, int]:
@@ -437,47 +435,49 @@ def cull_runtime_tilesets(
     if not selected:
         raise CullError("TMJ must reference at least one curated tile")
     _validate_requested_props(authoring, v3_authoring, props)
+    atlas_metadata = _read_json(authoring / "atlas.json", "authoring atlas metadata")
+    prop_catalog = _read_json(authoring / "catalog.json", "authoring prop catalog")
     source_credits = _read_json(authoring / "credits.json", "authoring credits")
-    packs = source_credits.get("packs")
-    if not isinstance(packs, list) or not packs:
-        raise CullError("authoring credits must declare licensed packs")
-    packs = list(packs)
-    if v3_pack is not None:
-        packs.append(v3_pack)
+    try:
+        packs = runtime_support.used_pack_credits(
+            source_credits, atlas_metadata, prop_catalog, selected.values(), props, v3_pack,
+        )
+    except runtime_support.RuntimeSupportError as exc:
+        raise CullError(str(exc)) from exc
     v3_catalog_sha = sha256((v3_authoring / "catalog.json").read_bytes()).hexdigest() \
         if v3_authoring is not None else None
-    output.mkdir(parents=True, exist_ok=True)
-    _clear_generated(output)
     try:
-        pages, asset_remap = _write_runtime_tiles(output, authoring, v3_source, selected)
-        props_manifest = _write_runtime_props(
-            output, authoring, v3_authoring, v3_source, props
-        )
+        with runtime_support.staged_runtime(output, GENERATED_PATHS) as staging:
+            pages, asset_remap = _write_runtime_tiles(staging, authoring, v3_source, selected)
+            props_manifest = _write_runtime_props(staging, authoring, v3_authoring, v3_source, props)
+            tilesets = _map_tilesets(source)
+            firstgids, by_firstgid = [item[0] for item in tilesets], dict(tilesets)
+            remap = {}
+            for gid in source_gids:
+                atlas, tile_id = _source_gid(firstgids, by_firstgid, gid)
+                record = tile_catalog[(atlas, tile_id)]
+                remap[str(gid)] = asset_remap[record["asset_key"]]["runtime_gid"]
+            _write_json(staging / "credits.json", {
+                "distribution_scope": "Only tiles and props referenced by this Claudeville map.",
+                "generated_by": "tools/mapgen/tilemap_culler.py", "packs": packs,
+                "schema_version": 1,
+            })
+            manifest = {
+                "authoring_root_sha256": sha256((authoring / "atlas.json").read_bytes()).hexdigest(),
+                "credits": "credits.json", "props": props_manifest, "schema_version": 1,
+                "source_tmj_sha256": stable_source_sha256(source_path),
+                "tile_asset_remap": asset_remap,
+                "tile_gid_clear_mask": tiled_gid.ALL_FLAG_MASK,
+                "tile_gid_flip_mask": tiled_gid.ORTHOGONAL_FLIP_MASK,
+                "tile_gid_remap": remap, "tile_size": TILE_SIZE, "tilesets": pages,
+            }
+            if v3_catalog_sha is not None:
+                manifest["interiors_v3_catalog_sha256"] = v3_catalog_sha
+            _write_json(staging / "runtime_manifest.json", manifest)
     except modern_interiors_v3_source.ModernInteriorsV3Error as exc:
         raise CullError(f"Modern Interiors v3 source failed: {exc}") from exc
-    remap = {}
-    tilesets = _map_tilesets(source)
-    firstgids, by_firstgid = [item[0] for item in tilesets], dict(tilesets)
-    for gid in source_gids:
-        atlas, tile_id = _source_gid(firstgids, by_firstgid, gid)
-        record = tile_catalog[(atlas, tile_id)]
-        remap[str(gid)] = asset_remap[record["asset_key"]]["runtime_gid"]
-    _write_json(output / "credits.json", {
-        "distribution_scope": "Only tiles and props referenced by this Claudeville map.",
-        "generated_by": "tools/mapgen/tilemap_culler.py", "packs": packs, "schema_version": 1,
-    })
-    manifest = {
-        "authoring_root_sha256": sha256((authoring / "atlas.json").read_bytes()).hexdigest(),
-        "credits": "credits.json",
-        "props": props_manifest, "schema_version": 1, "source_tmj_sha256": stable_source_sha256(source_path),
-        "tile_asset_remap": asset_remap,
-        "tile_gid_clear_mask": tiled_gid.ALL_FLAG_MASK,
-        "tile_gid_flip_mask": tiled_gid.ORTHOGONAL_FLIP_MASK,
-        "tile_gid_remap": remap, "tile_size": TILE_SIZE, "tilesets": pages,
-    }
-    if v3_catalog_sha is not None:
-        manifest["interiors_v3_catalog_sha256"] = v3_catalog_sha
-    _write_json(output / "runtime_manifest.json", manifest)
+    except runtime_support.RuntimeSupportError as exc:
+        raise CullError(f"runtime transaction failed: {exc}") from exc
     return manifest
 
 

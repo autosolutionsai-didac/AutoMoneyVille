@@ -18,22 +18,6 @@
     },
     {
       "creator": "LimeZu",
-      "license_evidence": "Project-licensed source provided by the user",
-      "name": "Modern Interiors",
-      "source_url": "https://limezu.itch.io/moderninteriors",
-      "sources": [
-        {
-          "filename": "Interiors_32x32_full.png",
-          "sha256": "ec056b502696ca7989c9b072cc513192498e9f2c96486160cd45d2605bf3e582"
-        },
-        {
-          "filename": "Room_Builder_32x32.png",
-          "sha256": "a6bd5690110f94d8a431803b910423d2dd834ab5c9b42f04815d6ba2e056aa6f"
-        }
-      ]
-    },
-    {
-      "creator": "LimeZu",
       "license_file": "LICENSE.txt",
       "license_sha256": "e33effd51253bb90c0d83fb555405f300273e9772d5eb84105327b6fa3eab4c5",
       "master_sources": [

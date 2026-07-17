@@ -7,7 +7,7 @@
       "key": "claudeville-v2-props"
     }
   ],
-  "candidate_source_sha256": "19feeb63ab7fedd3aaffa5bdd6bac7b6620cc8efe98ca0cdd9aea6a52fb71fde",
+  "candidate_source_sha256": "32250517db2539865c3962e90503432f4dd02ca0dc8b5180f3dce5701916c27c",
   "candidate_source_url": "assets/claudeville/visuals/claudeville_modern_interiors_v3.tmj",
   "character_atlas_image_url": "img/atlas.png",
   "character_manifest_url": "assets/characters/atlas.json",
@@ -92,9 +92,9 @@
       "name": "claudeville_v2_runtime_office"
     },
     {
-      "image_url": "assets/claudeville/visual_candidates/browser-modern-interiors-v16/runtime/tiles/interiors.png",
-      "key": "claudeville-v2-interiors",
-      "name": "claudeville_v2_runtime_interiors"
+      "image_url": "assets/claudeville/visual_candidates/browser-modern-interiors-v16/runtime/tiles/interiors_v3.png",
+      "key": "claudeville-v2-interiors_v3",
+      "name": "claudeville_v2_runtime_interiors_v3"
     }
   ],
   "version": 2,

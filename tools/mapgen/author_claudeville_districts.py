@@ -8,14 +8,18 @@ import os
 from pathlib import Path
 
 try:
+    from tools.mapgen import claudeville_district_semantics as semantics
     from tools.mapgen import claudeville_middle_placements as middle
     from tools.mapgen import claudeville_north_placements as north
+    from tools.mapgen import claudeville_south_placements as south
     from tools.mapgen import claudeville_tiled_authoring as authoring
     from tools.mapgen.curate_modern_interiors_v3 import DEFAULT_OUTPUT_ROOT as V3_ROOT
     from tools.mapgen.curate_modern_pixels_v2 import DEFAULT_OUTPUT_ROOT as V2_ROOT
 except ModuleNotFoundError:  # Direct script execution.
+    import claudeville_district_semantics as semantics
     import claudeville_middle_placements as middle
     import claudeville_north_placements as north
+    import claudeville_south_placements as south
     import claudeville_tiled_authoring as authoring
     from curate_modern_interiors_v3 import DEFAULT_OUTPUT_ROOT as V3_ROOT
     from curate_modern_pixels_v2 import DEFAULT_OUTPUT_ROOT as V2_ROOT
@@ -26,7 +30,7 @@ DEFAULT_MAP = (
     / "environment/frontend_server/static_dirs/assets/claudeville/visuals/"
     / "claudeville_modern_interiors_v3.tmj"
 )
-DISTRICTS = {"middle": middle, "north": north}
+DISTRICTS = {"middle": middle, "north": north, "south": south}
 CLEAR_TILE_LAYERS = (
     "Interior Furniture L1", "Interior Furniture L2", "Foreground L1", "Foreground L2",
 )
@@ -79,6 +83,62 @@ def _collection_firstgid(tmj: dict, map_path: Path) -> int:
     return next_gid
 
 
+def _ensure_v3_tile_sources(
+    tmj: dict, map_path: Path, module,
+) -> dict[str, dict[str, int]]:
+    requested = tuple(getattr(module, "V3_TILE_SOURCES", ()))
+    if not requested:
+        return {}
+    catalog = _read(V3_ROOT / "catalog.json")
+    records = catalog.get("tilesets")
+    if catalog.get("schema_version") != 3 or not isinstance(records, list):
+        raise DistrictAuthoringError("Modern Interiors v3 tile catalog is malformed")
+    by_source = {
+        item.get("source_id"): item for item in records
+        if isinstance(item, dict) and isinstance(item.get("source_id"), str)
+    }
+    if len(set(requested)) != len(requested) or not set(requested) <= by_source.keys():
+        raise DistrictAuthoringError("district references unknown v3 tile sources")
+
+    existing = {}
+    next_gid = 1
+    for reference in tmj.get("tilesets", []):
+        path = (map_path.parent / reference["source"]).resolve(strict=True)
+        tileset = _read(path)
+        next_gid = max(next_gid, reference["firstgid"] + tileset["tilecount"])
+        values = authoring.properties(tileset.get("properties"))
+        source_id = values.get("source_id")
+        if isinstance(source_id, str):
+            existing[source_id] = reference["firstgid"], path, tileset
+
+    result = {}
+    for source_id in requested:
+        record = by_source[source_id]
+        source_path = (V3_ROOT / record["tileset"]).resolve(strict=True)
+        if source_id in existing:
+            firstgid, path, tileset = existing[source_id]
+            if path != source_path:
+                raise DistrictAuthoringError(f"v3 tile source path changed: {source_id}")
+        else:
+            tileset = _read(source_path)
+            firstgid = next_gid
+            tmj["tilesets"].append({
+                "firstgid": firstgid,
+                "source": os.path.relpath(source_path, map_path.parent).replace("\\", "/"),
+            })
+            next_gid += tileset["tilecount"]
+        if (
+            tileset.get("columns") != record.get("columns")
+            or tileset.get("tilecount") != record.get("columns") * record.get("rows")
+        ):
+            raise DistrictAuthoringError(f"v3 tile source changed: {source_id}")
+        result[source_id] = {
+            "columns": record["columns"], "firstgid": firstgid,
+            "rows": record["rows"],
+        }
+    return result
+
+
 def _inside(obj: dict, sector: str, bounds: dict[str, tuple[int, ...]]) -> bool:
     values = authoring.properties(obj.get("properties"))
     if values.get("sector") == sector:
@@ -94,7 +154,19 @@ def _clear(tmj: dict, module) -> dict[str, dict]:
     layers = {layer["name"]: layer for layer in tmj["layers"] if layer["name"] != "Authoring"}
     for name in CLEAR_TILE_LAYERS:
         data = layers[name]["data"]
-        for left, top, right, bottom in module.TARGET_BOUNDS.values():
+        if name.startswith("Interior Furniture"):
+            rects = tuple(module.TARGET_BOUNDS.values())
+        else:
+            # Foreground layers also carry hand-authored facades and overhead
+            # detail. A district migration may only erase the explicit legacy
+            # rectangles it declares with a zero-valued tile fill.
+            rects = tuple(
+                (left, top, right, bottom)
+                for layer_name, left, top, right, bottom, gid
+                in getattr(module, "TILE_FILLS", ())
+                if layer_name == name and gid == 0
+            )
+        for left, top, right, bottom in rects:
             for y in range(top, bottom):
                 data[y * 176 + left:y * 176 + right] = [0] * (right - left)
     for name in ("Depth Props", "Overhead Props"):
@@ -336,8 +408,9 @@ def author_district(district: str, map_path: Path = DEFAULT_MAP) -> dict:
     if not authoring.is_tiled_first(tmj):
         raise DistrictAuthoringError("district passes require the v3 Tiled-first profile")
     values = authoring.properties(tmj.get("properties"))
-    if values.get("vertical_slice_revision") != 3:
-        raise DistrictAuthoringError("district passes require approved revision-three slices")
+    slice_revision = values.get("vertical_slice_revision")
+    if not isinstance(slice_revision, int) or slice_revision < 3:
+        raise DistrictAuthoringError("district passes require revision-three or newer slices")
     revision_key = f"{district}_district_revision"
     revision = values.get(revision_key)
     if revision == module.REVISION:
@@ -346,12 +419,35 @@ def author_district(district: str, map_path: Path = DEFAULT_MAP) -> dict:
         not isinstance(revision, int) or revision > module.REVISION
     ):
         raise DistrictAuthoringError(f"unsupported {district} revision: {revision}")
-    layers = _clear(tmj, module)
-    stamped_tiles = _apply_tile_stamps(tmj, layers, module, path)
-    patched_tiles = _patch_structure(tmj, layers, module)
-    created = _add_props(
-        tmj, layers, module, district, _collection_firstgid(tmj, path)
+    prop_firstgid = _collection_firstgid(tmj, path)
+    v3_tile_sources = _ensure_v3_tile_sources(tmj, path, module)
+    legacy_tiles = semantics.clear_tileset_tiles_in_rects(
+        tmj, path, "interiors", tuple(module.TARGET_BOUNDS.values()),
     )
+    for source_stem, rects in getattr(module, "LEGACY_TILESET_CLEARS", ()):
+        legacy_tiles += semantics.clear_tileset_tiles_in_rects(
+            tmj, path, source_stem, tuple(rects),
+        )
+    layers = _clear(tmj, module)
+    try:
+        semantic_changes = (
+            semantics.prepare_semantics(tmj, module)
+            if revision is None
+            else {"added_interactions": 0, "added_zones": 0, "removed_shapes": 0}
+        )
+        semantics.update_interaction_stances(tmj, module)
+        structured_tiles = semantics.paint_visual_structure(
+            layers, module, v3_tile_sources,
+        )
+        floor_tiles = semantics.patch_zone_floors(tmj, layers, module)
+        stamped_tiles = _apply_tile_stamps(tmj, layers, module, path)
+        patched_tiles = _patch_structure(tmj, layers, module)
+        created = _add_props(
+            tmj, layers, module, district, prop_firstgid
+        )
+        blocker_shapes = semantics.add_blockers(tmj, module, created)
+    except ValueError as exc:
+        raise DistrictAuthoringError(str(exc)) from exc
     relinked = _relink(tmj, created, module.TARGETS)
     tmj["properties"] = [
         item for item in tmj["properties"] if item.get("name") != revision_key
@@ -363,9 +459,13 @@ def author_district(district: str, map_path: Path = DEFAULT_MAP) -> dict:
     temporary.replace(path)
     return {
         "created_props": len(created),
+        "legacy_tiles_removed": legacy_tiles,
+        "floor_tiles": floor_tiles,
         "patched_tiles": patched_tiles,
         "relinked_interactions": relinked,
+        "semantic_shapes": sum(semantic_changes.values()) + blocker_shapes,
         "stamped_tiles": stamped_tiles,
+        "structured_tiles": structured_tiles,
     }
 
 
@@ -376,11 +476,13 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     try:
         result = author_district(args.district, args.map)
-    except (OSError, json.JSONDecodeError, DistrictAuthoringError) as exc:
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
         parser.error(str(exc))
     print(
         f"Authored {result['created_props']} props, patched "
-        f"{result['patched_tiles']} tiles, stamped {result['stamped_tiles']} tiles, "
+        f"{result['patched_tiles'] + result['floor_tiles'] + result['structured_tiles']} "
+        "tiles, stamped "
+        f"{result['stamped_tiles']} tiles, migrated {result['semantic_shapes']} shapes, "
         "and relinked "
         f"{result['relinked_interactions']} {args.district} interactions"
     )
