@@ -36,7 +36,7 @@ except ModuleNotFoundError:
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MAPGEN_ROOT = Path(__file__).resolve().parent
 WORLD_ROOT = REPO_ROOT / "environment/frontend_server/static_dirs/assets/claudeville"
-TMJ_PATH = WORLD_ROOT / "visuals/claudeville_full_town_v2.tmj"
+TMJ_PATH = WORLD_ROOT / "visuals/claudeville_target_v45.tmj"
 SPEC_PATH = MAPGEN_ROOT / "town_spec.json"
 OVERRIDES_PATH = MAPGEN_ROOT / "town_spec.collisions.json"
 COLLISION_PATH = WORLD_ROOT / "matrix/maze/collision_maze.csv"

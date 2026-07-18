@@ -427,7 +427,8 @@ def compile_authoring(tmj: dict, spec: dict, collision: list[list[bool]]) -> Aut
         stances.append(stance)
         objects.append({
             "semantic_id": interaction_id, "sector": item.properties["sector"],
-            "arena": item.properties["zone"], "type": item.properties["interaction_type"],
+            "arena": item.properties["zone"],
+            "type": item.properties["interaction_type"].replace("-", " "),
             "tiles": [list(point) for point in sorted(cells, key=lambda p: (p[1], p[0]))],
             "stance": list(stance), "blocks": policy == "require-blocked",
         })

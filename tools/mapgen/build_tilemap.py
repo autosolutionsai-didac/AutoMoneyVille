@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
 import json
 import math
 from pathlib import Path
@@ -36,7 +35,7 @@ except ModuleNotFoundError:  # Direct ``python tools/mapgen/build_tilemap.py``.
 REPO_ROOT = Path(__file__).resolve().parents[2]
 STATIC_ROOT = REPO_ROOT / "environment/frontend_server/static_dirs"
 WORLD_ROOT = STATIC_ROOT / "assets/claudeville"
-AUTHORING_MAP = WORLD_ROOT / "visuals/claudeville_full_town_v2.tmj"
+AUTHORING_MAP = WORLD_ROOT / "visuals/claudeville_target_v45.tmj"
 AUTHORING_ROOT = REPO_ROOT / "output/claudeville/modern_pixels_v2"
 SPEC_PATH = Path(__file__).resolve().parent / "town_spec.json"
 COLLISION_PATH = WORLD_ROOT / "matrix/maze/collision_maze.csv"
@@ -51,7 +50,17 @@ TILE_LAYERS = (
 )
 OBJECT_LAYERS = ("Depth Props", "Overhead Props")
 MAP_LAYER_ORDER = (*TILE_LAYERS[:-1], *OBJECT_LAYERS, TILE_LAYERS[-1])
-V3_TILESETS = {"room_arched_entryways", "room_floors", "room_walls"}
+V3_REQUIRED_TILESETS = {
+    "room_arched_entryways",
+    "room_floors",
+    "room_walls",
+}
+V3_OPTIONAL_TILESETS = {
+    "room_borders",
+    "theme_generic",
+    "theme_kitchen",
+}
+V3_TILESETS = V3_REQUIRED_TILESETS | V3_OPTIONAL_TILESETS
 V3_AUTHORING_PROFILE = "claudeville-modern-interiors-v3"
 V3_AUTHORING_REVISIONS = {
     "middle_district_revision": middle.REVISION,
@@ -59,7 +68,14 @@ V3_AUTHORING_REVISIONS = {
     "south_district_revision": south.REVISION,
     "vertical_slice_revision": vertical_slices.SLICE_REVISION,
 }
-V3_SOURCE_TILESETS = {"terrain", "town", "office", "interiors_props", *V3_TILESETS}
+V3_REQUIRED_SOURCE_TILESETS = {
+    "terrain",
+    "town",
+    "office",
+    "interiors_props",
+    *V3_REQUIRED_TILESETS,
+}
+V3_SOURCE_TILESETS = V3_REQUIRED_SOURCE_TILESETS | V3_OPTIONAL_TILESETS
 
 
 class TilemapError(ValueError): ...
@@ -204,10 +220,13 @@ def _validate_source(source: dict) -> dict[str, dict]:
         raise TilemapError("TMJ must reference approved Claudeville tilesets")
     names = {Path(str(entry.get("source", ""))).stem for entry in tilesets if isinstance(entry, dict)}
     firstgids = [entry.get("firstgid") for entry in tilesets if isinstance(entry, dict)]
-    expected = V3_SOURCE_TILESETS if profile == V3_AUTHORING_PROFILE else {
-        "terrain", "town", "office", "interiors",
-    }
-    if names != expected or len(names) != len(tilesets) or \
+    legacy_tilesets = {"terrain", "town", "office", "interiors"}
+    valid_names = (
+        V3_REQUIRED_SOURCE_TILESETS <= names <= V3_SOURCE_TILESETS
+        if profile == V3_AUTHORING_PROFILE
+        else names == legacy_tilesets
+    )
+    if not valid_names or len(names) != len(tilesets) or \
             len(firstgids) != len(tilesets) or any(
                 not isinstance(value, int) or isinstance(value, bool) or value < 1
                 for value in firstgids
@@ -473,25 +492,7 @@ def promote_candidate(candidate_manifest_path: Path, *, approved_source_sha256: 
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", type=Path, default=AUTHORING_MAP)
-    parser.add_argument("--candidate-root", type=Path)
-    parser.add_argument("--promote", type=Path, metavar="CANDIDATE_WORLD_JSON")
-    parser.add_argument("--approved-source-sha256")
-    args = parser.parse_args(argv)
-    try:
-        if args.promote:
-            if not args.approved_source_sha256:
-                parser.error("--promote requires --approved-source-sha256")
-            path = promote_candidate(args.promote, approved_source_sha256=args.approved_source_sha256)
-            print(f"Promoted {path}")
-            return 0
-        result = build_candidate(args.source, candidate_root=args.candidate_root)
-    except (OSError, TilemapError) as exc:
-        parser.error(str(exc))
-    print(f"Built {result.map_path} and {result.preview_path}; collision mismatches=0")
-    return 0
-
-
+    from tools.mapgen.build_tilemap_cli import main as cli_main
+    return cli_main(argv)
 if __name__ == "__main__":
     raise SystemExit(main())

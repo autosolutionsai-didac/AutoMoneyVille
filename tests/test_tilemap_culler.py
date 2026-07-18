@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -122,6 +123,171 @@ class TilemapCullerTests(unittest.TestCase):
                     self._tmj(root, "prop.unlicensed.missing"), root / "runtime", authoring_root=authoring
                 )
             self.assertFalse((root / "runtime").exists())
+
+    def test_culls_all_allowlisted_design_stamps_with_hash_and_credit_evidence(self):
+        cases = (
+            ("prop.design.academy_gym", (304, 240), "Modern Interiors"),
+            ("prop.design.bank_office", (192, 173), "Modern Office Revamped"),
+            ("prop.design.frontage.home_japanese", (192, 80), "Modern Exteriors"),
+            ("prop.design.frontage.home_modern", (192, 80), "Modern Exteriors"),
+            ("prop.design.frontage.home_one_story", (192, 80), "Modern Exteriors"),
+            ("prop.design.frontage.home_terraced_1", (192, 80), "Modern Exteriors"),
+            ("prop.design.frontage.home_terraced_3", (192, 80), "Modern Exteriors"),
+            ("prop.design.frontage.home_terraced_4", (192, 80), "Modern Exteriors"),
+            ("prop.design.frontage.home_terraced_5", (192, 80), "Modern Exteriors"),
+            ("prop.design.frontage.home_villa_1", (144, 80), "Modern Exteriors"),
+            ("prop.design.frontage.home_villa_3", (144, 80), "Modern Exteriors"),
+            ("prop.design.home_cluster.generic_ne", (112, 112), "Modern Interiors"),
+            ("prop.design.home_cluster.generic_nw", (112, 112), "Modern Interiors"),
+            ("prop.design.home_cluster.generic_south", (160, 118), "Modern Interiors"),
+            ("prop.design.home_cluster.japanese_ne", (128, 112), "Modern Interiors"),
+            ("prop.design.home_cluster.japanese_nw", (128, 112), "Modern Interiors"),
+            ("prop.design.home_cluster.japanese_se", (144, 112), "Modern Interiors"),
+            ("prop.design.home_cluster.japanese_sw", (144, 112), "Modern Interiors"),
+            ("prop.design.home_generic", (224, 214), "Modern Interiors"),
+            ("prop.design.home_japanese", (272, 202), "Modern Interiors"),
+            ("prop.design.university_lab", (221, 253), "Modern Office Revamped"),
+            ("prop.design.university_lab_main", (221, 157), "Modern Office Revamped"),
+            ("prop.design.university_lounge", (176, 80), "Modern Office Revamped"),
+        )
+        catalog = tilemap_culler.prop_atlas.DEFAULT_DESIGN_STAMP_ROOT / "catalog.json"
+        catalog_bytes = catalog.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+        expected_catalog_hash = hashlib.sha256(catalog_bytes).hexdigest()
+        for asset_key, size, pack in cases:
+            with self.subTest(asset_key=asset_key), TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                authoring = self._authoring_root(root)
+                runtime = root / "runtime"
+                manifest = tilemap_culler.cull_runtime_tilesets(
+                    self._tmj(root, asset_key), runtime, authoring_root=authoring
+                )
+                self.assertEqual(
+                    manifest["design_stamp_catalog_sha256"], expected_catalog_hash
+                )
+                self.assertEqual(manifest["props"]["asset_keys"], [asset_key])
+                frames = json.loads(
+                    (runtime / "props.json").read_text(encoding="utf-8")
+                )["frames"]
+                self.assertEqual(
+                    (frames[asset_key]["frame"]["w"], frames[asset_key]["frame"]["h"]),
+                    size,
+                )
+                credits = json.loads(
+                    (runtime / "credits.json").read_text(encoding="utf-8")
+                )
+                self.assertIn(pack, {item["name"] for item in credits["packs"]})
+                if asset_key == "prop.design.bank_office":
+                    second = root / "runtime-second"
+                    tilemap_culler.cull_runtime_tilesets(
+                        root / "town.tmj", second, authoring_root=authoring
+                    )
+                    for relative in ("props.png", "props.json", "runtime_manifest.json"):
+                        self.assertEqual(
+                            (runtime / relative).read_bytes(), (second / relative).read_bytes()
+                        )
+
+    def test_culls_all_graystone_frontages_in_one_runtime_atlas(self):
+        expected = {
+            "prop.design.frontage.bank_graystone": (352, 48),
+            "prop.design.frontage.agent_academy_graystone": (368, 48),
+            "prop.design.frontage.workshop_graystone": (352, 48),
+            "prop.design.frontage.community_center_graystone": (192, 48),
+            "prop.design.frontage.library_graystone": (400, 48),
+            "prop.design.frontage.home_1_graystone": (336, 48),
+            "prop.design.frontage.home_2_graystone": (208, 48),
+            "prop.design.frontage.home_3_graystone": (192, 48),
+            "prop.design.frontage.home_4_graystone": (144, 48),
+            "prop.design.frontage.home_5_graystone": (160, 48),
+            "prop.design.frontage.home_7_graystone": (192, 48),
+            "prop.design.frontage.home_8_graystone": (208, 48),
+            "prop.design.frontage.home_9_graystone": (192, 48),
+            "prop.design.frontage.home_10_graystone": (192, 48),
+        }
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = self._tmj(root)
+            payload = json.loads(source.read_text(encoding="utf-8"))
+            payload["layers"][1]["objects"] = [
+                {"properties": [{"name": "asset_key", "value": key}]}
+                for key in expected
+            ]
+            write_json(source, payload)
+            runtime = root / "runtime"
+            manifest = tilemap_culler.cull_runtime_tilesets(
+                source, runtime, authoring_root=self._authoring_root(root)
+            )
+            self.assertEqual(manifest["props"]["asset_keys"], sorted(expected))
+            frames = json.loads(
+                (runtime / "props.json").read_text(encoding="utf-8")
+            )["frames"]
+            self.assertEqual(
+                {
+                    key: (record["frame"]["w"], record["frame"]["h"])
+                    for key, record in frames.items()
+                },
+                expected,
+            )
+
+    def test_rejects_unknown_or_tampered_design_stamps_before_output(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            authoring = self._authoring_root(root)
+            with self.assertRaisesRegex(tilemap_culler.CullError, "unapproved"):
+                tilemap_culler.cull_runtime_tilesets(
+                    self._tmj(root, "prop.design.unreviewed"), root / "unknown",
+                    authoring_root=authoring,
+                )
+            stamp_root = root / "stamps"
+            shutil.copytree(tilemap_culler.prop_atlas.DEFAULT_DESIGN_STAMP_ROOT, stamp_root)
+            with self.assertRaisesRegex(tilemap_culler.CullError, "remain separate"):
+                tilemap_culler.cull_runtime_tilesets(
+                    self._tmj(root, "prop.design.bank_office"), stamp_root / "runtime",
+                    authoring_root=authoring, design_stamp_root=stamp_root,
+                )
+            stamp = stamp_root / "bank_office.png"
+            stamp.write_bytes(stamp.read_bytes() + b"tampered")
+            with self.assertRaisesRegex(tilemap_culler.CullError, "hash changed"):
+                tilemap_culler.cull_runtime_tilesets(
+                    self._tmj(root, "prop.design.bank_office"), root / "tampered",
+                    authoring_root=authoring, design_stamp_root=stamp_root,
+                )
+            self.assertFalse((root / "unknown").exists())
+            self.assertFalse((root / "tampered").exists())
+
+    def test_design_stamp_rejects_tampered_catalog_license_evidence(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            authoring = self._authoring_root(root)
+            stamp_root = root / "stamps"
+            shutil.copytree(tilemap_culler.prop_atlas.DEFAULT_DESIGN_STAMP_ROOT, stamp_root)
+            catalog_path = stamp_root / "catalog.json"
+            catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+            catalog["pack_credits"][0]["license_sha256"] = "f" * 64
+            write_json(catalog_path, catalog)
+            with self.assertRaisesRegex(tilemap_culler.CullError, "license evidence changed"):
+                tilemap_culler.cull_runtime_tilesets(
+                    self._tmj(root, "prop.design.bank_office"), root / "runtime",
+                    authoring_root=authoring, design_stamp_root=stamp_root,
+                )
+            self.assertFalse((root / "runtime").exists())
+
+    def test_v3_credit_supersedes_same_named_design_stamp_credit(self):
+        v3_credit = {
+            "name": "Modern Interiors",
+            "profile": tilemap_culler.modern_interiors_v3_source.PROFILE,
+        }
+        credits = tilemap_culler.runtime_support.used_pack_credits(
+            {"packs": [{"name": "Modern Interiors", "license_sha256": "a" * 64}]},
+            {"sources": []},
+            {"props": [{
+                "asset_key": "prop.design.home_japanese",
+                "pack": "Modern Interiors",
+            }]},
+            [{"atlas": "interiors_v3"}],
+            ["prop.design.home_japanese"],
+            v3_credit,
+        )
+        self.assertEqual(credits, [v3_credit])
 
     def test_v2_only_map_does_not_require_local_v3_sources(self):
         with TemporaryDirectory() as tmp:

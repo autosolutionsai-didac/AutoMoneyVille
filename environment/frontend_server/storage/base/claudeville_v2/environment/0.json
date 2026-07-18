@@ -6,47 +6,47 @@
     },
     "Milo Chen": {
         "maze": "claudeville",
-        "x": 49,
-        "y": 19
+        "x": 26,
+        "y": 20
     },
     "Iris Morgan": {
         "maze": "claudeville",
-        "x": 35,
-        "y": 22
+        "x": 59,
+        "y": 21
     },
     "Theo Grant": {
         "maze": "claudeville",
-        "x": 69,
-        "y": 24
+        "x": 57,
+        "y": 25
     },
     "Lena Ortiz": {
         "maze": "claudeville",
-        "x": 50,
-        "y": 27
+        "x": 58,
+        "y": 28
     },
     "Ravi Singh": {
         "maze": "claudeville",
-        "x": 66,
-        "y": 29
+        "x": 20,
+        "y": 31
     },
     "June Park": {
         "maze": "claudeville",
-        "x": 42,
-        "y": 32
+        "x": 26,
+        "y": 34
     },
     "Amara Cole": {
         "maze": "claudeville",
-        "x": 22,
-        "y": 34
+        "x": 56,
+        "y": 36
     },
     "Felix Reed": {
         "maze": "claudeville",
-        "x": 65,
-        "y": 35
+        "x": 43,
+        "y": 38
     },
     "Sofia Lane": {
         "maze": "claudeville",
-        "x": 46,
-        "y": 38
+        "x": 30,
+        "y": 40
     }
 }

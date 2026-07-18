@@ -20,24 +20,23 @@
     },
     "Home 1": {
       "home_1.bathroom": [
-        "shower"
+        "washstand"
       ],
       "home_1.bedroom": [
-        "bed",
-        "closet"
+        "bed"
       ],
-      "home_1.garden": [],
+      "home_1.garden": [
+        "garden seat"
+      ],
       "home_1.kitchen": [
-        "cooking area",
-        "refrigerator"
+        "cooking area"
       ],
       "home_1.living_room": [
-        "common room table"
+        "side table"
       ]
     },
     "University": {
       "university.cafeteria": [
-        "dining table",
         "service counter"
       ],
       "university.lecture": [
@@ -66,12 +65,9 @@
         "postal counter"
       ],
       "post.sorting": [
-        "mail sorting table",
-        "parcel sorting rack",
-        "sorting station"
+        "mail sorting table"
       ],
       "post.waiting": [
-        "parcel preparation table",
         "waiting seating"
       ],
       "post_office.circulation": []
@@ -90,15 +86,12 @@
         "job intake"
       ],
       "workshop.machine_bay": [
-        "tool storage",
-        "work machine",
-        "workbench"
+        "work machine"
       ]
     },
     "Community Center": {
       "community.event_hall": [
-        "event table",
-        "presentation area"
+        "event table"
       ],
       "community.lounge": [
         "lounge seating"
@@ -116,167 +109,127 @@
         "reading table"
       ],
       "library.stacks": [
-        "bookshelf",
-        "east bookshelf"
+        "bookshelf"
       ]
     },
     "Home 2": {
       "home_2.bathroom": [
-        "shower"
+        "washstand"
       ],
       "home_2.main_room": [
-        "closet",
-        "cooking area",
-        "desk",
-        "refrigerator"
+        "bed"
       ]
     },
     "Home 3": {
       "home_3.bathroom": [
-        "shower"
+        "washstand"
       ],
       "home_3.main_room": [
-        "closet",
-        "cooking area",
-        "desk",
-        "refrigerator",
-        "shelf"
+        "bed"
       ]
     },
     "Home 4": {
       "home_4.bathroom": [
-        "shower"
+        "washstand"
       ],
       "home_4.main_room": [
-        "closet",
-        "common room sofa",
-        "cooking area",
-        "desk"
+        "resident hobby"
       ]
     },
     "Home 5": {
-      "home_5.bedroom": [
-        "bed",
-        "desk"
+      "home_5.bathroom": [
+        "washstand"
       ],
-      "home_5.garden": [],
+      "home_5.bedroom": [
+        "bed"
+      ],
       "home_5.kitchen": [
-        "cooking area",
-        "refrigerator"
+        "cooking area"
       ],
       "home_5.living_room": [
-        "common room table",
-        "shelf"
+        "resident hobby"
       ]
     },
     "Home 6": {
       "home_6.bathroom": [
-        "bathroom sink",
-        "shower"
+        "washstand"
       ],
       "home_6.bedroom": [
-        "bed",
-        "closet"
-      ],
-      "home_6.garden": [
-        "garden chair"
+        "bed"
       ],
       "home_6.kitchen": [
-        "cooking area",
-        "refrigerator"
+        "cooking area"
       ],
       "home_6.living_room": [
-        "common room table",
-        "harp",
-        "shelf"
+        "resident hobby"
       ]
     },
     "Town Hall": {
       "hall.administration": [
-        "administration desk"
+        "admin desk"
       ],
       "hall.council": [
         "council table"
       ],
       "hall.public_service": [
-        "public counter"
+        "counter wing"
       ],
       "town_hall.circulation": []
     },
     "Home 7": {
       "home_7.bathroom": [
-        "bathroom sink",
-        "shower"
+        "washstand"
       ],
       "home_7.bedroom": [
-        "bed",
-        "closet",
-        "desk"
+        "bed"
       ],
-      "home_7.garden": [],
       "home_7.kitchen": [
-        "cooking area",
-        "refrigerator"
+        "cooking area"
       ],
       "home_7.living_room": [
-        "common room table",
-        "shelf"
+        "resident hobby"
       ]
     },
     "Home 8": {
-      "home_8.bedroom": [
-        "bed",
-        "desk"
+      "home_8.bathroom": [
+        "washstand"
       ],
-      "home_8.garden": [],
+      "home_8.bedroom": [
+        "bed"
+      ],
       "home_8.kitchen": [
-        "cooking area",
-        "refrigerator"
+        "cooking area"
       ],
       "home_8.living_room": [
-        "common room table",
-        "shelf"
+        "resident hobby"
       ]
     },
     "Home 9": {
       "home_9.bathroom": [
-        "bathroom sink",
-        "shower"
+        "washstand"
       ],
       "home_9.bedroom": [
         "bed"
       ],
-      "home_9.garden": [
-        "garden chair"
-      ],
       "home_9.kitchen": [
-        "cooking area",
-        "refrigerator"
+        "cooking area"
       ],
       "home_9.living_room": [
-        "common room table",
-        "harp",
-        "shelf"
+        "resident hobby"
       ]
     },
     "Home 10": {
       "home_10.bathroom": [
-        "bathroom sink",
-        "shower"
+        "washstand"
       ],
       "home_10.bedroom": [
-        "bed",
-        "closet",
-        "desk"
+        "bed"
       ],
-      "home_10.garden": [],
       "home_10.kitchen": [
-        "cooking area",
-        "refrigerator"
+        "cooking area"
       ],
       "home_10.living_room": [
-        "common room table",
-        "shelf"
+        "resident hobby"
       ]
     },
     "Central Plaza": {
@@ -289,6 +242,9 @@
     "Claudeville Cafe": {
       "cafe.dining": [
         "dining table"
+      ],
+      "cafe.restroom": [
+        "toilet"
       ],
       "cafe.service": [
         "service counter"

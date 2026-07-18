@@ -42,6 +42,9 @@
 	    if (window.matchMedia('(max-width: 560px)').matches) {
 	      return Math.max(0.8, fitted);
 	    }
+	    if (window.matchMedia('(min-width: 1200px)').matches) {
+	      return Math.max(0.8, Math.min(0.9, fitted));
+	    }
 	    return Math.max(zoomMin, Math.min(0.8, fitted));
 	  };
 	  const centerFittedWorld = () => {
@@ -159,8 +162,10 @@
 	  for (let i=0; i<Object.keys(spawn_tile_loc).length; i++) {
 	    let persona_name = Object.keys(spawn_tile_loc)[i];
 	    // Use same coordinate system as movement_target in animateMovements()
-	    let start_pos = [spawn_tile_loc[persona_name][0] * tile_width,
-	                     spawn_tile_loc[persona_name][1] * tile_width];
+	    const spawnTile = renderedWorldController.projectLogicalTile(
+	      spawn_tile_loc[persona_name]
+	    );
+	    let start_pos = [spawnTile[0] * tile_width, spawnTile[1] * tile_width];
 
 	    let new_sprite = ClaudevilleCharacters.createSprite(
 	      this, persona_name, start_pos[0], start_pos[1]

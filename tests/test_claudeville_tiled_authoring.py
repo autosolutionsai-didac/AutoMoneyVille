@@ -11,10 +11,17 @@ from types import SimpleNamespace
 
 from tools.mapgen import author_claudeville_vertical_slices as slices
 from tools.mapgen import build_tilemap
+from tools.mapgen import claudeville_semantic_graph as semantic_graph
 from tools.mapgen import claudeville_tiled_authoring as authoring
 from tools.mapgen import compile_claudeville_semantics as compiler
 from tools.mapgen import compose_claudeville_interiors as composer
 from tools.mapgen import seed_claudeville_tiled_authoring as migration
+
+ROOT = Path(__file__).resolve().parents[1]
+TARGET_SOURCE = (
+    ROOT / "environment/frontend_server/static_dirs/assets/claudeville/visuals/"
+    / "claudeville_target_v45.tmj"
+)
 
 
 def _layers() -> tuple[list[dict], dict[str, dict]]:
@@ -117,6 +124,32 @@ def _collision_csv(collision: list[list[bool]]) -> str:
 
 
 class TiledAuthoringTests(unittest.TestCase):
+    def test_reference_embeddings_share_buildings_without_collision_changes(self):
+        source = json.loads(TARGET_SOURCE.read_text(encoding="utf-8"))
+        spec = json.loads(compiler.SPEC_PATH.read_text(encoding="utf-8"))
+        collision = semantic_graph.read_collision(compiler.COLLISION_PATH)
+        compiled = authoring.compile_authoring(source, spec, collision)
+
+        sectors = {item["name"]: item["rect"] for item in spec["sectors"]}
+        self.assertEqual(sectors["Claudeville Cafe"], [40, 22, 45, 39])
+        self.assertEqual(sectors["Community Center"], [33, 22, 39, 39])
+        self.assertEqual(sectors["Home 6"], [42, 40, 45, 47])
+        self.assertEqual(sectors["Central Plaza"], [47, 21, 68, 37])
+        self.assertEqual(compiled.stats["collision_mismatches"], 0)
+        self.assertEqual(compiled.stats["connectivity_pct"], 100)
+        self.assertEqual(compiled.collision, tuple(tuple(row) for row in collision))
+
+        objects = {item["semantic_id"]: item for item in compiled.town_spec["objects"]}
+        self.assertEqual(
+            objects["cafe.service.service-counter-001"]["stance"], [41, 27],
+        )
+        self.assertEqual(
+            objects["home_6.living_room.resident-hobby-001"]["stance"], [43, 43],
+        )
+        self.assertEqual(
+            objects["hall.council.council-table-001"]["stance"], [51, 43],
+        )
+
     def test_candidate_contains_the_complete_revision_three_vertical_slices(self):
         source = json.loads(slices.DEFAULT_MAP.read_text(encoding="utf-8"))
         self.assertEqual(
@@ -184,9 +217,13 @@ class TiledAuthoringTests(unittest.TestCase):
         }
         self.assertIn("home_5.bedroom.wardrobe-blocker.shape-001", blocker_ids)
 
-        compiled = compiler.compile_semantics(tmj_path=slices.DEFAULT_MAP)
+        source = json.loads(TARGET_SOURCE.read_text(encoding="utf-8"))
+        spec = json.loads(compiler.SPEC_PATH.read_text(encoding="utf-8"))
+        compiled = authoring.compile_authoring(
+            source, spec, semantic_graph.read_collision(compiler.COLLISION_PATH),
+        )
         self.assertEqual(compiled.stats["collision_mismatches"], 0)
-        self.assertGreaterEqual(compiled.stats["connectivity_pct"], 98)
+        self.assertEqual(compiled.stats["connectivity_pct"], 100)
 
     def test_compiles_without_changing_authoritative_collision(self):
         collision = _collision()
@@ -195,6 +232,7 @@ class TiledAuthoringTests(unittest.TestCase):
         self.assertEqual(result.stats["collision_mismatches"], 0)
         self.assertEqual(result.town_spec["_authoring_profile"], authoring.PROFILE)
         self.assertEqual(result.town_spec["objects"][0]["semantic_id"], "test.service-counter")
+        self.assertEqual(result.town_spec["objects"][0]["type"], "service counter")
         self.assertFalse(result.town_spec["objects"][0]["blocks"])
         self.assertEqual(result.object_stances, ((2, 3),))
         self.assertEqual(

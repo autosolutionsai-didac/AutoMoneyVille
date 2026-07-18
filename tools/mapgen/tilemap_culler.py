@@ -14,12 +14,14 @@ try:
     from tools.mapgen import curate_modern_interiors_v3 as interiors_v3_curator
     from tools.mapgen import curate_modern_pixels_v2 as v2_curator
     from tools.mapgen import modern_interiors_v3_source, tiled_gid
+    from tools.mapgen import tilemap_prop_atlas as prop_atlas
     from tools.mapgen import tilemap_runtime_support as runtime_support
 except ModuleNotFoundError:  # Direct ``python tools/mapgen/cull_modern_pixels_v2.py``.
     import curate_modern_interiors_v3 as interiors_v3_curator
     import curate_modern_pixels_v2 as v2_curator
     import modern_interiors_v3_source
     import tiled_gid
+    import tilemap_prop_atlas as prop_atlas
     import tilemap_runtime_support as runtime_support
 
 INTERIORS_V3_OUTPUT_ROOT, DEFAULT_OUTPUT_ROOT, MAX_ATLAS_SIZE, TILE_SIZE = interiors_v3_curator.DEFAULT_OUTPUT_ROOT, v2_curator.DEFAULT_OUTPUT_ROOT, v2_curator.MAX_ATLAS_SIZE, v2_curator.TILE_SIZE
@@ -29,7 +31,24 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_SIZE = (176, 96)
 FLIP_MASK = tiled_gid.GID_MASK
 BASE_TILESETS = ("terrain", "town", "office", "interiors")
-V3_TILESETS = {"room_arched_entryways", "room_floors", "room_walls"}
+V3_REQUIRED_TILESETS = {
+    "room_arched_entryways",
+    "room_floors",
+    "room_walls",
+}
+V3_OPTIONAL_TILESETS = {
+    "room_borders",
+    "theme_generic",
+    "theme_kitchen",
+}
+V3_TILESETS = V3_REQUIRED_TILESETS | V3_OPTIONAL_TILESETS
+V3_REQUIRED_SOURCE_TILESETS = {
+    "terrain",
+    "town",
+    "office",
+    "interiors_props",
+    *V3_REQUIRED_TILESETS,
+}
 V3_PROFILE = "claudeville-modern-interiors-v3"
 GENERATED_ROOT_FILES = ("credits.json", "props.json", "props.png", "runtime_manifest.json")
 GENERATED_TILESETS = (*BASE_TILESETS, "interiors_v3")
@@ -39,6 +58,9 @@ GENERATED_PATHS = (*GENERATED_ROOT_FILES, *(f"tiles/{key}.{suffix}"
 
 class CullError(CurationError):
     """Raised when a Tiled source cannot be reduced safely."""
+
+
+_pack_props = prop_atlas.pack_props
 
 
 def stable_source_sha256(path: Path) -> str:
@@ -98,9 +120,15 @@ def _map_tilesets(source: dict) -> list[tuple[int, str]]:
     keys = [key for _, key in result]
     if len(keys) != len(set(keys)):
         raise CullError("TMJ may reference each approved tileset only once")
-    if _property_value(source.get("properties"), "authoring_profile") == V3_PROFILE \
-            and "interiors" in keys:
-        raise CullError("Modern Interiors v3 maps may not reference the legacy interiors tileset")
+    if _property_value(source.get("properties"), "authoring_profile") == V3_PROFILE:
+        if "interiors" in keys:
+            raise CullError(
+                "Modern Interiors v3 maps may not reference the legacy interiors tileset"
+            )
+        if not V3_REQUIRED_SOURCE_TILESETS <= set(keys):
+            raise CullError(
+                "Modern Interiors v3 maps must declare the core authoring tilesets"
+            )
     return sorted(result)
 
 
@@ -188,27 +216,6 @@ def _selected_assets(source: dict, tile_catalog: dict[tuple[str, int], dict]):
     return selected_tiles, sorted(source_gids), sorted(props)
 
 
-def _pack_props(images: list[tuple[str, Image.Image]]):
-    for width in (256, 512, 1024, 2048, 4096):
-        # The authoring palette includes complete civic façades such as the
-        # school.  A narrow first candidate page must not reject an otherwise
-        # valid sprite that fits on a later bounded runtime page.
-        if any(image.width + 4 > width for _, image in images):
-            continue
-        x = y = row_height = 2
-        placements = []
-        for key, image in images:
-            if x + image.width + 2 > width:
-                x, y, row_height = 2, y + row_height + 2, 0
-            placements.append((key, image, x, y))
-            x += image.width + 2
-            row_height = max(row_height, image.height)
-        height = y + row_height + 2
-        if height <= width and height <= MAX_ATLAS_SIZE:
-            return width, height, placements
-    raise CullError("runtime prop atlas would exceed 4096x4096")
-
-
 def _v3_props(authoring: Path) -> dict[str, dict]:
     catalog = _read_json(authoring / "catalog.json", "Modern Interiors v3 catalog")
     if catalog.get("profile") != modern_interiors_v3_source.PROFILE or \
@@ -258,19 +265,6 @@ def _v3_tiles(authoring: Path) -> dict[tuple[str, int], dict]:
             raise CullError(f"duplicate Modern Interiors v3 tile: {key}")
         result[key] = record
     return result
-
-
-def _validate_requested_props(
-    authoring: Path, v3_authoring: Path | None, requested: list[str]
-) -> tuple[dict, dict]:
-    frames = _read_json(authoring / "props.json", "authoring props metadata").get("frames")
-    if not isinstance(frames, dict):
-        raise CullError("authoring props metadata is missing frames")
-    v3 = _v3_props(v3_authoring) if v3_authoring is not None else {}
-    missing = sorted(set(requested) - set(frames) - set(v3))
-    if missing:
-        raise CullError(f"TMJ object assets are missing from props in approved catalogs: {missing}")
-    return frames, v3
 
 
 def _write_runtime_tiles(
@@ -347,63 +341,11 @@ def _write_runtime_tiles(
     return runtime_pages, asset_remap
 
 
-def _write_runtime_props(
-    output: Path, authoring: Path, v3_authoring: Path | None, v3_source: Path | None,
-    requested: list[str],
-):
-    frames, v3 = _validate_requested_props(authoring, v3_authoring, requested)
-    source_image = None
-    if any(key in frames for key in requested):
-        with Image.open(authoring / "props.png") as opened:
-            source_image = opened.convert("RGBA")
-    images = []
-    try:
-        for key in requested:
-            if key in frames:
-                frame = frames[key].get("frame") if isinstance(frames[key], dict) else None
-                if not isinstance(frame, dict) or not all(
-                    isinstance(frame.get(axis), int) for axis in ("x", "y", "w", "h")
-                ):
-                    raise CullError(f"authoring prop frame is malformed: {key}")
-                images.append((key, source_image.crop((
-                    frame["x"], frame["y"], frame["x"] + frame["w"],
-                    frame["y"] + frame["h"],
-                ))))
-                continue
-            record = v3[key]
-            if v3_source is None:
-                raise CullError("Modern Interiors v3 prop source was not preflighted")
-            path = modern_interiors_v3_source.validate_source_path(
-                v3_source, record.get("source")
-            )
-            if modern_interiors_v3_source.file_sha256(path) != record.get("source_sha256"):
-                raise CullError(f"Modern Interiors v3 prop hash changed: {key}")
-            images.append((key, modern_interiors_v3_source.open_png(path)))
-    finally:
-        if source_image is not None:
-            source_image.close()
-    if not images:
-        return None
-    try:
-        width, height, placements = _pack_props(images)
-        image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-        frames_out = {}
-        for key, prop, x, y in placements:
-            image.alpha_composite(prop, (x, y))
-            frames_out[key] = {"frame": {"h": prop.height, "w": prop.width, "x": x, "y": y}, "rotated": False, "spriteSourceSize": {"h": prop.height, "w": prop.width, "x": 0, "y": 0}, "sourceSize": {"h": prop.height, "w": prop.width}, "trimmed": False}
-        _write_png(output / "props.png", image)
-        _write_json(output / "props.json", {"frames": frames_out, "meta": {"app": "Claudeville Modern Pixels v3 runtime", "format": "RGBA8888", "image": "props.png", "scale": "1", "size": {"h": height, "w": width}}})
-        image.close()
-    finally:
-        for _, prop in images:
-            prop.close()
-    return {"asset_keys": requested, "data": "props.json", "image": "props.png", "key": "claudeville-v2-props"}
-
-
 def cull_runtime_tilesets(
     source_tmj: Path, output_root: Path, *, authoring_root: Path = DEFAULT_OUTPUT_ROOT,
     interiors_v3_authoring_root: Path = INTERIORS_V3_OUTPUT_ROOT,
     interiors_v3_source_root: Path = modern_interiors_v3_source.DEFAULT_SOURCE_ROOT,
+    design_stamp_root: Path = prop_atlas.DEFAULT_DESIGN_STAMP_ROOT,
 ) -> dict:
     """Return a deterministic compact runtime asset manifest for one hand-authored TMJ."""
     source_path = Path(source_tmj).expanduser().resolve(strict=True)
@@ -434,14 +376,35 @@ def cull_runtime_tilesets(
     selected, source_gids, props = _selected_assets(source, tile_catalog)
     if not selected:
         raise CullError("TMJ must reference at least one curated tile")
-    _validate_requested_props(authoring, v3_authoring, props)
+    try:
+        design_stamps, design_catalog_sha, design_credits = prop_atlas.load_design_stamps(
+            design_stamp_root, props
+        )
+        if design_stamps:
+            stamp_root = Path(design_stamp_root).expanduser().resolve(strict=True)
+            if output == stamp_root or stamp_root in output.parents or output in stamp_root.parents:
+                raise prop_atlas.PropAtlasError(
+                    "runtime output must remain separate from curated design stamps"
+                )
+        v3_props = _v3_props(v3_authoring) if v3_authoring is not None else {}
+        frames = prop_atlas.validate_requested_props(
+            authoring, v3_props, design_stamps, props
+        )
+    except prop_atlas.PropAtlasError as exc:
+        raise CullError(str(exc)) from exc
     atlas_metadata = _read_json(authoring / "atlas.json", "authoring atlas metadata")
     prop_catalog = _read_json(authoring / "catalog.json", "authoring prop catalog")
     source_credits = _read_json(authoring / "credits.json", "authoring credits")
     try:
+        source_credits = prop_atlas.merge_pack_credits(
+            source_credits, design_credits, design_stamps
+        )
+        prop_catalog = prop_atlas.merge_prop_provenance(prop_catalog, design_stamps)
         packs = runtime_support.used_pack_credits(
             source_credits, atlas_metadata, prop_catalog, selected.values(), props, v3_pack,
         )
+    except prop_atlas.PropAtlasError as exc:
+        raise CullError(str(exc)) from exc
     except runtime_support.RuntimeSupportError as exc:
         raise CullError(str(exc)) from exc
     v3_catalog_sha = sha256((v3_authoring / "catalog.json").read_bytes()).hexdigest() \
@@ -449,7 +412,9 @@ def cull_runtime_tilesets(
     try:
         with runtime_support.staged_runtime(output, GENERATED_PATHS) as staging:
             pages, asset_remap = _write_runtime_tiles(staging, authoring, v3_source, selected)
-            props_manifest = _write_runtime_props(staging, authoring, v3_authoring, v3_source, props)
+            props_manifest = prop_atlas.write_runtime_props(
+                staging, authoring, v3_source, props, frames, v3_props, design_stamps
+            )
             tilesets = _map_tilesets(source)
             firstgids, by_firstgid = [item[0] for item in tilesets], dict(tilesets)
             remap = {}
@@ -473,11 +438,15 @@ def cull_runtime_tilesets(
             }
             if v3_catalog_sha is not None:
                 manifest["interiors_v3_catalog_sha256"] = v3_catalog_sha
+            if design_catalog_sha is not None:
+                manifest["design_stamp_catalog_sha256"] = design_catalog_sha
             _write_json(staging / "runtime_manifest.json", manifest)
     except modern_interiors_v3_source.ModernInteriorsV3Error as exc:
         raise CullError(f"Modern Interiors v3 source failed: {exc}") from exc
     except runtime_support.RuntimeSupportError as exc:
         raise CullError(f"runtime transaction failed: {exc}") from exc
+    except prop_atlas.PropAtlasError as exc:
+        raise CullError(f"runtime prop atlas failed: {exc}") from exc
     return manifest
 
 

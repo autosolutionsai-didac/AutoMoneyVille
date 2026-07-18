@@ -1,34 +1,39 @@
-"""Contracts for Claudeville's coherent south residential district."""
+"""Contracts for the active reference-traced south residential district."""
+
+from __future__ import annotations
 
 import json
 import unittest
 from collections import defaultdict
 from pathlib import Path
 
-from tools.mapgen import claudeville_south_placements as south
+from tools.mapgen import claudeville_reference_facade_assets as facades
+from tools.mapgen import claudeville_reference_home1 as partitions
+from tools.mapgen import claudeville_reference_layout as layout
+from tools.mapgen import claudeville_reference_semantics as semantics
+from tools.mapgen import claudeville_reference_shared_civic as town_hall
+from tools.mapgen import claudeville_reference_stamps as homes
+from tools.mapgen import claudeville_semantic_graph as semantic_graph
+from tools.mapgen import claudeville_tiled_authoring as authoring
+from tools.mapgen import compile_claudeville_semantics as compiler
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / "tools/mapgen/town_spec.json"
-
-EXPECTED = {
-    "Home 2": [2, 35, 8, 45], "Home 3": [10, 35, 16, 45],
-    "Home 4": [18, 35, 24, 45], "Home 5": [26, 35, 32, 45],
-    "Home 6": [34, 35, 41, 45], "Town Hall": [43, 34, 53, 45],
-    "Home 7": [55, 35, 61, 45], "Home 8": [63, 35, 69, 45],
-    "Home 9": [71, 35, 78, 45], "Home 10": [80, 35, 86, 45],
-}
-AUTHORED_HOMES = tuple(
-    name for name in EXPECTED if name.startswith("Home ") and name != "Home 5"
+TARGET_SOURCE = (
+    ROOT / "environment/frontend_server/static_dirs/assets/claudeville/visuals/"
+    / "claudeville_target_v45.tmj"
 )
+SOUTH = frozenset({f"Home {number}" for number in range(2, 11)} | {"Town Hall"})
+EXPECTED = {name: semantics.EMBEDDED_SECTOR_RECTS[name] for name in SOUTH}
 
 
 class SouthDistrictTests(unittest.TestCase):
-    def test_south_sector_row_matches_authored_facade_lots(self):
+    def test_south_sector_row_matches_the_active_cutaway_lots(self):
         spec = json.loads(SPEC.read_text(encoding="utf-8"))
         sectors = {item["name"]: item["rect"] for item in spec["sectors"]}
-        self.assertEqual({name: sectors[name] for name in EXPECTED}, EXPECTED)
+        self.assertEqual({name: sectors[name] for name in SOUTH}, EXPECTED)
 
-    def test_all_south_arenas_objects_and_spawns_remain_inside_their_sector(self):
+    def test_all_south_arenas_objects_entrances_and_spawns_stay_in_sector(self):
         spec = json.loads(SPEC.read_text(encoding="utf-8"))
         sectors = {item["name"]: item["rect"] for item in spec["sectors"]}
 
@@ -36,114 +41,99 @@ class SouthDistrictTests(unittest.TestCase):
             return rect[0] <= point[0] <= rect[2] and rect[1] <= point[1] <= rect[3]
 
         for arena in spec["arenas"]:
-            if arena["sector"] not in EXPECTED:
+            if arena["sector"] not in SOUTH:
                 continue
-            rects = arena.get("rects", [arena.get("rect")])
-            self.assertTrue(all(rect is not None for rect in rects))
-            for x0, y0, x1, y1 in rects:
+            for x0, y0, x1, y1 in (arena.get("rects") or [arena["rect"]]):
                 self.assertTrue(inside(sectors[arena["sector"]], (x0, y0)))
                 self.assertTrue(inside(sectors[arena["sector"]], (x1, y1)))
-        for collection, key in ((spec["objects"], "tiles"), (spec["spawns"], "tile")):
+        for collection, key in (
+            (spec["objects"], "tiles"), (spec["spawns"], "tile"),
+            (spec["entrances"], "tile"),
+        ):
             for item in collection:
-                if item["sector"] not in EXPECTED:
+                if item["sector"] not in SOUTH:
                     continue
                 points = item[key] if key == "tiles" else [item[key]]
-                self.assertTrue(all(inside(sectors[item["sector"]], point) for point in points))
+                self.assertTrue(all(inside(sectors[item["sector"]], p) for p in points))
 
-    def test_production_homes_have_distinct_palettes_and_room_graphs(self):
-        self.assertNotIn("Home 5", south.TARGETS)
-        shells = {record[0]: record for record in south.VISUAL_SHELLS}
-        palettes = [shells[name][7] for name in AUTHORED_HOMES]
-        self.assertEqual(len(palettes), len(set(palettes)))
-
-        signatures = []
-        for name in AUTHORED_HOMES:
-            _, left, top, *_tail = shells[name]
-            signature = []
-            for sector, orientation, fixed, start, end, gaps in south.WALL_RUNS:
-                if sector != name:
-                    continue
-                fixed_origin = left if orientation == "vertical" else top
-                run_origin = top if orientation == "vertical" else left
-                signature.append((
-                    orientation, fixed - fixed_origin, start - run_origin,
-                    end - run_origin, tuple(gap - run_origin for gap in gaps),
-                ))
-            signatures.append(tuple(signature))
-        self.assertEqual(len(signatures), len(set(signatures)))
-
-    def test_every_home_has_complete_purposeful_clusters(self):
-        by_home = defaultdict(list)
-        for placement in south.PLACEMENTS:
-            by_home[placement[0]].append(placement)
-        for home in AUTHORED_HOMES:
-            with self.subTest(home=home):
-                placements = by_home[home]
-                roles = {item[2] for item in placements}
-                self.assertTrue({"bed", "cooking-area", "refrigerator"} <= roles)
-                self.assertTrue({"kitchen-counter", "kitchen-prep"} <= roles)
-                self.assertTrue({"closet", "wardrobe", "dresser"} & roles)
-                self.assertTrue({"sofa", "common-room-sofa"} & roles)
-                self.assertTrue(any("sink" in role for role in roles))
-                self.assertTrue(any("shower" in role for role in roles))
-                self.assertTrue(any("toilet" in role for role in roles))
-                self.assertGreaterEqual(len({item[3] for item in placements}), 6)
-
-                counter = next(item for item in placements if item[2] == "kitchen-counter")
-                sink = next(item for item in placements if item[2] == "kitchen-prep")
-                self.assertEqual(counter[5], sink[5])
-                self.assertEqual(counter[6] - 1, sink[6])
-
-    def test_native_arches_replace_all_giant_entrance_props(self):
-        self.assertIn("room.arched_entryways", south.V3_TILE_SOURCES)
-        self.assertFalse(any(
-            placement[4].startswith("prop.facade.") or placement[2] == "entrance"
-            for placement in south.PLACEMENTS
-        ))
-        for layer, x, y, reference in south.VISUAL_TILE_EDITS:
-            self.assertEqual(layer, "Wall")
-            self.assertEqual(reference[0], "room.arched_entryways")
-        self.assertEqual(len(south.VISUAL_TILE_EDITS), len(south.TARGETS) * 4)
-        for shell in south.VISUAL_SHELLS:
-            sector, _left, top, _right, _bottom, door_left, door_right, _floor = shell
-            expected = {
-                (x, y) for x in range(door_left, door_right + 1)
-                for y in range(top, top + 2)
-            }
-            actual = {
-                (x, y) for _layer, x, y, _reference in south.VISUAL_TILE_EDITS
-                if (x, y) in expected
-            }
-            with self.subTest(sector=sector):
-                self.assertEqual(actual, expected)
-
-    def test_facade_cleanup_is_limited_to_two_safe_rows_per_parcel(self):
-        self.assertEqual(len(south.SAFE_LEGACY_FACADE_RECTS), len(south.TARGETS))
-        for sector, left, top, right, bottom in south.SAFE_LEGACY_FACADE_RECTS:
-            target_left, target_top, target_right, target_bottom = south.TARGET_BOUNDS[sector]
-            self.assertEqual(bottom - top, 2)
-            self.assertTrue(target_left <= left < right <= target_right)
-            self.assertTrue(target_top <= top < bottom <= target_bottom)
+    def test_reference_entrances_are_the_emitted_top_facing_doors(self):
+        spec = json.loads(SPEC.read_text(encoding="utf-8"))
+        actual = {item["sector"]: tuple(item["tile"]) for item in spec["entrances"]}
         self.assertEqual(
-            south.TILE_FILLS,
-            tuple(
-                ("Foreground L1", left, top, right, bottom, 0)
-                for _sector, left, top, right, bottom
-                in south.SAFE_LEGACY_FACADE_RECTS
-            ),
+            {sector: actual[sector] for sector in SOUTH},
+            {sector: semantics.ENTRANCES[sector] for sector in SOUTH},
         )
 
-    def test_town_hall_has_public_admin_and_council_clusters(self):
-        placements = [item for item in south.PLACEMENTS if item[0] == "Town Hall"]
-        zones = {item[1] for item in placements}
-        roles = {item[2] for item in placements}
-        self.assertEqual(zones, {
-            "hall.public_service", "hall.administration", "hall.council",
-        })
+    def test_all_nine_south_homes_have_individual_nonoverlapping_shells(self):
+        rooms = []
+        for sector in sorted(SOUTH - {"Town Hall"}):
+            record = layout.BUILDINGS[sector]
+            self.assertTrue(record["paint_shell"])
+            self.assertEqual(record["door_side"], "top")
+            rooms.append((sector, record["room"]))
+        for index, (sector, (left, top, right, bottom)) in enumerate(rooms):
+            for other, (o_left, o_top, o_right, o_bottom) in rooms[index + 1:]:
+                overlaps = left < o_right and o_left < right and top < o_bottom and o_top < bottom
+                self.assertFalse(overlaps, f"{sector} overlaps {other}")
+
+    def test_every_home_has_one_complete_purposeful_program(self):
+        by_home = defaultdict(list)
+        for placement in homes.HOME_PLACEMENTS:
+            by_home[placement[0]].append(placement)
+        required = {
+            "washstand", "toilet-fixture", "refrigerator", "cooking-area",
+            "closet", "bed", "lounge-seating", "media-console", "plant",
+            "resident-hobby",
+        }
+        for home in sorted(SOUTH - {"Town Hall"}):
+            with self.subTest(home=home):
+                placements = by_home[home]
+                self.assertEqual(len(placements), 11)
+                self.assertTrue(required <= {item[2] for item in placements})
+                room = layout.BUILDINGS[home]["room"]
+                self.assertTrue(all(
+                    room[0] < item[5] < room[2] and room[1] < item[6] < room[3]
+                    for item in placements
+                ))
+
+    def test_internal_partitions_and_door_gaps_stay_inside_each_home(self):
+        south_partitions = [item for item in partitions.PARTITIONS if item[0] in SOUTH]
+        self.assertEqual({item[0] for item in south_partitions}, SOUTH - {"Town Hall"})
+        for sector, orientation, fixed, start, end, gaps in south_partitions:
+            left, top, right, bottom = layout.BUILDINGS[sector]["room"]
+            if orientation == "horizontal":
+                self.assertTrue(top < fixed < bottom and left <= start < end <= right)
+                self.assertTrue(all(start <= gap <= end for gap in gaps))
+            else:
+                self.assertTrue(left < fixed < right and top <= start < end <= bottom)
+                self.assertTrue(all(start <= gap <= end for gap in gaps))
+
+    def test_residential_frontages_are_distinct_native_exteriors_compositions(self):
+        specs = {
+            spec["sector"]: spec for spec in facades.RESIDENTIAL_SPECS
+            if spec["sector"] in SOUTH
+        }
+        self.assertEqual(set(specs), SOUTH - {"Town Hall"})
+        signatures = [tuple(spec["source_keys"]) for spec in specs.values()]
+        self.assertEqual(len(signatures), len(set(signatures)))
+        self.assertTrue(all(spec["output_size"][1] == 48 for spec in specs.values()))
+
+    def test_town_hall_has_records_council_service_and_administration_clusters(self):
+        roles = {item[2] for item in town_hall.PLACEMENTS}
         self.assertTrue({
-            "public-counter", "administration-desk", "council-table",
-            "waiting-sofa", "printer", "council-screen",
+            "records", "council-table", "council-chair", "counter-wing",
+            "service-terminal", "admin-desk", "waiting-seat",
         } <= roles)
+        town_hall.validate()
+
+    def test_active_south_authoring_preserves_collision_and_connectivity(self):
+        source = json.loads(TARGET_SOURCE.read_text(encoding="utf-8"))
+        spec = json.loads(SPEC.read_text(encoding="utf-8"))
+        collision = semantic_graph.read_collision(compiler.COLLISION_PATH)
+        compiled = authoring.compile_authoring(source, spec, collision)
+        self.assertEqual(compiled.stats["collision_mismatches"], 0)
+        self.assertEqual(compiled.stats["connectivity_pct"], 100)
+        self.assertEqual(compiled.stats["stances"], compiled.stats["objects"])
 
 
 if __name__ == "__main__":

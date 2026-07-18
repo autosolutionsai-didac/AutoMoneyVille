@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import unittest
 
+from tests.claudeville_composition_support import legacy_v2_sector_cells
 from tools.mapgen import claudeville_circulation_cells as circulation
 from tools.mapgen import claudeville_entry_paths as entry_paths
 from tools.mapgen import claudeville_home_semantics as homes
@@ -12,6 +13,8 @@ from tools.mapgen import claudeville_purpose_layouts as layout
 from tools.mapgen import claudeville_scenery_blocks as scenery
 from tools.mapgen import claudeville_semantic_graph as graph
 from tools.mapgen import compile_claudeville_semantics as compiler
+
+LEGACY_TMJ = compiler.WORLD_ROOT / "visuals/claudeville_full_town_v2.tmj"
 
 
 def empty_layers() -> dict[str, dict]:
@@ -45,9 +48,9 @@ class ClaudevilleCirculationTests(unittest.TestCase):
         self.assertNotIn(logical, entry_paths.authored_walkable_cells(layers, set()))
 
     def test_reviewed_cells_preserve_objects_blockers_and_scenery(self):
-        tmj = compiler._read_json(compiler.TMJ_PATH)
+        tmj = compiler._read_json(LEGACY_TMJ)
         layers = compiler._layers(tmj)
-        sectors = graph.sector_cells(compiler._read_json(compiler.SPEC_PATH))
+        sectors = legacy_v2_sector_cells()
         home_data = homes.derive_home_semantics(layers, layout, sector_cells=sectors)
         reviewed = set().union(*circulation.CIRCULATION_CELLS.values())
         occupied = {

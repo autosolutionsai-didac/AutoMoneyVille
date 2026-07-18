@@ -10,6 +10,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from tests.claudeville_composition_support import (
+    LEGACY_V2_SECTOR_RECTS,
     cells_in,
     derive_homes,
     layer_lookup,
@@ -254,10 +255,32 @@ class ClaudevilleInteriorCompositionTests(unittest.TestCase):
     @unittest.skipUnless(composer.AUTHORING_ROOT.is_dir(), "authoring cache missing")
     def test_every_home_object_has_one_reachable_cardinal_stance(self):
         with TemporaryDirectory() as temporary:
-            output = Path(temporary) / "stances.tmj"
+            root = Path(temporary)
+            output = root / "stances.tmj"
             composer.compose(composer.SOURCE_MAP, output)
             layers = layer_lookup(load_map(output))
-            compilation = semantic_compiler.compile_semantics(tmj_path=output)
+            spec = deepcopy(semantic_compiler._read_json(semantic_compiler.SPEC_PATH))
+            sectors = {item["name"]: item for item in spec["sectors"]}
+            for name, rect in LEGACY_V2_SECTOR_RECTS.items():
+                sectors[name]["rect"] = rect
+            spec_path = root / "legacy-v2-spec.json"
+            spec_path.write_text(json.dumps(spec), encoding="utf-8")
+            overrides_path = root / "legacy-v2-overrides.json"
+            overrides_path.write_text(
+                json.dumps({"blocked_regions": [], "blocked": [], "walkable": []}),
+                encoding="utf-8",
+            )
+            collision_path = root / "legacy-v2-collision.csv"
+            collision_path.write_text(
+                ",".join("0" for _ in range(88 * 48)) + "\n",
+                encoding="utf-8",
+            )
+            compilation = semantic_compiler.compile_semantics(
+                tmj_path=output,
+                spec_path=spec_path,
+                overrides_path=overrides_path,
+                collision_path=collision_path,
+            )
         homes = derive_homes(layers)
         recipes = [
             (sector, item)

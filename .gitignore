@@ -114,6 +114,17 @@ celerybeat-schedule
 # broad authoring cache. Only the culled Claudeville runtime is committed.
 /output/
 
+# Local Claudeville visual experiments. The promoted v45 runtime remains
+# versioned; rejected browser candidates and review captures stay local.
+/environment/frontend_server/static_dirs/assets/claudeville/visual_candidates/browser-*/
+!/environment/frontend_server/static_dirs/assets/claudeville/visual_candidates/browser-target-v45/
+!/environment/frontend_server/static_dirs/assets/claudeville/visual_candidates/browser-target-v45/**
+/environment/frontend_server/static_dirs/assets/claudeville/visual_candidates/browser-target-v45/playwright-*.png
+/environment/frontend_server/static_dirs/assets/claudeville/visuals/claudeville_compact_v4.tmj
+/environment/frontend_server/static_dirs/assets/claudeville/visuals/claudeville_reference_facades_v19.tmj
+/environment/frontend_server/static_dirs/assets/claudeville/visuals/claudeville_reference_slice_v18.tmj
+/environment/frontend_server/static_dirs/assets/claudeville/visuals/claudeville_target_visual_debug.tmj
+
 # virtualenv
 venv/
 ENV/

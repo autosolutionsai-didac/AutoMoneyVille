@@ -1,23 +1,22 @@
-"""Build a local native-16px authoring cache for the Claudeville v2 map."""
-
 from __future__ import annotations
 
 import argparse
 import json
-import math
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont, UnidentifiedImageError
+from PIL import Image, UnidentifiedImageError
 from PIL import __version__ as PILLOW_VERSION
 
 try:
     from tools.mapgen import modern_interiors_source
+    from tools.mapgen import tilemap_runtime_support as runtime_support
 except ModuleNotFoundError:  # Direct ``python tools/mapgen/curate_modern_pixels_v2.py``.
     import modern_interiors_source
+    import tilemap_runtime_support as runtime_support
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SOURCE_ROOT = REPO_ROOT.parents[1] / "Modern Pixels"
@@ -33,8 +32,6 @@ class CurationError(ValueError): ...
 
 @dataclass(frozen=True)
 class SourceSheet:
-    """One entire approved native-16px source sheet."""
-
     source_id: str
     pack: str
     relative_path: str
@@ -44,8 +41,6 @@ class SourceSheet:
 
 @dataclass(frozen=True)
 class PropSpec:
-    """One complete source image packed as a depth-sortable runtime frame."""
-
     asset_key: str
     category: str
     pack: str
@@ -115,6 +110,7 @@ PROP_SPECS = (
     _exterior_prop("prop.plaza.fountain_blue", "plaza", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Fountain_1.png"),
     _exterior_prop("prop.plaza.fountain_city", "plaza", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Fountain_2.png"),
     _exterior_prop("prop.plaza.fountain_garden", "plaza", "17_Garden_Singles_16x16", "ME_Singles_Garden_16x16_Fountain_2_1.png"),
+    _exterior_prop("prop.plaza.fountain_round_blue", "plaza", "17_Garden_Singles_16x16", "ME_Singles_Garden_16x16_Fountain_3_3.png"),
     _exterior_prop("prop.street.bench_01", "street", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Bench_1.png"),
     _exterior_prop("prop.street.bench_02", "street", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Bench_2.png"),
     _exterior_prop("prop.street.bench_03", "street", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Bench_3.png"),
@@ -124,6 +120,7 @@ PROP_SPECS = (
     _exterior_prop("prop.street.hydrant", "street", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Hydrant_1.png"),
     _exterior_prop("prop.street.lamp_01", "street", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Street_Lamp_1.png"),
     _exterior_prop("prop.street.lamp_03", "street", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Street_Lamp_3.png"),
+    _exterior_prop("prop.street.lamp_05", "street", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Street_Lamp_5.png"),
     _exterior_prop("prop.street.mailbox", "street", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Mailbox_1.png"),
     _exterior_prop("prop.street.parking_meter", "street", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Parking_Meter_1.png"),
     _exterior_prop("prop.street.phone_booth", "street", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Phone_Booth_1.png"),
@@ -136,6 +133,29 @@ PROP_SPECS = (
     _exterior_prop("prop.landscape.tree_05", "landscape", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Tree_5.png"),
     _exterior_prop("prop.landscape.tree_07", "landscape", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Tree_7.png"),
     _exterior_prop("prop.landscape.tree_09", "landscape", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Tree_9.png"),
+    _exterior_prop("prop.landscape.tree_11", "landscape", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Tree_11.png"),
+    _exterior_prop("prop.landscape.tree_12", "landscape", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Tree_12.png"),
+    _exterior_prop("prop.landscape.tree_cluster_15", "landscape", "3_City_Props_Singles_16x16", "ME_Singles_City_Props_16x16_Tree_15.png"),
+    _exterior_prop("prop.landscape.conifer_tall_01", "landscape", "11_Camping_Singles_16x16", "ME_Singles_Camping_16x16_Tree_208.png"),
+    _exterior_prop("prop.landscape.conifer_tall_02", "landscape", "11_Camping_Singles_16x16", "ME_Singles_Camping_16x16_Tree_212.png"),
+    _exterior_prop("prop.landscape.conifer_tall_03", "landscape", "11_Camping_Singles_16x16", "ME_Singles_Camping_16x16_Tree_216.png"),
+    _exterior_prop("prop.landscape.forest_wall_back_left", "landscape", "11_Camping_Singles_16x16", "ME_Singles_Camping_16x16_Tree_Wall_Modular_1.png"),
+    _exterior_prop("prop.landscape.forest_wall_back_center", "landscape", "11_Camping_Singles_16x16", "ME_Singles_Camping_16x16_Tree_Wall_Modular_2.png"),
+    _exterior_prop("prop.landscape.forest_wall_back_right", "landscape", "11_Camping_Singles_16x16", "ME_Singles_Camping_16x16_Tree_Wall_Modular_3.png"),
+    _exterior_prop("prop.landscape.forest_wall_mid_left", "landscape", "11_Camping_Singles_16x16", "ME_Singles_Camping_16x16_Tree_Wall_Modular_4.png"),
+    _exterior_prop("prop.landscape.forest_wall_mid_center", "landscape", "11_Camping_Singles_16x16", "ME_Singles_Camping_16x16_Tree_Wall_Modular_5.png"),
+    _exterior_prop("prop.landscape.forest_wall_mid_right", "landscape", "11_Camping_Singles_16x16", "ME_Singles_Camping_16x16_Tree_Wall_Modular_6.png"),
+    _exterior_prop("prop.landscape.forest_wall_front_left", "landscape", "11_Camping_Singles_16x16", "ME_Singles_Camping_16x16_Tree_Wall_Modular_7.png"),
+    _exterior_prop("prop.landscape.forest_wall_front_center", "landscape", "11_Camping_Singles_16x16", "ME_Singles_Camping_16x16_Tree_Wall_Modular_8.png"),
+    _exterior_prop("prop.landscape.forest_wall_front_right", "landscape", "11_Camping_Singles_16x16", "ME_Singles_Camping_16x16_Tree_Wall_Modular_9.png"),
+    _exterior_prop("prop.landscape.hedge_flowered_left", "landscape", "17_Garden_Singles_16x16", "ME_Singles_Garden_16x16_Grass_Wall_1_Flowered_1.png"),
+    _exterior_prop("prop.landscape.hedge_flowered_middle", "landscape", "17_Garden_Singles_16x16", "ME_Singles_Garden_16x16_Grass_Wall_1_Flowered_2.png"),
+    _exterior_prop("prop.landscape.hedge_flowered_right", "landscape", "17_Garden_Singles_16x16", "ME_Singles_Garden_16x16_Grass_Wall_1_Flowered_3.png"),
+    _exterior_prop("prop.landscape.hedge_flowered_vertical_top", "landscape", "17_Garden_Singles_16x16", "ME_Singles_Garden_16x16_Grass_Wall_1_Flowered_12.png"),
+    _exterior_prop("prop.landscape.hedge_flowered_vertical_mid", "landscape", "17_Garden_Singles_16x16", "ME_Singles_Garden_16x16_Grass_Wall_1_Flowered_4.png"),
+    _exterior_prop("prop.landscape.hedge_flowered_vertical_mid_alt", "landscape", "17_Garden_Singles_16x16", "ME_Singles_Garden_16x16_Grass_Wall_1_Flowered_8.png"),
+    _exterior_prop("prop.landscape.hedge_flowered_vertical_bottom", "landscape", "17_Garden_Singles_16x16", "ME_Singles_Garden_16x16_Grass_Wall_1_Flowered_5.png"),
+    _exterior_prop("prop.landscape.hedge_flowered_vertical_bottom_alt", "landscape", "17_Garden_Singles_16x16", "ME_Singles_Garden_16x16_Grass_Wall_1_Flowered_7.png"),
     _exterior_prop("prop.garden.bench_horizontal", "garden", "17_Garden_Singles_16x16", "ME_Singles_Garden_16x16_Medium_Bench_Horizontal.png"),
     _exterior_prop("prop.garden.bench_vertical", "garden", "17_Garden_Singles_16x16", "ME_Singles_Garden_16x16_Medium_Bench_Vertical.png"),
     _exterior_prop("prop.garden.cart", "garden", "17_Garden_Singles_16x16", "ME_Singles_Garden_16x16_Small_Wood_Cart_Full_1.png"),
@@ -233,7 +253,6 @@ def _safe_source(root: Path, relative_path: str) -> Path:
 
 
 def validate_source_path(source_root: Path, relative_path: str) -> Path:
-    """Resolve a v2 source only when it is beneath an approved licensed pack."""
     root = Path(source_root).expanduser().resolve(strict=True)
     if not root.is_dir():
         raise CurationError(f"source root is not a directory: {root}")
@@ -256,14 +275,8 @@ def _open_png(path: Path, expected: tuple[int, int] | None = None) -> Image.Imag
 
 
 def atlas_dimensions(tile_count: int) -> tuple[int, int, int]:
-    """Return a compact tile-aligned page layout bounded by 4096px."""
-    if not isinstance(tile_count, int) or isinstance(tile_count, bool) or tile_count < 1:
-        raise CurationError("atlas tile count must be a positive integer")
-    if tile_count > (MAX_ATLAS_SIZE // TILE_SIZE) ** 2:
-        raise CurationError("curated atlas would exceed the 4096x4096 limit")
-    columns = math.isqrt(tile_count - 1) + 1
-    rows = math.ceil(tile_count / columns)
-    return columns * TILE_SIZE, rows * TILE_SIZE, columns
+    return runtime_support.atlas_dimensions(tile_count, tile_size=TILE_SIZE,
+        max_size=MAX_ATLAS_SIZE, error_type=CurationError)
 
 
 def _write_json(path: Path, payload: object) -> None:
@@ -411,41 +424,13 @@ def _write_props(output: Path, root: Path, props: Iterable[PropSpec]) -> list[di
 
 def _contact_sheet(output: Path, root: Path, source_records: list[dict],
                    prop_records: list[dict]) -> None:
-    font = ImageFont.load_default()
-    cards = []
-    for record in source_records:
-        if record.get("source_scope") == "project":
-            continue
-        image = _open_png(_safe_source(root, record["relative_path"]))
-        image.thumbnail((144, 96), Image.Resampling.NEAREST)
-        cards.append((record["source_id"], image))
-    prop_by_key = {record["asset_key"]: record for record in prop_records}
-    for key in sorted(prop_by_key):
-        record = prop_by_key[key]
-        with Image.open(output / "props.png") as atlas:
-            frame = json.loads((output / "props.json").read_text(encoding="utf-8"))["frames"][key]["frame"]
-            image = atlas.crop((frame["x"], frame["y"], frame["x"] + frame["w"], frame["y"] + frame["h"]))
-        image.thumbnail((144, 96), Image.Resampling.NEAREST)
-        cards.append((key.removeprefix("prop."), image))
-    columns, card_width, card_height, header = 5, 176, 132, 42
-    rows = math.ceil(len(cards) / columns)
-    sheet = Image.new("RGBA", (columns * card_width, header + rows * card_height), (31, 38, 35, 255))
-    draw = ImageDraw.Draw(sheet)
-    draw.text((12, 12), "Claudeville v2 - licensed Modern Pixels (native 16px)", fill=(236, 226, 195, 255), font=font)
-    for index, (label, image) in enumerate(cards):
-        x = (index % columns) * card_width
-        y = header + (index // columns) * card_height
-        draw.rectangle((x + 4, y + 4, x + card_width - 5, y + card_height - 5), fill=(57, 66, 59, 255), outline=(144, 132, 102, 255))
-        px = x + (card_width - image.width) // 2
-        py = y + 12 + (88 - image.height) // 2
-        sheet.alpha_composite(image, (px, py))
-        draw.text((x + 8, y + 106), label[:27], fill=(238, 237, 223, 255), font=font)
-    _write_png(output / "contact_sheet.png", sheet)
+    from tools.mapgen.curate_modern_pixels_contact_sheet import write_contact_sheet
+
+    write_contact_sheet(output, root, source_records, prop_records)
 
 
 def curate_assets(source_root: Path = DEFAULT_SOURCE_ROOT,
                   output_root: Path = DEFAULT_OUTPUT_ROOT) -> dict:
-    """Build reproducible native-16 v2 assets without copying vendor packs."""
     if PILLOW_VERSION != SUPPORTED_PILLOW_VERSION:
         raise CurationError(f"unsupported Pillow {PILLOW_VERSION}; expected {SUPPORTED_PILLOW_VERSION}")
     root = Path(source_root).expanduser().resolve(strict=True)

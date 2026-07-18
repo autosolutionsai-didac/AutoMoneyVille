@@ -84,7 +84,7 @@
 		let maxDistance = tile_width;
 		for (const [personaName, movementData] of Object.entries(movement?.persona || {})) {
 			const sprite = personas[personaName];
-			const targetTile = movementData?.movement;
+			const targetTile = projectMovementTile(movementData?.movement);
 			if (!sprite || !targetTile || targetTile.length < 2) continue;
 			const targetX = targetTile[0] * tile_width;
 			const targetY = targetTile[1] * tile_width;
@@ -92,6 +92,11 @@
 			maxDistance = Math.max(maxDistance, distance);
 		}
 		return Math.max(tile_width / movement_speed, Math.ceil(maxDistance / movement_speed));
+	}
+
+	function projectMovementTile(tile) {
+		if (!Array.isArray(tile) || tile.length < 2) return tile;
+		return renderedWorldController?.projectLogicalTile?.(tile) || tile;
 	}
 
 	// Camera follow (juice pass): a lerped startFollow instead of the old
@@ -131,7 +136,7 @@
 
 		for (const [personaName, movementData] of preferredEntries) {
 			const sprite = personas[personaName];
-			const targetTile = movementData?.movement;
+			const targetTile = projectMovementTile(movementData?.movement);
 			if (!sprite || !targetTile || targetTile.length < 2) continue;
 
 			const targetX = targetTile[0] * tile_width;
@@ -219,8 +224,9 @@
 			const personaName = activePersonas[0];
 			const personaData = movement.persona[personaName];
 			if (personaData && mainCamera) {
-				const targetX = personaData.movement[0] * tile_width;
-				const targetY = personaData.movement[1] * tile_width;
+				const targetTile = projectMovementTile(personaData.movement);
+				const targetX = targetTile[0] * tile_width;
+				const targetY = targetTile[1] * tile_width;
 				mainCamera.pan(targetX, targetY, 300, 'Power2');
 				console.log('[SKIP] Centering on active persona:', personaName);
 			}
@@ -263,8 +269,9 @@
 			}
 
 			if (execute_count == execute_count_max) {
-				let curr_x = movementData["movement"][0];
-				let curr_y = movementData["movement"][1];
+				const projected = projectMovementTile(movementData["movement"]);
+				let curr_x = projected[0];
+				let curr_y = projected[1];
 				movement_target[curr_persona_name] = [curr_x * tile_width, curr_y * tile_width];
 
 				let pronunciatio_content = movementData["pronunciatio"];

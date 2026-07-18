@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import shutil
 import tempfile
 from contextlib import contextmanager
@@ -10,6 +11,20 @@ from pathlib import Path, PurePosixPath
 
 class RuntimeSupportError(ValueError):
     """Raised when runtime files or their provenance cannot be handled safely."""
+
+
+def atlas_dimensions(
+    tile_count: int, *, tile_size: int = 16, max_size: int = 4096,
+    error_type: type[ValueError] = RuntimeSupportError,
+) -> tuple[int, int, int]:
+    """Return a square-ish, tile-aligned atlas layout within a fixed bound."""
+    if not isinstance(tile_count, int) or isinstance(tile_count, bool) or tile_count < 1:
+        raise error_type("atlas tile count must be a positive integer")
+    if tile_count > (max_size // tile_size) ** 2:
+        raise error_type(f"curated atlas would exceed the {max_size}x{max_size} limit")
+    columns = math.isqrt(tile_count - 1) + 1
+    rows = math.ceil(tile_count / columns)
+    return columns * tile_size, rows * tile_size, columns
 
 
 def _relative_paths(values) -> tuple[PurePosixPath, ...]:
@@ -137,7 +152,11 @@ def used_pack_credits(
         raise RuntimeSupportError("used asset packs have missing or duplicate credits")
     result = [by_name[name] for name in by_name if name in used]
     if uses_v3:
-        if not isinstance(v3_pack, dict):
+        if not isinstance(v3_pack, dict) or not isinstance(v3_pack.get("name"), str):
             raise RuntimeSupportError("Modern Interiors v3 credit evidence is missing")
-        result.append(v3_pack)
+        v3_name = v3_pack["name"]
+        if any(item.get("name") == v3_name for item in result):
+            result = [v3_pack if item.get("name") == v3_name else item for item in result]
+        else:
+            result.append(v3_pack)
     return result

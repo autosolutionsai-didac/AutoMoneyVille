@@ -1,50 +1,38 @@
-32400, Claudeville, <all>, administration desk
+32400, Claudeville, <all>, admin desk
 32401, Claudeville, <all>, advisory desk
 32402, Claudeville, <all>, archive cabinets
-32403, Claudeville, <all>, bathroom sink
-32404, Claudeville, <all>, bed
-32405, Claudeville, <all>, bench
-32406, Claudeville, <all>, bookshelf
-32407, Claudeville, <all>, checkout counter
-32408, Claudeville, <all>, circulation desk
-32409, Claudeville, <all>, classroom seating
-32410, Claudeville, <all>, closet
-32411, Claudeville, <all>, common room sofa
-32412, Claudeville, <all>, common room table
-32413, Claudeville, <all>, computer station
-32414, Claudeville, <all>, cooking area
-32415, Claudeville, <all>, council table
-32416, Claudeville, <all>, desk
-32417, Claudeville, <all>, dining table
-32418, Claudeville, <all>, east bookshelf
-32419, Claudeville, <all>, event table
-32420, Claudeville, <all>, fountain
-32421, Claudeville, <all>, garden chair
-32422, Claudeville, <all>, harp
-32423, Claudeville, <all>, help desk
-32424, Claudeville, <all>, job intake
-32425, Claudeville, <all>, lecture seating
-32426, Claudeville, <all>, lounge seating
-32427, Claudeville, <all>, mail sorting table
-32428, Claudeville, <all>, notice board
-32429, Claudeville, <all>, operations desk
-32430, Claudeville, <all>, parcel preparation table
-32431, Claudeville, <all>, parcel sorting rack
-32432, Claudeville, <all>, postal counter
-32433, Claudeville, <all>, presentation area
-32434, Claudeville, <all>, public counter
-32435, Claudeville, <all>, reading table
-32436, Claudeville, <all>, reception desk
-32437, Claudeville, <all>, refrigerator
-32438, Claudeville, <all>, service counter
-32439, Claudeville, <all>, shelf
-32440, Claudeville, <all>, shower
-32441, Claudeville, <all>, sorting station
-32442, Claudeville, <all>, stock display
-32443, Claudeville, <all>, teller counter
-32444, Claudeville, <all>, terrace table
-32445, Claudeville, <all>, tool storage
-32446, Claudeville, <all>, training simulator
-32447, Claudeville, <all>, waiting seating
-32448, Claudeville, <all>, work machine
-32449, Claudeville, <all>, workbench
+32403, Claudeville, <all>, bed
+32404, Claudeville, <all>, bench
+32405, Claudeville, <all>, bookshelf
+32406, Claudeville, <all>, checkout counter
+32407, Claudeville, <all>, circulation desk
+32408, Claudeville, <all>, classroom seating
+32409, Claudeville, <all>, computer station
+32410, Claudeville, <all>, cooking area
+32411, Claudeville, <all>, council table
+32412, Claudeville, <all>, counter wing
+32413, Claudeville, <all>, dining table
+32414, Claudeville, <all>, event table
+32415, Claudeville, <all>, fountain
+32416, Claudeville, <all>, garden seat
+32417, Claudeville, <all>, help desk
+32418, Claudeville, <all>, job intake
+32419, Claudeville, <all>, lecture seating
+32420, Claudeville, <all>, lounge seating
+32421, Claudeville, <all>, mail sorting table
+32422, Claudeville, <all>, notice board
+32423, Claudeville, <all>, operations desk
+32424, Claudeville, <all>, postal counter
+32425, Claudeville, <all>, reading table
+32426, Claudeville, <all>, reception desk
+32427, Claudeville, <all>, resident hobby
+32428, Claudeville, <all>, service counter
+32429, Claudeville, <all>, side table
+32430, Claudeville, <all>, stock display
+32431, Claudeville, <all>, teller counter
+32432, Claudeville, <all>, terrace table
+32433, Claudeville, <all>, toilet
+32434, Claudeville, <all>, training simulator
+32435, Claudeville, <all>, waiting seating
+32436, Claudeville, <all>, washstand
+32437, Claudeville, <all>, work machine

@@ -46,21 +46,24 @@ class HandAuthoredClaudevilleTests(unittest.TestCase):
         self.assertEqual(source["orientation"], "orthogonal")
         self.assertEqual(
             [layer["name"] for layer in source["layers"]],
-            list(build_tilemap.MAP_LAYER_ORDER),
+            [*build_tilemap.MAP_LAYER_ORDER, "Authoring"],
         )
         self.assertEqual(
             {Path(tileset["source"]).stem for tileset in source["tilesets"]},
-            {"terrain", "town", "office", "interiors"},
+            build_tilemap.V3_SOURCE_TILESETS,
         )
-        self.assertEqual(
-            {property["name"]: property["value"] for property in source["properties"]},
+        properties = {
+            property["name"]: property["value"] for property in source["properties"]
+        }
+        self.assertGreaterEqual(
+            properties.items(),
             {
                 "authoring_style": "hand-authored-modern-pixels",
                 "collision_authority": "../matrix/maze/collision_maze.csv",
                 "logical_grid": "88x48@32",
                 "visual_grid": "176x96@16",
                 "world_pixel_size": "2816x1536",
-            },
+            }.items(),
         )
         object_layers = [layer for layer in source["layers"] if layer["type"] == "objectgroup"]
         self.assertEqual([layer["name"] for layer in object_layers], list(build_tilemap.OBJECT_LAYERS))

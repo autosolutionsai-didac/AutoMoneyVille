@@ -4,12 +4,9 @@
   root.ClaudevilleWorld = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function (root) {
   "use strict";
-  const MANIFEST_KEY = "world-manifest";
-  const TILEMAP_KEY = "world-tilemap";
-  const ALIASES_KEY = "world-address-aliases";
-  const FALLBACK_KEY = "world-legacy-background";
-  const SCENE_KEY = "world-authored-scene";
-  const CHARACTER_KEY = "atlas";
+  const MANIFEST_KEY = "world-manifest", TILEMAP_KEY = "world-tilemap";
+  const ALIASES_KEY = "world-address-aliases", FALLBACK_KEY = "world-legacy-background";
+  const SCENE_KEY = "world-authored-scene", CHARACTER_KEY = "atlas";
   const DEFAULT_ACTOR_DEPTH = 2000;
   const DEFAULT_OVERHEAD_DEPTH = 90000;
   const V2_LAYER_ORDER = [
@@ -385,6 +382,7 @@
     return {
       bounds, layers: [], objectSprites: [], facades: [], sceneImage: null,
       depthForFootY: (footY, offset) => depthForFootY(manifest, footY, offset),
+      projectLogicalTile: tile => tile.slice(0, 2),
       setFocusedSector() {}, usedFallback: true,
     };
   }
@@ -478,10 +476,13 @@
         ? scene.add.image(0, 0, SCENE_KEY).setOrigin(0, 0).setDepth(-2) : null;
       const objectSprites = createObjectSprites(scene, map, manifest);
       const facadeController = createFacades(scene, manifest);
+      const collisionProjector = manifest.version === 2 && root.ClaudevilleWorldCollision
+        ? root.ClaudevilleWorldCollision.createProjector(map, manifest) : null;
       return {
         bounds: {width: map.widthInPixels, height: map.heightInPixels},
         layers, objectSprites, facades: facadeController.facades, sceneImage,
         depthForFootY: (footY, offset) => depthForFootY(manifest, footY, offset),
+        projectLogicalTile: tile => collisionProjector ? collisionProjector.project(tile) : tile.slice(0, 2),
         setFocusedSector: facadeController.setFocusedSector,
         usedFallback: false,
       };

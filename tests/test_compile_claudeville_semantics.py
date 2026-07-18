@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 
+from tests.claudeville_composition_support import legacy_v2_sector_cells
 from tools.mapgen import claudeville_home_semantics as homes
 from tools.mapgen import claudeville_home_stances as home_stances
 from tools.mapgen import claudeville_purpose_layouts as real_layout
@@ -15,6 +16,8 @@ from tools.mapgen import claudeville_scenery_blocks as scenery
 from tools.mapgen import claudeville_semantic_graph as semantic_graph
 from tools.mapgen import compile_claudeville_semantics as compiler
 from tools.mapgen.claudeville_interior_layouts import SOURCE_TEMPLATES, Stamp
+
+LEGACY_TMJ = compiler.WORLD_ROOT / "visuals/claudeville_full_town_v2.tmj"
 
 
 def _tile_layers() -> dict[str, dict]:
@@ -390,9 +393,8 @@ class SemanticCompilerTests(unittest.TestCase):
         self.assertEqual(homes.atlas_blocks(layers, layout), {(2, 2)})
 
     def test_real_home_templates_map_to_distinct_english_room_semantics(self):
-        tmj = compiler._read_json(compiler.TMJ_PATH)
-        spec = compiler._read_json(compiler.SPEC_PATH)
-        sectors = semantic_graph.sector_cells(spec)
+        tmj = compiler._read_json(LEGACY_TMJ)
+        sectors = legacy_v2_sector_cells()
         result = homes.derive_home_semantics(
             compiler._layers(tmj), real_layout, sector_cells=sectors
         )
@@ -416,8 +418,8 @@ class SemanticCompilerTests(unittest.TestCase):
             )
 
     def test_scenery_blocks_do_not_overlap_active_world_cells(self):
-        layers = compiler._layers(compiler._read_json(compiler.TMJ_PATH))
-        sectors = semantic_graph.sector_cells(compiler._read_json(compiler.SPEC_PATH))
+        layers = compiler._layers(compiler._read_json(LEGACY_TMJ))
+        sectors = legacy_v2_sector_cells()
         public_zones, _owners, _clear = homes.partition_public_zones(
             layers, real_layout, sectors
         )
