@@ -1,0 +1,465 @@
+
+{% load static %}
+	function preload() {
+	  // Speech bubble art shipped since Stanford but only used by the legacy
+	  // demo page — the main view finally gets real bubbles (P1 juice pass).
+	  this.load.image("speech_bubble", "{% static 'assets/speech_bubble/v3.png' %}");
+	  ClaudevilleWorld.queueWorld(
+	    this, world_manifest_url, static_asset_root,
+	    worldManifest => ClaudevilleCharacters.queueCharacters(
+	      this, worldManifest.resident_manifest_url, static_asset_root
+	    )
+	  );
+	}
+
+	function create() {
+		  renderedWorldController = ClaudevilleWorld.createWorld(this);
+		  mapBounds = renderedWorldController.bounds;
+		  let locationPillTimer = null;
+		  const showLocationPill = sector => {
+		    const pill = document.getElementById('location-pill');
+		    if (!pill) return;
+		    clearTimeout(locationPillTimer);
+		    pill.textContent = sector || '';
+		    pill.classList.toggle('hidden', !sector);
+		    if (sector) locationPillTimer = setTimeout(() => pill.classList.add('hidden'), 2800);
+		  };
+		  window.setFocusedWorldSector = sector => {
+		    if (renderedWorldController?.setFocusedSector) {
+		      renderedWorldController.setFocusedSector(sector || null);
+		    }
+		    showLocationPill(sector || null);
+		  };
+
+	  // *** SET UP CAMERA - Mouse drag panning ***
+	  const camera = this.cameras.main;
+	  mainCamera = camera;
+
+	  camera.setBounds(0, 0, mapBounds.width, mapBounds.height);
+	  const fitWorldZoom = () => {
+	    const fitted = Math.min(camera.width / mapBounds.width,
+	                            camera.height / mapBounds.height) * 0.96;
+	    if (window.matchMedia('(max-width: 560px)').matches) {
+	      return Math.max(0.8, fitted);
+	    }
+	    if (window.matchMedia('(min-width: 1200px)').matches) {
+	      return Math.max(0.8, Math.min(0.9, fitted));
+	    }
+	    return Math.max(zoomMin, Math.min(0.8, fitted));
+	  };
+	  const centerFittedWorld = () => {
+	    const fullWidth = this.scale.gameSize.width;
+	    const fullHeight = this.scale.gameSize.height;
+	    const viewportWidth = Math.round(mapBounds.width * zoomLevel);
+	    const viewportHeight = Math.round(mapBounds.height * zoomLevel);
+	    if (viewportWidth > fullWidth || viewportHeight > fullHeight) {
+	      camera.setViewport(0, 0, fullWidth, fullHeight);
+	      ClaudevilleCamera.constrainFiniteWorld(camera, mapBounds);
+	      camera.centerOn(mapBounds.width / 2, mapBounds.height / 2);
+	      const container = document.getElementById('game-container');
+	      container?.style.setProperty('--world-letterbox-x', '0px');
+	      container?.style.setProperty('--world-letterbox-y', '0px');
+	      return;
+	    }
+	    const offsetX = Math.round((fullWidth - viewportWidth) / 2);
+	    const offsetY = Math.round((fullHeight - viewportHeight) / 2);
+	    camera.setViewport(offsetX, offsetY, viewportWidth, viewportHeight);
+	    camera.setBounds(0, 0, mapBounds.width, mapBounds.height);
+	    camera.setScroll(0, 0);
+	    const container = document.getElementById('game-container');
+	    container?.style.setProperty('--world-letterbox-x', `${offsetX}px`);
+	    container?.style.setProperty('--world-letterbox-y', `${offsetY}px`);
+	  };
+	  const expandCameraViewport = () => {
+	    const fullWidth = this.scale.gameSize.width;
+	    const fullHeight = this.scale.gameSize.height;
+	    camera.setViewport(0, 0, fullWidth, fullHeight);
+	    ClaudevilleCamera.constrainFiniteWorld(camera, mapBounds);
+	    const container = document.getElementById('game-container');
+	    container?.style.setProperty('--world-letterbox-x', '0px');
+	    container?.style.setProperty('--world-letterbox-y', '0px');
+	  };
+	  zoomLevel = fitWorldZoom();
+	  camera.setBackgroundColor(0x226987);
+	  this.add.rectangle(
+	    mapBounds.width / 2, mapBounds.height / 2,
+	    mapBounds.width * 3, mapBounds.height * 3, 0x226987
+	  ).setDepth(-100000);
+	  camera.setZoom(zoomLevel);
+	  centerFittedWorld();
+	  const initialZoomIndicator = document.getElementById('zoom-indicator');
+	  if (initialZoomIndicator) {
+	    initialZoomIndicator.textContent = Math.round(zoomLevel * 100) + '%';
+	  }
+	  showLocationPill('Central Plaza');
+
+	  // Mouse drag panning
+	  this.input.on('pointerdown', function(pointer) {
+	    if (window.ClaudevilleHUD?.blocksCameraInput(pointer.event?.target)) return;
+	    if (pointer.button === 0) {  // Left mouse button
+	      if (!hasCameraInteraction) expandCameraViewport();
+	      hasCameraInteraction = true;
+	      isDragging = true;
+	      dragStart.x = pointer.x;
+	      dragStart.y = pointer.y;
+	      scrollStart.x = camera.scrollX;
+	      scrollStart.y = camera.scrollY;
+	    }
+	  });
+
+	  this.input.on('pointermove', function(pointer) {
+	    if (isDragging && pointer.isDown) {
+	      // Manual pan takes the wheel: stop fighting the follow camera.
+	      if (typeof setCameraFollowTarget === 'function') setCameraFollowTarget(null);
+	      const dx = pointer.x - dragStart.x;
+	      const dy = pointer.y - dragStart.y;
+	      camera.scrollX = scrollStart.x - dx / camera.zoom;
+	      camera.scrollY = scrollStart.y - dy / camera.zoom;
+	    }
+	  });
+
+	  this.input.on('pointerup', function(pointer) {
+	    isDragging = false;
+	  });
+
+	  // Mouse wheel zoom — pointer-centered: the world point under the cursor
+	  // stays under the cursor while zooming (the old version zoomed on the
+	  // camera center, drifting away from what you were looking at).
+	  this.input.on('wheel', function(pointer, gameObjects, deltaX, deltaY, deltaZ) {
+	    if (window.ClaudevilleHUD?.blocksCameraInput(pointer.event?.target)) return;
+	    if (!hasCameraInteraction) expandCameraViewport();
+	    hasCameraInteraction = true;
+	    if (deltaY < 0) {
+	      zoomLevel = Math.min(zoomMax, zoomLevel + zoomStep);
+	    } else if (deltaY > 0) {
+	      zoomLevel = Math.max(zoomMin, zoomLevel - zoomStep);
+	    }
+	    ClaudevilleCamera.zoomCameraAtPointer(camera, pointer, zoomLevel, mapBounds);
+
+	    const zoomIndicator = document.getElementById('zoom-indicator');
+	    if (zoomIndicator) {
+	      zoomIndicator.textContent = Math.round(zoomLevel * 100) + '%';
+	    }
+	  });
+
+	  // Handle window resize
+	  this.scale.on('resize', function(gameSize) {
+	    camera.setViewport(0, 0, gameSize.width, gameSize.height);
+	    if (!hasCameraInteraction) {
+	      zoomLevel = fitWorldZoom();
+	      camera.setZoom(zoomLevel);
+	      centerFittedWorld();
+	      const zoomIndicator = document.getElementById('zoom-indicator');
+	      if (zoomIndicator) zoomIndicator.textContent = Math.round(zoomLevel * 100) + '%';
+	    } else {
+	      expandCameraViewport();
+	    }
+	  });
+
+	  // *** SET UP PERSONAS ***
+	  ClaudevilleCharacters.createAnimations(this, Object.keys(spawn_tile_loc));
+
+	  for (let i=0; i<Object.keys(spawn_tile_loc).length; i++) {
+	    let persona_name = Object.keys(spawn_tile_loc)[i];
+	    // Use same coordinate system as movement_target in animateMovements()
+	    const spawnTile = renderedWorldController.projectLogicalTile(
+	      spawn_tile_loc[persona_name]
+	    );
+	    let start_pos = [spawnTile[0] * tile_width, spawnTile[1] * tile_width];
+
+	    let new_sprite = ClaudevilleCharacters.createSprite(
+	      this, persona_name, start_pos[0], start_pos[1]
+	    );
+
+	    personas[persona_name] = new_sprite;
+	    const spriteLayout = ClaudevilleCharacters.displayLayout(new_sprite);
+	    new_sprite.setDepth(ClaudevilleCharacters.depthForSprite(
+	      new_sprite, renderedWorldController
+	    ));
+
+	    // Initialize movement target to match spawn position
+	    movement_target[persona_name] = [start_pos[0], start_pos[1]];
+
+	    // Soft contact shadow under the sprite (grounds it visually).
+	    const shadow = this.add.ellipse(
+	      spriteLayout.foot.x, spriteLayout.foot.y, 18, 6, 0x000000, 0.3
+	    );
+	    shadow.setDepth(new_sprite.depth - 1);
+	    personaShadows[persona_name] = shadow;
+
+	    // Real speech bubble + emoji, ABOVE the night overlay (2.6) so thought
+	    // indicators stay readable after dark.
+	    const bubble = this.add.image(
+	      spriteLayout.foot.x, spriteLayout.top - 6, "speech_bubble"
+	    );
+	    bubble.setOrigin(0.5, 1);
+	    bubble.setDisplaySize(46, 30);
+		    bubble.setDepth(100001);
+	    // setDisplaySize works via scale — remember it so pop tweens land here.
+	    bubble.baseScaleX = bubble.scaleX;
+	    bubble.baseScaleY = bubble.scaleY;
+	    bubble.setVisible(false);
+	    speechBubbles[persona_name] = bubble;
+
+	    const emojiText = this.add.text(
+	      spriteLayout.foot.x,
+	      spriteLayout.top - 21,
+	      "",
+	      {
+	        font: "15px sans-serif",
+	        resolution: 2,
+	      }
+	    );
+	    emojiText.setOrigin(0.5, 0.5);  // Centered inside the bubble
+		    emojiText.setDepth(100002);
+	    emojiText.setVisible(false);
+	    pronunciatios[persona_name] = emojiText;
+	  }
+
+	  // Create day/night overlay (covers entire map, above all tile layers but below personas)
+	  // Uses a dark blue tint that fades based on time of day
+	  const graphics = this.add.graphics();
+	  graphics.fillStyle(0x0a0a20, 1);  // Darker blue-purple night color
+	  graphics.fillRect(0, 0, mapBounds.width, mapBounds.height);
+	  nightOverlay = graphics;
+		  nightOverlay.setDepth(100000);
+	  nightOverlay.setBlendMode(Phaser.BlendModes.MULTIPLY);  // tints, not blackout
+	  nightOverlay.setAlpha(0);   // Start with no overlay (daytime)
+	}
+
+
+	function update(time, delta) {
+	  if (!MODE_GUARD.canMutate()) return;
+	  // Skip if paused or menu open (but NOT if skipping - we want to run fast during skip)
+	  if (isPaused || isMenuOpen()) {
+	    return;
+	  }
+
+	  // Throttle animation speed (getAnimationDelay returns 0 during skip mode)
+	  const now = Date.now();
+	  if (now - lastAnimationTime < getAnimationDelay()) {
+	    return;
+	  }
+	  lastAnimationTime = now;
+
+	  if (execute_count > 0) {
+	    // Animation in progress
+	    animateMovements();
+	  }
+	  else if (!pollInProgress) {
+	    // No animation, check for movements and maybe request more simulation
+	    pollInProgress = true;
+	    pollMovements().then(result => {
+	      pollInProgress = false;
+
+	      handlePolledMovementResult(result);
+
+	      // Auto-request more simulation only when autosim is OFF (else the backend
+	      // producer fills the buffer ahead of the display; we just consume it).
+	      if (!autosimEnabled && simulationActive && !isSimulating && !backendBusy && queuedMovements <= TARGET_BUFFER) {
+	        requestSimulation(BATCH_SIZE);
+	      }
+	    });
+	  }
+	}
+
+	function isMenuOpen() {
+	  const menu = document.getElementById('menu-overlay');
+	  return menu && !menu.classList.contains('hidden');
+	}
+
+	// ==========================================================================
+	// Control Button Handlers
+	// ==========================================================================
+
+	function updateButtonStates() {
+		const playBtn = document.getElementById("play_button");
+		const pauseBtn = document.getElementById("pause_button");
+		const skipBtn = document.getElementById("skip_button");
+		if (!MODE_GUARD.canMutate()) {
+			playBtn.disabled = true;
+			pauseBtn.disabled = true;
+			skipBtn.disabled = true;
+			return;
+		}
+
+		// Remove active class from all
+		playBtn.classList.remove('active');
+		pauseBtn.classList.remove('active');
+
+		if (isSkipping) {
+			playBtn.disabled = true;
+			pauseBtn.disabled = false;
+			skipBtn.disabled = true;
+			skipBtn.querySelector('.icon').textContent = '⏳';
+		} else if (isPaused) {
+			playBtn.disabled = false;
+			pauseBtn.disabled = true;
+			skipBtn.disabled = false;
+			skipBtn.querySelector('.icon').textContent = '⏭';
+			pauseBtn.classList.add('active');
+		} else {
+			playBtn.disabled = false;
+			pauseBtn.disabled = false;
+			skipBtn.disabled = false;
+			skipBtn.querySelector('.icon').textContent = '⏭';
+			playBtn.classList.add('active');
+		}
+	}
+
+	// Play button
+	MODE_GUARD.bindMutationClick(document.getElementById("play_button"), function() {
+		simulationActive = true;
+		isPaused = false;
+		isSkipping = false;
+		// User gesture: the right moment to ask for approval notifications.
+		ensureNotificationPermission();
+		setPlaybackState('playing');
+		if (firstPlayThisLoad) {
+			firstPlayThisLoad = false;
+			const personaCount = Object.keys(persona_names).length;
+			updateSimStatus(
+				`First step calls Claude for ${personaCount} personas (~60-120s)`, true);
+		} else {
+			updateSimStatus('Starting playback...', true);
+		}
+		updateButtonStates();
+		// Fade out any "new" message highlights when resuming playback
+		document.querySelectorAll('.chat-bubble.new').forEach(bubble => {
+			bubble.classList.add('fading');
+			setTimeout(() => {
+				bubble.classList.remove('new', 'fading');
+			}, 1500);
+		});
+		kickPlaybackPipeline(true);
+	});
+
+	// Pause button
+	document.getElementById("pause_button").addEventListener("click", function() {
+		simulationActive = false;
+		isPaused = true;
+		isSkipping = false;
+		setPlaybackState('paused');
+		updateSimStatus('Paused', false);
+		updateButtonStates();
+	});
+
+	// Skip to next action button
+	MODE_GUARD.bindMutationClick(document.getElementById("skip_button"), function() {
+		if (!isSkipping) {
+			startSkipMode();
+		}
+	});
+
+	// Spacebar hotkey: toggle skip mode / pause
+	MODE_GUARD.bindMutationKey(document, "Space", function(e) {
+		// Ignore if typing in a text input field (but allow range sliders)
+		if (e.target.tagName === 'TEXTAREA') return;
+		if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
+		// Ignore if menu is open
+		if (isMenuOpen()) return;
+
+		if (e.code === "Space") {
+			// Don't hijack Space while typing (reviewer note, delivery form...).
+			const tag = (document.activeElement?.tagName || '').toLowerCase();
+			if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+			e.preventDefault();  // Prevent page scroll and slider interaction
+			if (document.activeElement) document.activeElement.blur();
+
+			if (isSkipping || !isPaused) {
+				// Currently running (skipping or playing) - pause
+				isPaused = true;
+				isSkipping = false;
+				setPlaybackState('paused');
+				updateButtonStates();
+			} else if (e.shiftKey) {
+				// Paused + Shift-Space = skip to next action (the old Space).
+				startSkipMode();
+			} else {
+				// Paused + Space = PLAY (what everyone expects).
+				document.getElementById("play_button").click();
+			}
+		}
+	});
+
+	// Speed slider
+	document.getElementById("speed_slider").addEventListener("input", function(e) {
+		playbackSpeed = parseInt(e.target.value);
+		document.getElementById("speed_label").textContent = playbackSpeed + "x";
+	});
+
+	// ==========================================================================
+	// Panel Controls
+	// ==========================================================================
+
+	// Click persona card to center camera on that persona
+	document.querySelectorAll('.persona-card').forEach(function(card) {
+		card.addEventListener('click', function() {
+			const personaName = this.getAttribute('data-persona-name');
+			if (personaName && personas[personaName] && mainCamera) {
+				const personaSprite = personas[personaName];
+				mainCamera.pan(personaSprite.body.x, personaSprite.body.y, 500, 'Power2');
+			}
+		});
+	});
+
+	// Initialize button states
+	const townApprovalActions = {
+		'town-approve-request': 'approved',
+		'town-reject-request': 'rejected',
+		'town-complete-request': 'completed',
+		'town-fail-request': 'failed'
+	};
+	for (const [buttonId, state] of Object.entries(townApprovalActions)) {
+		const button = document.getElementById(buttonId);
+		if (button) {
+			button.addEventListener('click', () => transitionTownCenterRequest(state));
+		}
+	}
+	const recordDeliveryButton = document.getElementById('town-record-delivery');
+	if (recordDeliveryButton) {
+		recordDeliveryButton.addEventListener('click', recordTownDelivery);
+	}
+	const followButton = document.getElementById('follow_button');
+	if (followButton) {
+		followButton.addEventListener('click', () => {
+			autoFollowMovement = !autoFollowMovement;
+			followButton.classList.toggle('active', autoFollowMovement);
+			if (!autoFollowMovement) setCameraFollowTarget(null);
+		});
+	}
+	const artifactsToggle = document.getElementById('town-artifacts-toggle');
+	if (artifactsToggle) {
+		artifactsToggle.addEventListener('click', () => {
+			const list = document.getElementById('town-artifacts-list');
+			if (list) list.classList.toggle('hidden');
+			refreshTownCenter();
+		});
+	}
+	// First-run hint: shown once per browser until dismissed.
+	if (!IS_REPLAY && !localStorage.getItem('claudeville_hint_dismissed')) {
+		document.getElementById('first-run-hint')?.classList.remove('hidden');
+	}
+	document.getElementById('first-run-dismiss')?.addEventListener('click', () => {
+		localStorage.setItem('claudeville_hint_dismissed', '1');
+		document.getElementById('first-run-hint')?.classList.add('hidden');
+	});
+
+	setTownApprovalButtonsEnabled(false);
+	updateButtonStates();
+	if (IS_REPLAY) {
+		// Recorded-run page: freeze at the requested step. No live polling, no
+		// simulate kicks, no town-center refresh — the live backend may be
+		// running a completely different sim.
+		MODE_GUARD.freezeControls(document);
+		setPlaybackState('paused');
+		updateSimStatus('Replay · frozen step {{ effective_step|default:step }}', false);
+	} else {
+		setPlaybackState('paused');
+		updateSimStatus('Paused — press Play to start', false);
+		refreshRuntimeHealth();
+		refreshTownCenter();
+		setInterval(refreshRuntimeHealth, 3000);
+		setInterval(refreshTownCenter, 7000);
+		setInterval(() => kickPlaybackPipeline(false), 1000);
+	}

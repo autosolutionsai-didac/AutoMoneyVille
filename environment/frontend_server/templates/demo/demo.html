@@ -1,14 +1,59 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block extra_head %}
+<style>
+	html, body {
+		height: auto;
+		min-height: 100%;
+		overflow-x: hidden;
+		overflow-y: auto;
+		background: #f4f4f0;
+		color: #1f2937;
+	}
+
+	.demo-replay-page #game-container {
+		position: relative;
+		top: auto;
+		left: auto;
+		width: 100%;
+		max-width: 1200px;
+		height: auto;
+		aspect-ratio: 1200 / 640;
+		margin: 0 auto;
+		overflow: hidden;
+		z-index: auto;
+		background: #1a1a2e;
+	}
+
+	.demo-replay-page #game-container > canvas {
+		width: 100% !important;
+		height: 100% !important;
+		max-width: 100%;
+	}
+
+	.demo-replay-content {
+		width: 55%;
+		margin: 4.5em auto 0;
+	}
+
+	@media (max-width: 768px) {
+		.demo-replay-content {
+			width: calc(100% - 2rem);
+			margin-top: 2rem;
+		}
+	}
+</style>
+{% endblock extra_head %}
+
 {% block content %}
 <br>
 <br>
-<div>
+<div class="demo-replay-page">
 
 	<div id="game-container" style="text-align: center"></div>
 
-	<div style="width:55%; margin: 0 auto; margin-top:4.5em">
+	<div class="demo-replay-content">
 		<h3 style="margin-bottom:1.5em; font-size:1.5em"><em>This is a pre-computed replay of a simulation that accompanies the paper entitled "Generative Agents: Interactive Simulacra of Human Behavior." It is for demonstration purposes only.</em></h3>
 
 
@@ -43,7 +88,8 @@
 							<div class="row" style="padding:0">
 								<div class="col-md-4" id="on_screen_det_trigger_container-{{p.underscore}}" style="text-align:center; padding:0; padding-top:0.3em">
 									{% with 'assets/characters/profile/'|add:p.underscore|add:'.png' as image_static %}
-									<img src="{% static image_static %}" style="width:46px; padding:0; ">
+									<img data-character-portrait="{{ p.original }}"
+										 src="{% static image_static %}" style="width:46px; padding:0; ">
 									{% endwith %}
 									<br>
 									{{ p.initial }}
@@ -72,7 +118,8 @@
 			  <div class="media-left media-middle">
 			    <a href="#">
 			    	{% with 'assets/characters/profile/'|add:p.underscore|add:'.png' as image_static %}
-						<img src="{% static image_static %}" style="width:5em">
+						<img data-character-portrait="{{ p.original }}"
+							 src="{% static image_static %}" style="width:5em">
 						{% endwith %}
 			    </a>
 			  </div>
@@ -107,8 +154,14 @@
 
 
 {% block js_content %}
+{{ persona_init_pos|json_script:"demo-persona-init" }}
+{{ all_movement|json_script:"demo-all-movement" }}
 <script src='https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js'></script>
 <script src='https://code.jquery.com/jquery-3.7.1.min.js'></script>
+<script src="{% static 'js/world_addresses.js' %}"></script>
+<script src="{% static 'js/world_collision.js' %}?v=1"></script>
+<script src="{% static 'js/world_renderer.js' %}?v=2"></script>
+<script src="{% static 'js/character_renderer.js' %}?v=2"></script>
 {% include 'demo/main_script.html' %}
 <script>
 	{% for p in persona_names %}

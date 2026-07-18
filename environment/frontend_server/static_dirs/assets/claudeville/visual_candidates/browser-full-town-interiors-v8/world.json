@@ -1,0 +1,107 @@
+{
+  "address_alias_manifest_url": "assets/claudeville/legacy_address_aliases.v1.json",
+  "atlases": [
+    {
+      "data_url": "assets/claudeville/visual_candidates/browser-full-town-interiors-v8/runtime/props.json",
+      "image_url": "assets/claudeville/visual_candidates/browser-full-town-interiors-v8/runtime/props.png",
+      "key": "claudeville-v2-props"
+    }
+  ],
+  "candidate_source_sha256": "d34ca539a146ee41fbc4da09ca46b367984aaea92ab9476f897418ac11f08461",
+  "candidate_source_url": "assets/claudeville/visuals/claudeville_full_town_v2.tmj",
+  "character_atlas_image_url": "img/atlas.png",
+  "character_manifest_url": "assets/characters/atlas.json",
+  "collision_layer": "Collisions",
+  "collision_tileset": "claudeville_v2_runtime_terrain",
+  "credits_url": "assets/claudeville/visual_candidates/browser-full-town-interiors-v8/runtime/credits.json",
+  "depth_model": {
+    "actor_base": 2000,
+    "overhead_depth": 90000
+  },
+  "dimensions": {
+    "height": 48,
+    "tile_size": 32,
+    "width": 88
+  },
+  "facades": [],
+  "foreground_layers": [
+    "Foreground L1",
+    "Foreground L2"
+  ],
+  "layer_order": [
+    "Bottom Ground",
+    "Exterior Ground",
+    "Exterior Decoration L1",
+    "Exterior Decoration L2",
+    "Interior Ground",
+    "Wall",
+    "Interior Furniture L1",
+    "Interior Furniture L2",
+    "Foreground L1",
+    "Foreground L2",
+    "Depth Props",
+    "Overhead Props",
+    "Collisions"
+  ],
+  "legacy_background_fallback_url": "assets/claudeville/visuals/claudeville_bg.png",
+  "object_layers": [
+    {
+      "atlas": "claudeville-v2-props",
+      "depth_mode": "foot-y",
+      "name": "Depth Props"
+    },
+    {
+      "atlas": "claudeville-v2-props",
+      "depth": 90000,
+      "depth_mode": "fixed",
+      "name": "Overhead Props"
+    }
+  ],
+  "rendering": {
+    "texture_filter": "nearest"
+  },
+  "resident_manifest_url": "assets/characters/manifest.json",
+  "tile_layers": [
+    "Bottom Ground",
+    "Exterior Ground",
+    "Exterior Decoration L1",
+    "Exterior Decoration L2",
+    "Interior Ground",
+    "Wall",
+    "Interior Furniture L1",
+    "Interior Furniture L2",
+    "Foreground L1",
+    "Foreground L2",
+    "Collisions"
+  ],
+  "tilemap_url": "assets/claudeville/visual_candidates/browser-full-town-interiors-v8/claudeville_v2.json",
+  "tilesets": [
+    {
+      "image_url": "assets/claudeville/visual_candidates/browser-full-town-interiors-v8/runtime/tiles/terrain.png",
+      "key": "claudeville-v2-terrain",
+      "name": "claudeville_v2_runtime_terrain"
+    },
+    {
+      "image_url": "assets/claudeville/visual_candidates/browser-full-town-interiors-v8/runtime/tiles/town.png",
+      "key": "claudeville-v2-town",
+      "name": "claudeville_v2_runtime_town"
+    },
+    {
+      "image_url": "assets/claudeville/visual_candidates/browser-full-town-interiors-v8/runtime/tiles/office.png",
+      "key": "claudeville-v2-office",
+      "name": "claudeville_v2_runtime_office"
+    },
+    {
+      "image_url": "assets/claudeville/visual_candidates/browser-full-town-interiors-v8/runtime/tiles/interiors.png",
+      "key": "claudeville-v2-interiors",
+      "name": "claudeville_v2_runtime_interiors"
+    }
+  ],
+  "version": 2,
+  "visual_dimensions": {
+    "height": 96,
+    "tile_size": 16,
+    "width": 176
+  },
+  "world": "claudeville"
+}

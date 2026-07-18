@@ -1,0 +1,26 @@
+{
+  "milo chen": {
+    "name": "Milo Chen",
+    "familiarity": 1,
+    "affinity": 0.3,
+    "sentiment": "friendly",
+    "last_topics": [],
+    "beliefs": [
+      "hands them the validated pain to package"
+    ],
+    "last_interaction": null,
+    "times_talked": 0
+  },
+  "theo grant": {
+    "name": "Theo Grant",
+    "familiarity": 1,
+    "affinity": 0.3,
+    "sentiment": "friendly",
+    "last_topics": [],
+    "beliefs": [
+      "relies on them to pitch the offer well"
+    ],
+    "last_interaction": null,
+    "times_talked": 0
+  }
+}

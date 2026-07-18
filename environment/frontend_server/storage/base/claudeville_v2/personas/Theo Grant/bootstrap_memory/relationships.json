@@ -1,0 +1,26 @@
+{
+  "iris morgan": {
+    "name": "Iris Morgan",
+    "familiarity": 1,
+    "affinity": 0.3,
+    "sentiment": "friendly",
+    "last_topics": [],
+    "beliefs": [
+      "relies on them to pitch the offer well"
+    ],
+    "last_interaction": null,
+    "times_talked": 0
+  },
+  "sofia lane": {
+    "name": "Sofia Lane",
+    "familiarity": 1,
+    "affinity": 0.1,
+    "sentiment": "neutral",
+    "last_topics": [],
+    "beliefs": [
+      "expects them to vet my outreach"
+    ],
+    "last_interaction": null,
+    "times_talked": 0
+  }
+}

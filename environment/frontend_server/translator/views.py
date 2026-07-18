@@ -11,9 +11,18 @@ import os
 import time
 
 import requests
+from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
+
+from translator.replay_inspector import (
+    InvalidReplayRequest,
+    ReplayStateNotFound,
+    ReplayStateUnavailable,
+    load_replay_persona_state,
+    load_replay_snapshot,
+)
 
 # Backend server URL (env-overridable; defaults to the local Flask backend).
 BACKEND_URL = os.environ.get("CLAUDEVILLE_BACKEND_URL", "http://127.0.0.1:5000")
@@ -59,27 +68,44 @@ def _read_json_file(path, retries=3, delay=0.05):
     raise last_error
 
 
-def _world_render_context(backend):
-    """maze_name + map pixel size for the Phaser frontend, read from the backend
-    health snapshot (the running backend knows its world). Defaults to the_ville so
-    the frontend keeps working when the backend is down. No filesystem reads.
-    """
-    backend = backend or {}
-    return {
-        "maze_name": backend.get("maze_name", "the_ville"),
-        "map_width_px": backend.get("map_width_px", 4480),
-        "map_height_px": backend.get("map_height_px", 3200),
-    }
-
-
-# Map pixel sizes for offline views (demo/replay) where no live backend is available.
-_MAZE_DIMS = {"the_ville": (4480, 3200), "claudeville": (2816, 1536)}
+_WORLD_RENDER_CONFIG = {
+    "the_ville": {
+        "dimensions": (4480, 3200),
+        "manifest": "assets/the_ville/world.json",
+    },
+    "claudeville": {
+        "dimensions": (2816, 1536),
+        "manifest": "assets/claudeville/world.json",
+    },
+}
 
 
 def _world_render_context_for_maze(maze_name):
-    """Render context for offline replay views, keyed by the recording's maze_name."""
-    w, h = _MAZE_DIMS.get(maze_name, _MAZE_DIMS["the_ville"])
-    return {"maze_name": maze_name, "map_width_px": w, "map_height_px": h}
+    """Return only an allowlisted frontend world contract and its safe fallback size."""
+    if maze_name not in _WORLD_RENDER_CONFIG:
+        maze_name = "the_ville"
+    config = _WORLD_RENDER_CONFIG[maze_name]
+    width, height = config["dimensions"]
+    return {
+        "maze_name": maze_name,
+        "map_width_px": width,
+        "map_height_px": height,
+        "world_manifest_path": config["manifest"],
+    }
+
+
+def _world_render_context(backend):
+    """Select the running backend's world without accepting it as a static path."""
+    backend = backend or {}
+    context = _world_render_context_for_maze(backend.get("maze_name", "the_ville"))
+    for source, target in (
+        ("map_width_px", "map_width_px"),
+        ("map_height_px", "map_height_px"),
+    ):
+        value = backend.get(source)
+        if isinstance(value, int) and value > 0:
+            context[target] = value
+    return context
 
 
 # =============================================================================
@@ -283,6 +309,23 @@ def api_persona_state(request, persona_name):
         return JsonResponse({"error": str(e)}, status=502)
 
 
+def api_replay_persona_state(request, sim_code, step, persona_name):
+    """Serve an immutable saved persona state without contacting the backend."""
+    if request.method != "GET":
+        return JsonResponse({"error": "GET required"}, status=405)
+    try:
+        state = load_replay_persona_state(
+            settings.BASE_DIR, sim_code, step, persona_name
+        )
+    except InvalidReplayRequest:
+        return JsonResponse({"error": "Invalid replay request"}, status=400)
+    except ReplayStateNotFound:
+        return JsonResponse({"error": "Replay state not found"}, status=404)
+    except ReplayStateUnavailable:
+        return JsonResponse({"error": "Replay state unavailable"}, status=422)
+    return JsonResponse(state)
+
+
 def api_town_center_record_delivery(request, request_id):
     """Record HUMAN-CONFIRMED revenue for a delivered request.
 
@@ -388,8 +431,8 @@ def demo(request, sim_code, step, play_speed="2"):
         "sim_code": sim_code,
         "step": step,
         "persona_names": persona_names,
-        "persona_init_pos": json.dumps(persona_init_pos),
-        "all_movement": json.dumps(all_movement),
+        "persona_init_pos": persona_init_pos,
+        "all_movement": all_movement,
         "start_datetime": start_datetime,
         "sec_per_step": sec_per_step,
         "play_speed": play_speed,
@@ -477,38 +520,42 @@ def home(request):
 
 @ensure_csrf_cookie
 def replay(request, sim_code, step):
-    sim_code = sim_code
-    step = int(step)
+    try:
+        snapshot = load_replay_snapshot(settings.BASE_DIR, sim_code, step)
+    except InvalidReplayRequest:
+        return HttpResponse("Invalid replay request", status=400)
+    except ReplayStateNotFound:
+        return HttpResponse("Replay not found", status=404)
+    except ReplayStateUnavailable:
+        return HttpResponse("Replay unavailable", status=422)
 
-    persona_names = []
-    persona_names_set = set()
-    personas_dir = f"storage/runs/{sim_code}/personas"
-    for x in os.listdir(personas_dir):
-        if not x.startswith("."):
-            persona_names.append([x, x.replace(" ", "_")])
-            persona_names_set.add(x)
-
-    persona_init_pos = []
-    env_dir = f"storage/runs/{sim_code}/environment"
-    file_count = [
-        int(f.split(".")[0])
-        for f in os.listdir(env_dir)
-        if f.endswith(".json") and not f.startswith(".")
+    persona_names = [
+        [name, name.replace(" ", "_")] for name in snapshot["persona_names"]
     ]
-    curr_json = f"{env_dir}/{max(file_count)}.json"
-    with open(curr_json) as json_file:
-        persona_init_pos_dict = json.load(json_file)
-        for key, val in persona_init_pos_dict.items():
-            if key in persona_names_set:
-                persona_init_pos += [[key, val["x"], val["y"]]]
+    persona_names_set = set(snapshot["persona_names"])
+    persona_init_pos = []
+    for key, val in snapshot["environment"].items():
+        if not isinstance(val, dict) or key not in persona_names_set:
+            continue
+        x, y = val.get("x"), val.get("y")
+        if all(
+            isinstance(value, (int, float)) and not isinstance(value, bool)
+            for value in (x, y)
+        ):
+            persona_init_pos.append([key, x, y])
 
     context = {
         "sim_code": sim_code,
-        "step": step,
+        "step": snapshot["effective_step"],
+        "requested_step": snapshot["requested_step"],
+        "effective_step": snapshot["effective_step"],
         "persona_names": persona_names,
         "persona_init_pos": persona_init_pos,
         "mode": "replay",
     }
+    context.update(
+        _world_render_context_for_maze(snapshot["meta"].get("maze_name", "the_ville"))
+    )
     template = "home/home.html"
     return render(request, template, context)
 

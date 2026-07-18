@@ -1,0 +1,12 @@
+{
+  "columns": 6,
+  "image": "interiors_v3.png",
+  "imageheight": 96,
+  "imagewidth": 96,
+  "name": "claudeville_v2_runtime_interiors_v3",
+  "tilecount": 36,
+  "tileheight": 16,
+  "tilewidth": 16,
+  "type": "tileset",
+  "version": "1.10"
+}

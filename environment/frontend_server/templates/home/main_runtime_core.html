@@ -1,0 +1,402 @@
+{% load static %}
+
+<script type="text/javascript">
+	// ###########################################################################
+	// PREAMBLE
+	// ###########################################################################
+	// Hidden data divs are rendered ONCE by home.html (they used to be
+	// duplicated here too — invalid HTML that worked by getElementById accident).
+
+	let step = parseInt(document.getElementById('step').innerHTML);
+	let sim_code = document.getElementById('sim_code').innerHTML;
+	// 'simulate' (live backend) or 'replay' (recorded run, no live polling).
+	const SIM_MODE = (document.getElementById('sim_mode')?.textContent || 'simulate').trim();
+	const IS_REPLAY = SIM_MODE === 'replay';
+	const MODE_GUARD = ClaudevilleReplayGuard.create(SIM_MODE);
+
+	let spans = document.getElementById('persona_init_pos').getElementsByTagName('span');
+	let persona_names = {};
+	for(var i = 0, l = spans.length; i < l; i++){
+		let x = spans[i].innerText.split(",");
+		persona_names[x[0]] = [parseInt(x[1]), parseInt(x[2])]
+	}
+
+	// Phaser 3.0 global settings - FULL SCREEN RESPONSIVE
+	const config = {
+	  type: Phaser.AUTO,
+	  width: window.innerWidth,
+	  height: window.innerHeight,
+	  parent: "game-container",
+	  transparent: true,
+	  pixelArt: true,
+	  scale: {
+	    mode: Phaser.Scale.RESIZE,
+	    autoCenter: Phaser.Scale.CENTER_BOTH
+	  },
+	  physics: {
+	    default: "arcade",
+	    arcade: {
+	      gravity: { y: 0 }
+	    }
+	  },
+	  scene: {
+	    preload: preload,
+	    create: create,
+	    update: update
+	  }
+	};
+
+	const game = new Phaser.Game(config);
+	let showDebug = false;
+
+	// Camera control state
+	let isDragging = false;
+	let dragStart = { x: 0, y: 0 };
+	let scrollStart = { x: 0, y: 0 };
+	let zoomLevel = 0.8;
+	let hasCameraInteraction = false;
+	const zoomMin = 0.3;
+	const zoomMax = 3.0;
+	const zoomStep = 0.1;
+	let mainCamera = null;
+	let mapBounds = { width: 0, height: 0 };
+
+	// Day/night cycle
+	let nightOverlay = null;
+
+	function parseTimeString(timeStr) {
+		// Parse time like "February 13, 2024, 07:00:00" or "07:00 AM"
+		// Returns {hour, minute} in 24-hour format
+		const match = timeStr.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?/i);
+		if (!match) return { hour: 12, minute: 0 };  // Default to noon if can't parse
+
+		let hour = parseInt(match[1]);
+		const minute = parseInt(match[2]);
+		const ampm = match[4];
+
+		if (ampm) {
+			// 12-hour format
+			if (ampm.toUpperCase() === 'PM' && hour !== 12) hour += 12;
+			if (ampm.toUpperCase() === 'AM' && hour === 12) hour = 0;
+		}
+		// If no AM/PM, assume 24-hour format
+
+		return { hour, minute };
+	}
+
+	function calculateDayNightTint(hour, minute = 0) {
+		// Hour-keyed ambient color ramp (MULTIPLY blend: the color tints the
+		// whole world; alpha is the strength). Replaces the old flat black fade.
+		//   night (20-05): deep blue   | dawn (05-08): warm amber ramp-out
+		//   day   (08-17): untinted    | dusk (17-20): orange -> deep blue
+		const t = hour + minute / 60;
+		const NIGHT = { color: 0x2a3560, alpha: 0.5 };
+		const DAWN = { color: 0xffd9a0, alpha: 0.18 };
+		const DUSK = { color: 0xff9a5c, alpha: 0.22 };
+		const lerp = (a, b, k) => a + (b - a) * k;
+		const mix = (c1, c2, k) => {
+			const r = lerp((c1 >> 16) & 255, (c2 >> 16) & 255, k);
+			const g = lerp((c1 >> 8) & 255, (c2 >> 8) & 255, k);
+			const b = lerp(c1 & 255, c2 & 255, k);
+			return (Math.round(r) << 16) | (Math.round(g) << 8) | Math.round(b);
+		};
+		if (t >= 8 && t < 17) return { color: 0xffffff, alpha: 0 };
+		if (t >= 5 && t < 8) {
+			// Night -> dawn amber -> clear, across three hours.
+			const k = (t - 5) / 3;
+			if (k < 0.5) {
+				const kk = k * 2;
+				return { color: mix(NIGHT.color, DAWN.color, kk),
+					alpha: lerp(NIGHT.alpha, DAWN.alpha, kk) };
+			}
+			const kk = (k - 0.5) * 2;
+			return { color: DAWN.color, alpha: lerp(DAWN.alpha, 0, kk) };
+		}
+		if (t >= 17 && t < 20) {
+			// Clear -> dusk orange -> night, across three hours.
+			const k = (t - 17) / 3;
+			if (k < 0.5) {
+				const kk = k * 2;
+				return { color: DUSK.color, alpha: lerp(0, DUSK.alpha, kk) };
+			}
+			const kk = (k - 0.5) * 2;
+			return { color: mix(DUSK.color, NIGHT.color, kk),
+				alpha: lerp(DUSK.alpha, NIGHT.alpha, kk) };
+		}
+		return NIGHT;
+	}
+
+	let lastTintKey = null;
+	function updateDayNightCycle(timeStr) {
+		if (!nightOverlay) return;
+		const { hour, minute } = parseTimeString(timeStr);
+		const tint = calculateDayNightTint(hour, minute);
+		const key = `${tint.color}:${tint.alpha.toFixed(3)}`;
+		if (key === lastTintKey) return;  // redraw only when the ramp moves
+		lastTintKey = key;
+		nightOverlay.clear();
+		nightOverlay.fillStyle(tint.color, 1);
+		nightOverlay.fillRect(0, 0, mapBounds.width, mapBounds.height);
+		nightOverlay.setAlpha(tint.alpha);
+	}
+
+	// Persona related variables
+	var spawn_tile_loc = {};
+	for (var key in persona_names){
+		spawn_tile_loc[key] = persona_names[key];
+	}
+
+	var personas = {};
+	var pronunciatios = {};
+	var personaShadows = {};   // soft ellipse under each sprite (juice pass)
+	var speechBubbles = {};    // bubble image behind each emoji (juice pass)
+	let anims_direction;
+	let pre_anims_direction_dict = {};
+
+	// Persona activity tracking for dynamic panel ordering
+	let personaLastActivity = {};  // { personaName: timestamp }
+
+	function updatePersonaActivity(personaNames) {
+		// Update activity timestamp for active personas
+		const now = Date.now();
+		for (const name of personaNames) {
+			personaLastActivity[name] = now;
+		}
+		reorderPersonaPanel();
+	}
+
+	function reorderPersonaPanel() {
+		const panelContent = document.querySelector('#persona-panel .panel-content');
+		if (!panelContent) return;
+
+		const cards = Array.from(panelContent.querySelectorAll('.persona-card'));
+		if (cards.length === 0) return;
+
+		// Sort cards by last activity (most recent first), then alphabetically for ties
+		cards.sort((a, b) => {
+			const nameA = a.getAttribute('data-persona-name');
+			const nameB = b.getAttribute('data-persona-name');
+			const activityA = personaLastActivity[nameA] || 0;
+			const activityB = personaLastActivity[nameB] || 0;
+
+			if (activityB !== activityA) {
+				return activityB - activityA;  // Most recent first
+			}
+			return nameA.localeCompare(nameB);  // Alphabetical fallback
+		});
+
+		// Reorder DOM elements
+		for (const card of cards) {
+			panelContent.appendChild(card);
+		}
+	}
+
+	let curr_maze = "{{ maze_name|default:'the_ville' }}";
+	const world_manifest_url = "{% static world_manifest_path %}?v=2";
+	const static_asset_root = "{% static '' %}";
+	let tile_width = 32;
+	let movement_speed = 4;
+
+	// Movement display variables
+	let pollInProgress = false;
+	let execute_movement = null;
+	let execute_count_max = tile_width/movement_speed;
+	let execute_count = 0;
+		let movement_target = {};
+		let renderedWorldController = null;
+	let autoFollowMovement = false;
+	let lastMovementPacketAt = Date.now();
+
+	// ==========================================================================
+	// Playback Controls
+	// ==========================================================================
+	let isPaused = true;
+	let isSkipping = false;
+	let playbackSpeed = 5;
+	let animationDelay = 200;
+	let lastAnimationTime = 0;
+	let playbackState = "paused";
+	let latestBackendHealth = null;
+	let backendBusy = false;
+	let selectedTownCenterRequestId = null;
+	let staleRunReloadScheduled = false;
+
+	// ==========================================================================
+	// Simulation Control (Frontend-driven)
+	// ==========================================================================
+	let isSimulating = false;
+	let simulationActive = false; // Master switch for auto-simulation
+	let queuedMovements = 0;      // Steps queued but not yet animated
+	let displayedStep = step;     // Step currently being displayed
+	let simulatedStep = step;     // Step simulated on backend
+	let lastAppliedMovementStep = step - 1;
+	const CLIENT_VERSION = "stream-v2";
+	const TARGET_BUFFER = 1;      // Keep playback responsive; one slow LLM step should not block a batch
+	const BATCH_SIZE = 1;         // Request one backend step per batch
+	// When the backend's autosim producer is running, it drives stepping ahead of
+	// the display and the frontend is a PURE CONSUMER: it only polls /movements and
+	// replays the deep buffer (smooth playback, decoupled from LLM latency).
+	let autosimEnabled = false;
+
+	// CSRF token reader. Django sets the csrftoken cookie via @ensure_csrf_cookie on
+	// the page view; non-GET requests must echo it back in the X-CSRFToken header.
+	function getCookie(name) {
+		const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+		return match ? decodeURIComponent(match.pop()) : '';
+	}
+
+	// HTML-escape untrusted (LLM/backend-derived) text before interpolating into markup.
+	function escapeHtml(value) {
+		return String(value == null ? '' : value)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#39;');
+	}
+
+	function setPlaybackState(state) {
+		playbackState = state;
+		const stateEl = document.getElementById('playback-state-content');
+		if (stateEl) stateEl.textContent = state;
+	}
+
+	function setDisplayedSimTime(currTime) {
+		if (!currTime) return;
+		const gameTime = document.getElementById('game-time-content');
+		if (gameTime) {
+			gameTime.textContent = currTime;
+			updateDayNightCycle(currTime);
+		}
+	}
+
+	function updatePersonaCardFromSnapshot(persona) {
+		const personaName = persona?.name;
+		if (!personaName) return;
+		const personaNameOs = personaName.replace(/ /g, "_");
+		const actionEl = document.getElementById("current_action__" + personaNameOs);
+		const locationEl = document.getElementById("target_address__" + personaNameOs);
+		if (actionEl && persona.action) {
+			actionEl.textContent = ClaudevilleAddresses.translateText(persona.action);
+		}
+		if (locationEl && persona.location) {
+			locationEl.textContent = ClaudevilleAddresses.displayAddress(persona.location);
+		}
+	}
+
+	function syncBackendSnapshot(backend) {
+		if (!backend?.ok) return;
+		if (backend.curr_time && (isPaused || execute_count <= 0)) {
+			setDisplayedSimTime(backend.curr_time);
+		}
+		for (const persona of backend.personas || []) {
+			updatePersonaCardFromSnapshot(persona);
+		}
+	}
+
+	function updateRuntimePanel(health) {
+		const panel = document.getElementById('runtime-status-panel');
+		const backend = health?.backend || {};
+		latestBackendHealth = backend;
+		backendBusy = Boolean(backend.backend_busy);
+		if (
+			!IS_REPLAY &&
+			backend.ok &&
+			backend.sim_code &&
+			backend.sim_code !== sim_code &&
+			!staleRunReloadScheduled
+		) {
+			// Replay pages intentionally show a DIFFERENT (recorded) run than
+			// whatever the live backend is doing — never reload them.
+			staleRunReloadScheduled = true;
+			updateSimStatus('New backend run detected - reloading page', true);
+			setTimeout(() => window.location.reload(), 750);
+		}
+
+		const backendHealth = document.getElementById('backend-health-content');
+		const backendTime = document.getElementById('backend-time-content');
+		const backendStep = document.getElementById('backend-step-content');
+		const queueDepth = document.getElementById('queue-depth-content');
+		const backendBusyEl = document.getElementById('backend-busy-content');
+
+		if (backendHealth) {
+			backendHealth.textContent = backend.ok ? (backend.backend_busy ? 'busy' : 'online') : 'offline';
+		}
+		if (backendTime) backendTime.textContent = backend.curr_time || '--';
+		const gameTime = document.getElementById('game-time-content');
+		if (gameTime && gameTime.textContent === '--:--' && backend.curr_time) {
+			gameTime.textContent = backend.curr_time;
+			updateDayNightCycle(backend.curr_time);
+		}
+		syncBackendSnapshot(backend);
+		if (backendStep) backendStep.textContent = backend.step ?? '--';
+		if (queueDepth) queueDepth.textContent = backend.movement_queue_depth ?? queuedMovements ?? '--';
+		if (backendBusyEl) {
+			if (!backend.ok) {
+				backendBusyEl.textContent = backend.error || 'unavailable';
+			} else if (backend.backend_busy) {
+				const seconds = backend.backend_busy_seconds ?? 0;
+				const reason = backend.backend_busy_reason || 'working';
+				backendBusyEl.textContent = `${reason} (${seconds}s)`;
+				backendBusyEl.title = backend.backend_busy_since || '';
+			} else {
+				backendBusyEl.textContent = 'idle';
+				backendBusyEl.title = '';
+			}
+		}
+		if (panel) panel.classList.toggle('backend-down', !backend.ok);
+	}
+
+	async function refreshRuntimeHealth() {
+		if (!MODE_GUARD.canMutate()) return;
+		try {
+			const response = await fetch("{% url 'api_health' %}");
+			const health = await response.json();
+			autosimEnabled = !!(health.backend && health.backend.autosim_enabled);
+			updateRuntimePanel(health);
+			if (isPaused && !isSkipping) {
+				setPlaybackState('paused');
+			} else if (!health.backend?.ok) {
+				updateSimStatus('Backend offline', false);
+			} else if (health.backend?.backend_busy) {
+				setPlaybackState('backend busy');
+				updateSimStatus('Backend busy - waiting for next movement', true);
+			} else if (!isPaused && !isSkipping && !isSimulating && playbackState === 'backend busy') {
+				setPlaybackState('playing');
+				updateSimStatus('Ready', false);
+			}
+		} catch (error) {
+			updateRuntimePanel({ backend: { ok: false, error: String(error) } });
+			updateSimStatus('Health check failed', false);
+		}
+	}
+
+	function formatRevenue(cents) {
+		return `$${((cents || 0) / 100).toFixed(2)}`;
+	}
+
+	function setTownApprovalButtonsEnabled(enabled) {
+		for (const id of [
+			'town-approve-request',
+			'town-reject-request',
+			'town-complete-request',
+			'town-fail-request'
+		]) {
+			const button = document.getElementById(id);
+			if (button) button.disabled = !enabled;
+		}
+	}
+
+	const RISK_ORDER = { critical: 0, high: 1, medium: 2, low: 3, unlabeled: 4 };
+
+	function sortedApprovalQueue(queue) {
+		// Risk-first (worst on top), then biggest agent-claimed payoff.
+		return queue.slice().sort((a, b) => {
+			const ra = RISK_ORDER[(a.payload || {}).risk_label] ?? 4;
+			const rb = RISK_ORDER[(b.payload || {}).risk_label] ?? 4;
+			if (ra !== rb) return ra - rb;
+			const ca = parseFloat((a.payload || {}).expected_payoff) || 0;
+			const cb = parseFloat((b.payload || {}).expected_payoff) || 0;
+			return cb - ca;
+		});
+	}

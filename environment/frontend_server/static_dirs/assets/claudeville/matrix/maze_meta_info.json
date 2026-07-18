@@ -4,5 +4,6 @@
   "maze_height": 48,
   "sq_tile_size": 32,
   "collision_block_id": "32125",
-  "special_constraint": ""
+  "special_constraint": "",
+  "address_alias_manifest": "legacy_address_aliases.v1.json"
 }

@@ -1,0 +1,384 @@
+
+{% load static %}
+	// ==========================================================================
+	// Chat Popup System
+	// ==========================================================================
+
+	// Track conversations by group
+	let conversations = {};  // {convoId: {participants: Set, lines: [], location: {x, y}}}
+	let activeConvoId = null;
+	let lastConvoActivity = 0;  // For fade-out timer
+	let chatMinimized = false;
+	let displayedMessageKeys = new Set();  // Track which messages are already displayed
+	let previousConvoIds = [];  // Track previous conversation tabs for highlighting
+
+	function updateChatPopup(movements) {
+		const chatPopup = document.getElementById('chat-popup');
+		if (!chatPopup || !movements || !movements.persona) return;
+
+		// Use backend's authoritative conversation groups if available
+		const backendConvos = movements.meta?.conversations || {};
+
+		// Collect all unique chat lines from all personas
+		// Key is "speaker:line", value is {speaker, line, location}
+		let allLines = new Map();
+		let firstLocation = null;
+
+		for (const [name, data] of Object.entries(movements.persona)) {
+			if (data.chat && data.chat.length > 0) {
+				if (!firstLocation) {
+					firstLocation = { x: data.movement[0], y: data.movement[1] };
+				}
+				for (const [speaker, line] of data.chat) {
+					const key = `${speaker}:${line}`;
+					if (!allLines.has(key)) {
+						allLines.set(key, {
+							speaker,
+							line,
+							key,
+							location: { x: data.movement[0], y: data.movement[1] }
+						});
+					}
+				}
+			}
+		}
+
+		// Build conversation objects using backend's participant list
+		let activeConvos = {};
+		for (const [groupId, groupInfo] of Object.entries(backendConvos)) {
+			if (groupInfo.participants && groupInfo.participants.length > 0) {
+				activeConvos[groupId] = {
+					participants: new Set(groupInfo.participants),
+					lines: [...allLines.values()],
+					location: firstLocation || { x: 0, y: 0 }
+				};
+			}
+		}
+
+		// Fallback: if no backend convos but we have chat lines, derive from speakers
+		if (Object.keys(activeConvos).length === 0 && allLines.size > 0) {
+			const speakers = new Set([...allLines.values()].map(l => l.speaker));
+			const convoId = [...speakers].sort().join('_');
+			activeConvos[convoId] = {
+				participants: speakers,
+				lines: [...allLines.values()],
+				location: firstLocation
+			};
+		}
+
+		// Update stored conversations
+		conversations = activeConvos;
+		const convoIds = Object.keys(conversations);
+
+		if (convoIds.length === 0) {
+			// Start fade timer if no activity
+			if (Date.now() - lastConvoActivity > 5000) {
+				chatPopup.classList.add('hidden');
+				// Clear displayed messages when chat hides (for fresh start next time)
+				displayedMessageKeys.clear();
+				previousConvoIds = [];
+			}
+			return;
+		}
+
+		lastConvoActivity = Date.now();
+		chatPopup.classList.remove('hidden');
+
+		// Auto-select closest conversation to camera if none selected or current is gone
+		if (!activeConvoId || !conversations[activeConvoId]) {
+			activeConvoId = findClosestConversation();
+		}
+
+		// Update tabs
+		updateConversationTabs(convoIds);
+
+		// Update messages for active conversation (if not minimized)
+		if (!chatMinimized) {
+			updateConversationMessages(activeConvoId);
+		}
+	}
+
+	function findClosestConversation() {
+		if (!mainCamera) return Object.keys(conversations)[0] || null;
+
+		// Get camera center position
+		const camX = mainCamera.scrollX + mainCamera.width / 2;
+		const camY = mainCamera.scrollY + mainCamera.height / 2;
+
+		let closest = null;
+		let minDist = Infinity;
+
+		for (const [convoId, convo] of Object.entries(conversations)) {
+			const dx = convo.location.x * tile_width - camX;
+			const dy = convo.location.y * tile_width - camY;
+			const dist = dx * dx + dy * dy;
+			if (dist < minDist) {
+				minDist = dist;
+				closest = convoId;
+			}
+		}
+		return closest;
+	}
+
+	function getInitials(name) {
+		// Extract initials from a name (e.g., "Maria Lopez" -> "ML")
+		const rgx = new RegExp(/(\p{L}{1})\p{L}+/, 'gu');
+		const matches = [...name.matchAll(rgx)] || [];
+		return ((matches.shift()?.[1] || '') + (matches.pop()?.[1] || '')).toUpperCase();
+	}
+
+	function updateConversationTabs(convoIds) {
+		const chatTabs = document.getElementById('chat-tabs');
+		if (!chatTabs) return;
+
+		// Check for new conversations (not in previous list)
+		const newConvoIds = convoIds.filter(id => !previousConvoIds.includes(id));
+
+		// Only rebuild tabs if the list changed
+		const tabsChanged = convoIds.length !== previousConvoIds.length ||
+			convoIds.some((id, i) => id !== previousConvoIds[i]);
+
+		if (tabsChanged) {
+			chatTabs.innerHTML = '';
+
+			for (const convoId of convoIds) {
+				const convo = conversations[convoId];
+				const tab = document.createElement('button');
+				const isNew = newConvoIds.includes(convoId);
+				tab.className = 'chat-tab' + (convoId === activeConvoId ? ' active' : '') + (isNew ? ' new' : '');
+				tab.dataset.convoId = convoId;
+				// Show initials of first two participants
+				const participantInitials = [...convo.participants].slice(0, 2).map(getInitials);
+				tab.textContent = participantInitials.join(' & ');
+				if (convo.participants.size > 2) {
+					tab.textContent += ` +${convo.participants.size - 2}`;
+				}
+				// Add tooltip with full names
+				tab.title = [...convo.participants].join(', ');
+				tab.onclick = () => {
+					activeConvoId = convoId;
+					// Pan camera to conversation location
+					if (mainCamera) {
+						mainCamera.pan(
+							convo.location.x * tile_width,
+							convo.location.y * tile_width,
+							500, 'Power2'
+						);
+					}
+					updateConversationTabs(convoIds);
+					updateConversationMessages(convoId);
+				};
+				chatTabs.appendChild(tab);
+
+				// Remove 'new' highlight after animation
+				if (isNew) {
+					setTimeout(() => tab.classList.remove('new'), 1500);
+				}
+			}
+			previousConvoIds = [...convoIds];
+		} else {
+			// Just update active state without rebuilding
+			chatTabs.querySelectorAll('.chat-tab').forEach(tab => {
+				const isActive = tab.dataset.convoId === activeConvoId;
+				tab.classList.toggle('active', isActive);
+			});
+		}
+	}
+
+	function updateConversationMessages(convoId, forceRebuild = false) {
+		const chatMessages = document.getElementById('chat-messages');
+		if (!chatMessages) return;
+
+		const convo = conversations[convoId];
+		if (!convo) {
+			chatMessages.innerHTML = '<p class="chat-empty">No active conversation</p>';
+			displayedMessageKeys.clear();
+			return;
+		}
+
+		// If conversation changed or forced rebuild, clear and rebuild
+		const currentConvoMarker = chatMessages.dataset.convoId;
+		if (currentConvoMarker !== convoId || forceRebuild) {
+			chatMessages.innerHTML = '';
+			chatMessages.dataset.convoId = convoId;
+			displayedMessageKeys.clear();
+		}
+
+		// Add only new messages (those not in displayedMessageKeys)
+		let addedNew = false;
+		for (const { speaker, line, key } of convo.lines) {
+			if (!displayedMessageKeys.has(key)) {
+				displayedMessageKeys.add(key);
+				const displaySpeaker = ClaudevilleAddresses.translateText(speaker);
+				const displayLine = ClaudevilleAddresses.translateText(line);
+
+				const bubble = document.createElement('div');
+				// Only highlight as "new" if simulation is paused (skip ahead was used)
+				// When playing, messages flow naturally so no highlight needed
+				bubble.className = isPaused ? 'chat-bubble new' : 'chat-bubble';
+				bubble.innerHTML = `
+					<span class="speaker">${escapeHtml(displaySpeaker)}</span>
+					<span class="message">${escapeHtml(displayLine)}</span>
+				`;
+				chatMessages.appendChild(bubble);
+				addedNew = true;
+				// Mirror every line into the persistent event feed — the popup
+				// auto-wipes after 5s of silence; the feed is the record.
+				if (window.feedChatLine) {
+					window.feedChatLine(displaySpeaker, displayLine);
+				}
+
+				// If paused, keep highlight until playback resumes
+				// If playing, fade out after animation completes
+				if (!isPaused) {
+					// No highlight when playing - messages flow naturally
+				}
+				// Note: 'new' class removal when unpausing is handled in play button handler
+			}
+		}
+
+		// Only scroll if new messages were added
+		if (addedNew) {
+			chatMessages.scrollTop = chatMessages.scrollHeight;
+		}
+	}
+
+	// Chat minimize button
+	document.getElementById('chat-minimize').addEventListener('click', function() {
+		const chatPopup = document.getElementById('chat-popup');
+		chatMinimized = !chatMinimized;
+		if (chatMinimized) {
+			chatPopup.classList.add('minimized');
+			this.textContent = '+';
+		} else {
+			chatPopup.classList.remove('minimized');
+			this.textContent = '−';
+			// Refresh messages when expanding
+			if (activeConvoId) {
+				updateConversationMessages(activeConvoId);
+			}
+		}
+	});
+
+	// ==========================================================================
+	// Menu System (ESC key)
+	// ==========================================================================
+
+	function toggleMenu() {
+		const menu = document.getElementById('menu-overlay');
+		if (menu.classList.contains('hidden')) {
+			openMenu();
+		} else {
+			closeMenu();
+		}
+	}
+
+	function openMenu() {
+		const menu = document.getElementById('menu-overlay');
+		menu.classList.remove('hidden');
+
+		// Update current sim info
+		document.getElementById('menu-sim-info').textContent =
+			`${sim_code} - Step ${displayedStep}`;
+
+		// Load saves list
+		loadSavesList();
+	}
+
+	function closeMenu() {
+		const menu = document.getElementById('menu-overlay');
+		menu.classList.add('hidden');
+	}
+
+	async function loadSavesList() {
+		const savesList = document.getElementById('saves-list');
+		if (!MODE_GUARD.canMutate()) {
+			savesList.textContent = 'Saved games are unavailable in a frozen replay.';
+			return;
+		}
+		savesList.innerHTML = '<p class="saves-loading">Loading...</p>';
+
+		try {
+			const response = await fetch("{% url 'api_saves' %}");
+			const result = await response.json();
+
+			if (result.saves && result.saves.length > 0) {
+				savesList.innerHTML = result.saves.map(save => `
+					<div class="save-item ${save.sim_code === sim_code ? 'current' : ''}"
+						 data-sim-code="${escapeHtml(save.sim_code)}">
+						<div>
+							<div class="save-name">${escapeHtml(save.sim_code)}</div>
+							<div class="save-info">Step ${escapeHtml(save.step)} - ${escapeHtml(save.personas.length)} personas</div>
+						</div>
+						<div class="save-info">${escapeHtml(save.curr_time)}</div>
+					</div>
+				`).join('');
+
+				// Non-current saves aren't loadable from the browser — say so
+				// inline instead of ambushing with an alert().
+				savesList.querySelectorAll('.save-item').forEach(item => {
+					const saveCode = item.getAttribute('data-sim-code');
+					if (saveCode !== sim_code) {
+						item.classList.add('disabled');
+						item.title = 'Restart the backend with this save to load it';
+					}
+				});
+			} else {
+				savesList.innerHTML = '<p class="saves-loading">No saves found</p>';
+			}
+		} catch (error) {
+			savesList.innerHTML = '<p class="saves-loading">Failed to load saves</p>';
+		}
+	}
+
+	async function saveGame() {
+		if (!MODE_GUARD.canMutate()) return;
+		const saveBtn = document.getElementById('menu-save-btn');
+		saveBtn.disabled = true;
+		saveBtn.textContent = 'Saving...';
+
+		try {
+			const response = await fetch("{% url 'api_save' %}", {
+				method: 'POST',
+				headers: { 'X-CSRFToken': getCookie('csrftoken') }
+			});
+			const result = await response.json();
+
+			if (result.status === 'saved') {
+				saveBtn.textContent = 'Saved!';
+				setTimeout(() => {
+					saveBtn.textContent = 'Save Game';
+					saveBtn.disabled = false;
+				}, 2000);
+				// Refresh saves list
+				loadSavesList();
+			} else {
+				saveBtn.textContent = 'Save Failed';
+				saveBtn.disabled = false;
+			}
+		} catch (error) {
+			saveBtn.textContent = 'Save Failed';
+			saveBtn.disabled = false;
+		}
+	}
+
+	// ESC key handler
+	document.addEventListener('keydown', function(e) {
+		if (e.key === 'Escape') {
+			toggleMenu();
+		}
+	});
+
+	// Menu button handlers
+	document.getElementById('menu-save-btn').addEventListener('click', saveGame);
+	document.getElementById('menu-resume-btn').addEventListener('click', closeMenu);
+
+	// Click outside menu to close
+	document.getElementById('menu-overlay').addEventListener('click', function(e) {
+		if (e.target === this) {
+			closeMenu();
+		}
+	});
+
+	// The simulation starts only after Play is pressed.
+</script>

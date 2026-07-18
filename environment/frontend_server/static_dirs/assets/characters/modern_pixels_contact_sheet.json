@@ -1,0 +1,142 @@
+{
+  "image": "modern_pixels_contact_sheet.png",
+  "image_sha256": "c87f6ba1f2be3acbffade44f84b3f062b0703d44ec5b0244751cebc93bb424c1",
+  "label": "CLAUDEVILLE RESIDENT REVIEW - NATIVE 16x32",
+  "schema_version": 2,
+  "size": [
+    1000,
+    500
+  ],
+  "selection_policy": [
+    "fallback hair silhouette and tone",
+    "primary palette",
+    "skin-tone continuity",
+    "professional role read",
+    "whole-roster visual distinction"
+  ],
+  "candidate_audit": {
+    "candidate_hashes": {
+      "Adrian.png": "d7a67d9e3db1be7e8596a352c47f680316b5fc84017c10f6376d76f9306274b8",
+      "Dominic.png": "ae1555bab0b394b734331a42de4238d2f6a473a0535868dbaa00472fcd1bc63e",
+      "Elena.png": "b434c22dc6526e12bc7b8516d1f755243d24da30e9339eaf429233b63573c1e2",
+      "Ethan.png": "d0949db09166e039e3215ff9ebd9d8b77d84df8be4c8926e95de708ba30ca9a0",
+      "Felix.png": "e2700071bbb6e92ccf9c59b7461ddb538784ae86b9af8e4dddf107e3625e29a1",
+      "Henrik.png": "1d54215111990905e5dcdfbb3dbac39d609cd25401f67477155980640833f7b7",
+      "Julian.png": "afb4b364e3bd9e9ec10522f624d91ceba7148108419773d32e36dfdebada1698",
+      "Lucas.png": "88a35b3c83423fa9b4e9d13ed50bec561314c7f10b297079fa38d8315f9e3f37",
+      "Marcus.png": "bd65c88ccaeeab2d1d93a6733217ad2e96f990a5e354a1e73a9320b421d0d5cc",
+      "Mateo.png": "7f0c22bae96993aef9ad135c35c08ec8197e61f353b83c7fcdfb98567472d3e1",
+      "Nathan.png": "aa8a53e213f70f247d1d133dd2f8b6ede5d3e5211a855238d12eaaefcbff48db",
+      "Oscar.png": "e09dd75f1f161dfc81850f2b058c95d03802c42a7834c7fcc6a7eb0f0094c3f2",
+      "Owen.png": "6f350b482081de2bc137cad4fbba2cf6c695ff8333175074c4be87f431927000",
+      "Sebastian.png": "2c2a9fe7483c32f27ad89ea7f4bd3a20b25cb0c1f8bdf0b6c9fc4f26af59abfe",
+      "Selene.png": "d217bcb9c3e0983ef99fa45cece0d9261aec44566cd4efc1f98c7cbf919794b7",
+      "Unnamed Character.png": "df4d320f959fab554da59aa822348ef1eca377986b1588b63749cca77ea6b208"
+    },
+    "candidate_pool_sha256": "c2ddc2a5f09e619c8424b90f6cc7bc21ff7a0a3939f0c457c99820c5df790f79"
+  },
+  "selections": [
+    {
+      "name": "Nora Vale",
+      "role": "strategist",
+      "fallback_reference": "short gray hair; dark green",
+      "selected_profile": "gray side-swept hair; slate formal",
+      "decision_basis": "hair and authority",
+      "source_kind": "user-supplied-limezu-generator-derivative",
+      "source_ref": "characters/Marcus.png"
+    },
+    {
+      "name": "Milo Chen",
+      "role": "market researcher",
+      "fallback_reference": "short brown hair; green",
+      "selected_profile": "short brown hair; blue-white",
+      "decision_basis": "professional research read",
+      "source_kind": "user-supplied-limezu-generator-derivative",
+      "source_ref": "characters/Sebastian.png"
+    },
+    {
+      "name": "Iris Morgan",
+      "role": "offer designer",
+      "fallback_reference": "long gray hair; lavender",
+      "selected_profile": "long gray hair; lavender",
+      "decision_basis": "closest silhouette and palette",
+      "source_kind": "user-supplied-limezu-generator-derivative",
+      "source_ref": "characters/Elena.png"
+    },
+    {
+      "name": "Theo Grant",
+      "role": "sales drafter",
+      "fallback_reference": "warm orange hair; green",
+      "selected_profile": "warm orange hair; pale blue",
+      "decision_basis": "approachable warm silhouette",
+      "source_kind": "user-supplied-limezu-generator-derivative",
+      "source_ref": "characters/Nathan.png"
+    },
+    {
+      "name": "Lena Ortiz",
+      "role": "delivery planner",
+      "fallback_reference": "short blonde hair; green",
+      "selected_profile": "short golden hair; green-white",
+      "decision_basis": "custom fidelity composite",
+      "source_kind": "licensed-generator-component-composite",
+      "source_ref": "component-composite:Lena Ortiz"
+    },
+    {
+      "name": "Ravi Singh",
+      "role": "analyst",
+      "fallback_reference": "medium skin; brown hair; white-blue",
+      "selected_profile": "medium-deep skin; dark hair; green-blue",
+      "decision_basis": "skin and analytical palette",
+      "source_kind": "user-supplied-limezu-generator-derivative",
+      "source_ref": "characters/Lucas.png"
+    },
+    {
+      "name": "June Park",
+      "role": "operations coordinator",
+      "fallback_reference": "black bob; blue",
+      "selected_profile": "dark bob; structured blue",
+      "decision_basis": "custom fidelity composite",
+      "source_kind": "licensed-generator-component-composite",
+      "source_ref": "component-composite:June Park"
+    },
+    {
+      "name": "Amara Cole",
+      "role": "finance scoring",
+      "fallback_reference": "long blonde hair; lavender",
+      "selected_profile": "long golden hair; lavender-white",
+      "decision_basis": "custom fidelity composite",
+      "source_kind": "licensed-generator-component-composite",
+      "source_ref": "component-composite:Amara Cole"
+    },
+    {
+      "name": "Felix Reed",
+      "role": "tool advocate",
+      "fallback_reference": "spiky blonde hair; green",
+      "selected_profile": "spiky blonde hair; blue",
+      "decision_basis": "hair and technical energy",
+      "source_kind": "user-supplied-limezu-generator-derivative",
+      "source_ref": "characters/Adrian.png"
+    },
+    {
+      "name": "Sofia Lane",
+      "role": "risk officer",
+      "fallback_reference": "short gray hair; green",
+      "selected_profile": "short gray hair; green-white",
+      "decision_basis": "palette and serious read",
+      "source_kind": "user-supplied-limezu-generator-derivative",
+      "source_ref": "characters/Oscar.png"
+    }
+  ],
+  "reviewed_animations": [
+    "idle",
+    "walk"
+  ],
+  "optional_actions": {
+    "status": "disabled-pending-visual-review",
+    "not_exposed_in_runtime": [
+      "sit",
+      "phone",
+      "hurt"
+    ]
+  }
+}

@@ -1,0 +1,404 @@
+
+{% load static %}
+	function handlePolledMovementResult(result) {
+		if (!result.hasMovements) return false;
+
+		queuedMovements = Math.max(0, queuedMovements - 1);
+
+		if (result.hadNewAction) {
+			const activePersonas = result.movement.meta?.active_personas || [];
+			if (activePersonas.length > 0) {
+				updatePersonaActivity(activePersonas);
+			}
+		}
+
+		if (isSkipping && result.hadNewAction) {
+			handleSkipActionFound(result.movement);
+		}
+
+		return true;
+	}
+
+	async function kickPlaybackPipeline(forceRequest = false) {
+		if (!MODE_GUARD.canMutate()) return;
+		if (!simulationActive || isPaused || isSkipping || isMenuOpen()) return;
+		if (execute_count > 0 || pollInProgress) return;
+
+		pollInProgress = true;
+		const result = await pollMovements();
+		pollInProgress = false;
+
+		if (handlePolledMovementResult(result)) return;
+
+		// autosim drives stepping on the backend; consumer only polls (above).
+		if (!autosimEnabled && simulationActive && !isSimulating && queuedMovements <= TARGET_BUFFER) {
+			requestSimulation(BATCH_SIZE, forceRequest);
+		}
+	}
+
+	function handleSimulationError(message) {
+		simulationActive = false;
+		isPaused = true;
+		isSkipping = false;
+		setPlaybackState('paused');
+		updateButtonStates();
+		updateSimStatus('Simulation error - check backend status', false);
+		console.error('[SIM] Auto-simulation paused:', message);
+	}
+
+	// Honest latency: while a busy state is showing, tick an elapsed counter
+	// onto the chip so 90s of Claude inference reads as progress, not a hang.
+	let simStatusBaseText = '';
+	let simStatusBusySince = 0;
+	let firstPlayThisLoad = true;
+
+	setInterval(() => {
+		if (!simStatusBusySince) return;
+		const textEl = document.getElementById('sim-status-text');
+		if (!textEl) return;
+		const elapsed = Math.floor((Date.now() - simStatusBusySince) / 1000);
+		if (elapsed >= 2) textEl.textContent = `${simStatusBaseText} (${elapsed}s)`;
+	}, 1000);
+
+	function updateSimStatus(text, simulating) {
+		const statusEl = document.getElementById('sim-status');
+		const textEl = document.getElementById('sim-status-text');
+		if (text !== simStatusBaseText) {
+			// New phase: restart the elapsed counter.
+			simStatusBusySince = simulating ? Date.now() : 0;
+		} else if (!simulating) {
+			simStatusBusySince = 0;
+		}
+		simStatusBaseText = text;
+		if (textEl) textEl.textContent = text;
+		if (statusEl) {
+			if (simulating) {
+				statusEl.classList.add('simulating');
+			} else {
+				statusEl.classList.remove('simulating');
+			}
+		}
+	}
+
+	function calculateMovementFrameCount(movement) {
+		let maxDistance = tile_width;
+		for (const [personaName, movementData] of Object.entries(movement?.persona || {})) {
+			const sprite = personas[personaName];
+			const targetTile = projectMovementTile(movementData?.movement);
+			if (!sprite || !targetTile || targetTile.length < 2) continue;
+			const targetX = targetTile[0] * tile_width;
+			const targetY = targetTile[1] * tile_width;
+			const distance = Math.abs(sprite.body.x - targetX) + Math.abs(sprite.body.y - targetY);
+			maxDistance = Math.max(maxDistance, distance);
+		}
+		return Math.max(tile_width / movement_speed, Math.ceil(maxDistance / movement_speed));
+	}
+
+	function projectMovementTile(tile) {
+		if (!Array.isArray(tile) || tile.length < 2) return tile;
+		return renderedWorldController?.projectLogicalTile?.(tile) || tile;
+	}
+
+	// Camera follow (juice pass): a lerped startFollow instead of the old
+	// discrete pan() jumps. `followedPersona` tracks the current target;
+	// null = free camera. Exposed on window for the inspector + event feed.
+	let followedPersona = null;
+
+	function setCameraFollowTarget(personaName) {
+		if (!mainCamera) return;
+		if (!personaName || !personas[personaName]) {
+			mainCamera.stopFollow();
+			followedPersona = null;
+			return;
+		}
+		followedPersona = personaName;
+		mainCamera.startFollow(personas[personaName], true, 0.08, 0.08);
+	}
+	window.setCameraFollowTarget = setCameraFollowTarget;
+
+	window.panCameraToTile = function (tileX, tileY) {
+		if (!mainCamera) return;
+		setCameraFollowTarget(null);
+		mainCamera.pan(tileX * tile_width, tileY * tile_width, 450, 'Power2');
+	};
+
+	function focusMovementTarget(movement) {
+		if (!autoFollowMovement || !mainCamera || isDragging) return;
+
+		const personaEntries = Object.entries(movement?.persona || {});
+		const activeNames = movement?.meta?.active_personas || [];
+		const preferredEntries = [
+			...activeNames
+				.map(name => [name, movement.persona?.[name]])
+				.filter(([, data]) => data),
+			...personaEntries
+		];
+
+		for (const [personaName, movementData] of preferredEntries) {
+			const sprite = personas[personaName];
+			const targetTile = projectMovementTile(movementData?.movement);
+			if (!sprite || !targetTile || targetTile.length < 2) continue;
+
+			const targetX = targetTile[0] * tile_width;
+			const targetY = targetTile[1] * tile_width;
+			const isMoving = Math.abs(sprite.body.x - targetX) > 1 || Math.abs(sprite.body.y - targetY) > 1;
+			const isActive = activeNames.includes(personaName);
+			if (isMoving || isActive) {
+				if (followedPersona !== personaName) {
+					setCameraFollowTarget(personaName);
+				}
+				return;
+			}
+		}
+	}
+
+	// ==========================================================================
+	// Movement Polling
+	// ==========================================================================
+
+	async function pollMovements() {
+		if (!MODE_GUARD.canMutate()) {
+			return { hasMovements: false, hadNewAction: false };
+		}
+		try {
+			const movementsUrl = `{% url 'api_movements' %}?after_step=${lastAppliedMovementStep}`;
+			const response = await fetch(movementsUrl, {
+				headers: { 'X-Claudeville-Client': CLIENT_VERSION }
+			});
+			const result = await response.json();
+
+			if (result.empty) {
+				queuedMovements = 0;  // Backend queue is empty, reset our count
+				if (!isPaused && !isSimulating) {
+					setPlaybackState(backendBusy ? 'backend busy' : 'buffering');
+				}
+				await new Promise(r => setTimeout(r, 500));
+				return { hasMovements: false, hadNewAction: false };
+			}
+
+			if (result.error) {
+				console.error('[POLL] Error:', result.error);
+				await new Promise(r => setTimeout(r, 1000));
+				return { hasMovements: false, hadNewAction: false };
+			}
+
+			const movementStep = result.meta?.step;
+			if (typeof movementStep === 'number' && movementStep <= lastAppliedMovementStep) {
+				return { hasMovements: false, hadNewAction: false };
+			}
+
+			execute_movement = result;
+			execute_count_max = calculateMovementFrameCount(result);
+			execute_count = execute_count_max;
+			lastMovementPacketAt = Date.now();
+			focusMovementTarget(result);
+			if (!isPaused && !isSkipping) setPlaybackState('playing');
+			const hadNewAction = result.meta && result.meta.had_new_action;
+			return { hasMovements: true, hadNewAction: hadNewAction, movement: result };
+
+		} catch (error) {
+			console.error('[POLL] Request failed:', error);
+			await new Promise(r => setTimeout(r, 1000));
+			return { hasMovements: false, hadNewAction: false };
+		}
+	}
+
+	// Skip mode just sets a flag - the update() loop handles the rest
+	// When skipping: runs at max speed, auto-pauses when LLM action detected
+	function startSkipMode() {
+		if (!MODE_GUARD.canMutate()) return;
+		isSkipping = true;
+		isPaused = false;  // Unpause to let update() run
+		setPlaybackState('skipping');
+		updateButtonStates();
+		updateSimStatus('Skipping to next action...', false);
+	}
+
+	// Called when we detect an LLM action during skip mode
+	function handleSkipActionFound(movement) {
+		if (!isSkipping) return;
+
+		const activePersonas = movement.meta?.active_personas || [];
+		if (activePersonas.length > 0) {
+			// Center on the first active persona
+			const personaName = activePersonas[0];
+			const personaData = movement.persona[personaName];
+			if (personaData && mainCamera) {
+				const targetTile = projectMovementTile(personaData.movement);
+				const targetX = targetTile[0] * tile_width;
+				const targetY = targetTile[1] * tile_width;
+				mainCamera.pan(targetX, targetY, 300, 'Power2');
+				console.log('[SKIP] Centering on active persona:', personaName);
+			}
+		}
+
+		// Stop skipping and pause
+		isSkipping = false;
+		isPaused = true;
+		setPlaybackState('paused');
+		updateButtonStates();
+		updateSimStatus('Ready', false);
+	}
+
+	function getAnimationDelay() {
+		// Use selected speed for both normal and skip mode
+		// Scale delay: speed 1 = 400ms, speed 50 = 10ms
+		return Math.max(10, Math.floor(400 / playbackSpeed));
+	}
+
+	function animateMovements() {
+		if (!execute_movement || execute_count <= 0) {
+			return true;
+		}
+
+		const currTime = execute_movement["meta"]["curr_time"];
+		document.getElementById("game-time-content").textContent = currTime;
+		updateDayNightCycle(currTime);
+		if (execute_count == execute_count_max) {
+			updateChatPopup(execute_movement);
+		}
+
+		for (let i = 0; i < Object.keys(personas).length; i++) {
+			let curr_persona_name = Object.keys(personas)[i];
+			let curr_persona = personas[curr_persona_name];
+			let curr_pronunciatio = pronunciatios[curr_persona_name];
+			const movementData = execute_movement?.["persona"]?.[curr_persona_name];
+			if (!movementData) {
+				movement_target[curr_persona_name] = [curr_persona.body.x, curr_persona.body.y];
+				continue;
+			}
+
+			if (execute_count == execute_count_max) {
+				const projected = projectMovementTile(movementData["movement"]);
+				let curr_x = projected[0];
+				let curr_y = projected[1];
+				movement_target[curr_persona_name] = [curr_x * tile_width, curr_y * tile_width];
+
+				let pronunciatio_content = movementData["pronunciatio"];
+				const hasThought = Boolean(
+					pronunciatio_content && !['💭', '...', '…'].includes(pronunciatio_content.trim())
+				);
+				if (pronunciatios[curr_persona_name].text !== pronunciatio_content) {
+					pronunciatios[curr_persona_name].setText(hasThought ? pronunciatio_content : '');
+					// Pop-in: bubble + emoji scale up together on a new thought.
+					const bubbleSprite = speechBubbles[curr_persona_name];
+					const scene = curr_persona.scene;
+					if (bubbleSprite) bubbleSprite.setVisible(hasThought);
+					pronunciatios[curr_persona_name].setVisible(hasThought);
+					if (hasThought && bubbleSprite && scene) {
+						scene.tweens.add({
+							targets: bubbleSprite,
+							scaleX: { from: bubbleSprite.baseScaleX * 0.2, to: bubbleSprite.baseScaleX },
+							scaleY: { from: bubbleSprite.baseScaleY * 0.2, to: bubbleSprite.baseScaleY },
+							duration: 200,
+							ease: 'Back.easeOut',
+						});
+						scene.tweens.add({
+							targets: pronunciatios[curr_persona_name],
+							scaleX: { from: 0.2, to: 1 },
+							scaleY: { from: 0.2, to: 1 },
+							duration: 200,
+							ease: 'Back.easeOut',
+						});
+					}
+				}
+
+				let curr_persona_name_os = curr_persona_name.replace(/ /g, "_");
+				let description_content = movementData["description"] || "";
+
+				document.getElementById("current_action__" + curr_persona_name_os).textContent =
+					ClaudevilleAddresses.translateText(description_content.split("@")[0]);
+				document.getElementById("target_address__" + curr_persona_name_os).textContent =
+					ClaudevilleAddresses.displayAddress(description_content.split("@")[1] || "");
+			}
+
+			if (curr_persona.body.x < movement_target[curr_persona_name][0]) {
+				curr_persona.body.x += movement_speed;
+				anims_direction = "r";
+				pre_anims_direction_dict[curr_persona_name] = "r";
+			} else if (curr_persona.body.x > movement_target[curr_persona_name][0]) {
+				curr_persona.body.x -= movement_speed;
+				anims_direction = "l";
+				pre_anims_direction_dict[curr_persona_name] = "l";
+			} else if (curr_persona.body.y < movement_target[curr_persona_name][1]) {
+				curr_persona.body.y += movement_speed;
+				anims_direction = "d";
+				pre_anims_direction_dict[curr_persona_name] = "d";
+			} else if (curr_persona.body.y > movement_target[curr_persona_name][1]) {
+				curr_persona.body.y -= movement_speed;
+				anims_direction = "u";
+				pre_anims_direction_dict[curr_persona_name] = "u";
+				} else {
+					anims_direction = "";
+				}
+			const spriteLayout = ClaudevilleCharacters.displayLayout(curr_persona);
+			curr_persona.setDepth(ClaudevilleCharacters.depthForSprite(
+				curr_persona, renderedWorldController
+			));
+
+			curr_pronunciatio.x = spriteLayout.foot.x;
+			curr_pronunciatio.y = spriteLayout.top - 21;
+			const followBubble = speechBubbles[curr_persona_name];
+			if (followBubble) {
+				followBubble.x = spriteLayout.foot.x;
+				followBubble.y = spriteLayout.top - 6;
+			}
+			const followShadow = personaShadows[curr_persona_name];
+			if (followShadow) {
+				followShadow.x = spriteLayout.foot.x;
+				followShadow.y = spriteLayout.foot.y;
+				followShadow.setDepth(curr_persona.depth - 1);
+			}
+
+			const walkDirection = { l: "left", r: "right", u: "up", d: "down" }[anims_direction];
+			if (walkDirection) {
+				ClaudevilleCharacters.playWalk(
+					curr_persona.scene, curr_persona, curr_persona_name, walkDirection
+				);
+			} else {
+				// Determine facing direction: face conversation partner if chatting
+				let facing_direction = pre_anims_direction_dict[curr_persona_name];
+				let chatting_with = movementData?.["chatting_with"];
+				if (chatting_with && personas[chatting_with]) {
+					let partner = personas[chatting_with];
+					let dx = partner.body.x - curr_persona.body.x;
+					let dy = partner.body.y - curr_persona.body.y;
+					// Face the direction with the larger difference
+					if (Math.abs(dx) > Math.abs(dy)) {
+						facing_direction = dx > 0 ? "r" : "l";
+					} else {
+						facing_direction = dy > 0 ? "d" : "u";
+					}
+				}
+
+				const idleDirection = { l: "left", r: "right", u: "up", d: "down" }[facing_direction] || "down";
+				ClaudevilleCharacters.setIdle(
+					curr_persona.scene, curr_persona, curr_persona_name, idleDirection
+				);
+			}
+		}
+
+		execute_count--;
+
+		if (execute_count <= 0) {
+			for (let persona_name in personas) {
+				personas[persona_name].body.x = movement_target[persona_name][0];
+				personas[persona_name].body.y = movement_target[persona_name][1];
+			}
+			const movementStep = execute_movement?.["meta"]?.["step"];
+			if (typeof movementStep === 'number') {
+				lastAppliedMovementStep = Math.max(lastAppliedMovementStep, movementStep);
+				step = lastAppliedMovementStep + 1;
+				displayedStep = step;
+			}
+			execute_movement = null;
+			return true;
+		}
+
+		return false;
+	}
+
+
+	// ###########################################################################
+	// ENGINE
+	// ###########################################################################

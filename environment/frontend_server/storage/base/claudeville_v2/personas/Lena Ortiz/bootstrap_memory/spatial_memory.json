@@ -1,0 +1,257 @@
+{
+  "Claudeville": {
+    "Bank": {
+      "bank.advisory": [
+        "advisory desk"
+      ],
+      "bank.archive": [
+        "archive cabinets"
+      ],
+      "bank.circulation": [],
+      "bank.operations": [
+        "operations desk"
+      ],
+      "bank.teller": [
+        "teller counter"
+      ],
+      "bank.waiting": [
+        "waiting seating"
+      ]
+    },
+    "Home 1": {
+      "home_1.bathroom": [
+        "washstand"
+      ],
+      "home_1.bedroom": [
+        "bed"
+      ],
+      "home_1.garden": [
+        "garden seat"
+      ],
+      "home_1.kitchen": [
+        "cooking area"
+      ],
+      "home_1.living_room": [
+        "side table"
+      ]
+    },
+    "University": {
+      "university.cafeteria": [
+        "service counter"
+      ],
+      "university.lecture": [
+        "lecture seating"
+      ],
+      "university.study_lab": [
+        "computer station"
+      ]
+    },
+    "Agent Academy": {
+      "academy.classroom": [
+        "classroom seating"
+      ],
+      "academy.lounge": [
+        "lounge seating"
+      ],
+      "academy.reception": [
+        "reception desk"
+      ],
+      "academy.training_lab": [
+        "training simulator"
+      ]
+    },
+    "Post Office": {
+      "post.service": [
+        "postal counter"
+      ],
+      "post.sorting": [
+        "mail sorting table"
+      ],
+      "post.waiting": [
+        "waiting seating"
+      ],
+      "post_office.circulation": []
+    },
+    "Market": {
+      "market.checkout": [
+        "checkout counter"
+      ],
+      "market.retail": [
+        "stock display"
+      ]
+    },
+    "Workshop": {
+      "workshop.circulation": [],
+      "workshop.intake": [
+        "job intake"
+      ],
+      "workshop.machine_bay": [
+        "work machine"
+      ]
+    },
+    "Community Center": {
+      "community.event_hall": [
+        "event table"
+      ],
+      "community.lounge": [
+        "lounge seating"
+      ],
+      "community.reception": [
+        "help desk"
+      ],
+      "community_center.circulation": []
+    },
+    "Library": {
+      "library.circulation": [
+        "circulation desk"
+      ],
+      "library.reading": [
+        "reading table"
+      ],
+      "library.stacks": [
+        "bookshelf"
+      ]
+    },
+    "Home 2": {
+      "home_2.bathroom": [
+        "washstand"
+      ],
+      "home_2.main_room": [
+        "bed"
+      ]
+    },
+    "Home 3": {
+      "home_3.bathroom": [
+        "washstand"
+      ],
+      "home_3.main_room": [
+        "bed"
+      ]
+    },
+    "Home 4": {
+      "home_4.bathroom": [
+        "washstand"
+      ],
+      "home_4.main_room": [
+        "resident hobby"
+      ]
+    },
+    "Home 5": {
+      "home_5.bathroom": [
+        "washstand"
+      ],
+      "home_5.bedroom": [
+        "bed"
+      ],
+      "home_5.kitchen": [
+        "cooking area"
+      ],
+      "home_5.living_room": [
+        "resident hobby"
+      ]
+    },
+    "Home 6": {
+      "home_6.bathroom": [
+        "washstand"
+      ],
+      "home_6.bedroom": [
+        "bed"
+      ],
+      "home_6.kitchen": [
+        "cooking area"
+      ],
+      "home_6.living_room": [
+        "resident hobby"
+      ]
+    },
+    "Town Hall": {
+      "hall.administration": [
+        "admin desk"
+      ],
+      "hall.council": [
+        "council table"
+      ],
+      "hall.public_service": [
+        "counter wing"
+      ],
+      "town_hall.circulation": []
+    },
+    "Home 7": {
+      "home_7.bathroom": [
+        "washstand"
+      ],
+      "home_7.bedroom": [
+        "bed"
+      ],
+      "home_7.kitchen": [
+        "cooking area"
+      ],
+      "home_7.living_room": [
+        "resident hobby"
+      ]
+    },
+    "Home 8": {
+      "home_8.bathroom": [
+        "washstand"
+      ],
+      "home_8.bedroom": [
+        "bed"
+      ],
+      "home_8.kitchen": [
+        "cooking area"
+      ],
+      "home_8.living_room": [
+        "resident hobby"
+      ]
+    },
+    "Home 9": {
+      "home_9.bathroom": [
+        "washstand"
+      ],
+      "home_9.bedroom": [
+        "bed"
+      ],
+      "home_9.kitchen": [
+        "cooking area"
+      ],
+      "home_9.living_room": [
+        "resident hobby"
+      ]
+    },
+    "Home 10": {
+      "home_10.bathroom": [
+        "washstand"
+      ],
+      "home_10.bedroom": [
+        "bed"
+      ],
+      "home_10.kitchen": [
+        "cooking area"
+      ],
+      "home_10.living_room": [
+        "resident hobby"
+      ]
+    },
+    "Central Plaza": {
+      "plaza": [
+        "bench",
+        "fountain",
+        "notice board"
+      ]
+    },
+    "Claudeville Cafe": {
+      "cafe.dining": [
+        "dining table"
+      ],
+      "cafe.restroom": [
+        "toilet"
+      ],
+      "cafe.service": [
+        "service counter"
+      ],
+      "cafe.terrace": [
+        "terrace table"
+      ]
+    }
+  }
+}

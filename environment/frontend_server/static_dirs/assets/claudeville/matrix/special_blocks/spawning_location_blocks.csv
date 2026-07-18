@@ -1,19 +1,21 @@
-32500, Claudeville, Banco, main, sp
-32501, Claudeville, Residencia 1, bedroom, sp
-32502, Claudeville, Universidad, main, sp
-32503, Claudeville, Academia de Agentes, classroom, sp
-32504, Claudeville, Oficina de Correos, main, sp
-32505, Claudeville, Mercado, main, sp
-32506, Claudeville, Taller de Trabajo, main, sp
-32507, Claudeville, Sala de Acuerdos, main, sp
-32508, Claudeville, Biblioteca, reading room, sp
-32509, Claudeville, Residencia 2, bedroom, sp
-32510, Claudeville, Residencia 3, bedroom, sp
-32511, Claudeville, Residencia 4, bedroom, sp
-32512, Claudeville, Residencia 5, bedroom, sp
-32513, Claudeville, Residencia 6, bedroom, sp
-32514, Claudeville, Oficina de Gobierno, main, sp
-32515, Claudeville, Residencia 7, bedroom, sp
-32516, Claudeville, Residencia 8, bedroom, sp
-32517, Claudeville, Residencia 9, bedroom, sp
-32518, Claudeville, Residencia 10, bedroom, sp
+32500, Claudeville, Agent Academy, academy.reception, sp
+32501, Claudeville, Bank, bank.circulation, sp
+32502, Claudeville, Central Plaza, plaza, central-plaza
+32503, Claudeville, Claudeville Cafe, cafe.dining, sp
+32504, Claudeville, Community Center, community.lounge, sp
+32505, Claudeville, Home 1, home_1.living_room, sp
+32506, Claudeville, Home 10, home_10.living_room, sp
+32507, Claudeville, Home 2, home_2.main_room, sp
+32508, Claudeville, Home 3, home_3.main_room, sp
+32509, Claudeville, Home 4, home_4.main_room, sp
+32510, Claudeville, Home 5, home_5.living_room, sp
+32511, Claudeville, Home 6, home_6.living_room, sp
+32512, Claudeville, Home 7, home_7.living_room, sp
+32513, Claudeville, Home 8, home_8.living_room, sp
+32514, Claudeville, Home 9, home_9.living_room, sp
+32515, Claudeville, Library, library.circulation, sp
+32516, Claudeville, Market, market.retail, sp
+32517, Claudeville, Post Office, post_office.circulation, sp
+32518, Claudeville, Town Hall, hall.public_service, sp
+32519, Claudeville, University, university.cafeteria, sp
+32520, Claudeville, Workshop, workshop.circulation, sp

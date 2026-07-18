@@ -1,0 +1,26 @@
+{
+  "ravi singh": {
+    "name": "Ravi Singh",
+    "familiarity": 1,
+    "affinity": 0.3,
+    "sentiment": "friendly",
+    "last_topics": [],
+    "beliefs": [
+      "trusts their scoring to keep us honest"
+    ],
+    "last_interaction": null,
+    "times_talked": 0
+  },
+  "june park": {
+    "name": "June Park",
+    "familiarity": 1,
+    "affinity": 0.2,
+    "sentiment": "friendly",
+    "last_topics": [],
+    "beliefs": [
+      "keeps me aligned to the plan"
+    ],
+    "last_interaction": null,
+    "times_talked": 0
+  }
+}

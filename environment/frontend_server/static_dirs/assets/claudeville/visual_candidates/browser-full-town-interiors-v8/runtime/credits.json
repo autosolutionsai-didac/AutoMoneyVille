@@ -1,0 +1,37 @@
+{
+  "distribution_scope": "Only tiles and props referenced by this Claudeville map.",
+  "generated_by": "tools/mapgen/tilemap_culler.py",
+  "packs": [
+    {
+      "creator": "LimeZu",
+      "license_file": "modernexteriors-win/Modern_Exteriors_License.pdf",
+      "license_sha256": "64aae67044ccfc7e1e059a49b4a30de438e7834bbf7efdcd59bc9902457b6ec1",
+      "name": "Modern Exteriors",
+      "source_url": "https://limezu.itch.io/modernexteriors"
+    },
+    {
+      "creator": "LimeZu",
+      "license_file": "Modern_Office_Revamped_v1.2/LICENSE.txt",
+      "license_sha256": "ac9ae86ccbdb3a1e28433e8f6516968c18a1ad55bfea089de423afa4027a689f",
+      "name": "Modern Office Revamped",
+      "source_url": "https://limezu.itch.io/modernoffice"
+    },
+    {
+      "creator": "LimeZu",
+      "license_evidence": "Project-licensed source provided by the user",
+      "name": "Modern Interiors",
+      "source_url": "https://limezu.itch.io/moderninteriors",
+      "sources": [
+        {
+          "filename": "Interiors_32x32_full.png",
+          "sha256": "ec056b502696ca7989c9b072cc513192498e9f2c96486160cd45d2605bf3e582"
+        },
+        {
+          "filename": "Room_Builder_32x32.png",
+          "sha256": "a6bd5690110f94d8a431803b910423d2dd834ab5c9b42f04815d6ba2e056aa6f"
+        }
+      ]
+    }
+  ],
+  "schema_version": 1
+}

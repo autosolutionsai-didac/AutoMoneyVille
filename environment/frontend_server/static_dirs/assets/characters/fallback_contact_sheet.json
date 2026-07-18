@@ -1,0 +1,23 @@
+{
+  "image": "fallback_contact_sheet.png",
+  "image_sha256": "518d84508eed306814eec486067a1c0b855e833b8b27450a6e9ec7882390b0fe",
+  "label": "CLAUDEVILLE FALLBACK - EXISTING 96x128 SHEETS",
+  "residents": [
+    "Nora Vale",
+    "Milo Chen",
+    "Iris Morgan",
+    "Theo Grant",
+    "Lena Ortiz",
+    "Ravi Singh",
+    "June Park",
+    "Amara Cole",
+    "Felix Reed",
+    "Sofia Lane"
+  ],
+  "schema_version": 1,
+  "size": [
+    800,
+    410
+  ],
+  "source": "fallback"
+}

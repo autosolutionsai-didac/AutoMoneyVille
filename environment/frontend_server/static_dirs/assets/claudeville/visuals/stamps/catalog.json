@@ -1,0 +1,1474 @@
+{
+  "generated_by": "tools/mapgen/curate_claudeville_design_stamps.py",
+  "license_scope": "Curated derivatives only; vendor sources are not shipped.",
+  "pack_credits": [
+    {
+      "creator": "LimeZu",
+      "license_file": "modernexteriors-win/Modern_Exteriors_License.pdf",
+      "license_sha256": "64aae67044ccfc7e1e059a49b4a30de438e7834bbf7efdcd59bc9902457b6ec1",
+      "name": "Modern Exteriors",
+      "source_url": "https://limezu.itch.io/modernexteriors"
+    },
+    {
+      "creator": "LimeZu",
+      "license_file": "moderninteriors-win/LICENSE.txt",
+      "license_sha256": "e33effd51253bb90c0d83fb555405f300273e9772d5eb84105327b6fa3eab4c5",
+      "name": "Modern Interiors",
+      "source_url": "https://limezu.itch.io/moderninteriors"
+    },
+    {
+      "creator": "LimeZu",
+      "license_file": "Modern_Office_Revamped_v1.2/LICENSE.txt",
+      "license_sha256": "ac9ae86ccbdb3a1e28433e8f6516968c18a1ad55bfea089de423afa4027a689f",
+      "name": "Modern Office Revamped",
+      "source_url": "https://limezu.itch.io/modernoffice"
+    }
+  ],
+  "records": [
+    {
+      "asset_key": "prop.design.academy_gym",
+      "file": "academy_gym.png",
+      "native_size": [
+        304,
+        240
+      ],
+      "output_sha256": "5c7ce03ce92e1ead90fdf2f073e7f527eab5153373dca8c1237fbeb0e5b25889",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Gym_layer_1.png",
+          "sha256": "3145ea6bfe034b196a9e9d01a2d521b549e9712469643a3255b036ef200c99e1"
+        },
+        {
+          "name": "Gym_layer_2.png",
+          "sha256": "f839307e617272a8d696cb9efd4bae83493d0a1138fdb99c5534f7d3eebeba63"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.academy_gym_compact",
+      "file": "academy_gym_compact.png",
+      "native_size": [
+        192,
+        112
+      ],
+      "output_sha256": "3f41f818fec084f40d880b1aed5bc76c9caf3d8d1deeee83184b7d0b1c54a374",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Gym_2_layer_1.png",
+          "sha256": "d961b76ece1f72ac4d44b975470606d93c3f8e90e25d30aa5e34eac2148aebf1"
+        },
+        {
+          "name": "Gym_2_layer_2.png",
+          "sha256": "5dbe546cf03c71442cc5efed59644eb975ab248396e73bc568aff7c1a62ecbcb"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.academy_lab",
+      "file": "academy_lab.png",
+      "native_size": [
+        160,
+        160
+      ],
+      "output_sha256": "abedd34a9cc000d76dfc7e46a0aa3dabd60e0a43c8b04c51dc497b0465742640",
+      "pack": "Modern Office Revamped",
+      "source_sha256": "cac42f25c080f57313e7cb25e3a2d309bee6ba390a8ba4abc8986b8c119adfdd",
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.bank_office",
+      "file": "bank_office.png",
+      "native_size": [
+        192,
+        173
+      ],
+      "output_sha256": "d2708c1d339bf9c673d4e4a6eb16125f45e84987b1373f283a616d21462a3eb3",
+      "pack": "Modern Office Revamped",
+      "source_sha256": "bff7b0206aceb2b7db0680ec00eb2719ac2aba60ab0287f0ecece5ad1352596e",
+      "trim_offset": [
+        0,
+        3
+      ]
+    },
+    {
+      "asset_key": "prop.design.bank_operations_east",
+      "file": "bank_operations_east.png",
+      "native_size": [
+        144,
+        160
+      ],
+      "output_sha256": "08f78260ca993bae492bc19786b06dab6133a708710ec228b2c3a584853abc7f",
+      "pack": "Modern Office Revamped",
+      "source_sha256": "cac42f25c080f57313e7cb25e3a2d309bee6ba390a8ba4abc8986b8c119adfdd",
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.bank_suite",
+      "file": "bank_suite.png",
+      "native_size": [
+        199,
+        182
+      ],
+      "output_sha256": "a3adf34a5f84af2fa2ec3339f5c314112c920a0f1e59994074835cc2e2e596d6",
+      "pack": "Modern Office Revamped",
+      "source_sha256": "bff7b0206aceb2b7db0680ec00eb2719ac2aba60ab0287f0ecece5ad1352596e",
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.cafe_complete",
+      "file": "cafe_complete.png",
+      "native_size": [
+        192,
+        160
+      ],
+      "output_sha256": "91d1fff67017d75d7d9a3d17b0af4c85ba873459bdaa008c936cf21bcb2f657f",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Ice_Cream_Shop_Design_layer_1.png",
+          "sha256": "1bbba36a51727f3acb6eea3a6aaaf4a02ac167093df453f445c4980d99320038"
+        },
+        {
+          "name": "Ice_Cream_Shop_Design_layer_2.png",
+          "sha256": "d6600b2fd9daf56e535dfb8c7e544e8170a5895b3b83e0847d2298c44748aa91"
+        },
+        {
+          "name": "Ice_Cream_Shop_Design_layer_3.png",
+          "sha256": "21c1d36fddbc57726a83f7b6f9dd3dca078bfedb635bf11c5aa586e5c7aa652c"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.community_cafe",
+      "file": "community_cafe.png",
+      "native_size": [
+        192,
+        160
+      ],
+      "output_sha256": "83dfbc149612af86892aeb711f0afaff736f8873f64e704c2822cab8ecb0794b",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Ice_Cream_Shop_Design_layer_2.png",
+          "sha256": "d6600b2fd9daf56e535dfb8c7e544e8170a5895b3b83e0847d2298c44748aa91"
+        },
+        {
+          "name": "Ice_Cream_Shop_Design_layer_3.png",
+          "sha256": "21c1d36fddbc57726a83f7b6f9dd3dca078bfedb635bf11c5aa586e5c7aa652c"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.community_foyer",
+      "file": "community_foyer.png",
+      "native_size": [
+        192,
+        96
+      ],
+      "output_sha256": "3ff332ab2b17e83ce314e25d12b1676aba66af5be445ba14f16b73e9dbbd5049",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Condominium_Design_2_layer_1.png",
+          "sha256": "15e0579efa62a5cdbfa313ba3de65e16e461701405c96e2bcaef61fa254f3fd6"
+        },
+        {
+          "name": "Condominium_Design_2_layer_2.png",
+          "sha256": "6a58df08e47c3dced8c745998ecf820a0f0309f0a1be503e052e1f5d32f7d62e"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.community_presentation_room",
+      "file": "community_presentation_room.png",
+      "native_size": [
+        176,
+        160
+      ],
+      "output_sha256": "a6244f5f652721bcc12ecd52c51948bff30be400549389072e7e6f19a216257f",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Tv_Studio_Design_layer_1.png",
+          "sha256": "f01894014c63373a08ff450662dc8a4711cf2a4571f29c197fa1bef885613b58"
+        },
+        {
+          "name": "Tv_Studio_Design_layer_3.png",
+          "sha256": "7b1c1ef2d3d7ae6c042526cf0c41c54a2d1a49c691dc4b5d8bfc8eebf454382a"
+        },
+        {
+          "name": "Tv_Studio_Design_layer_2.png",
+          "sha256": "88261200ed01900e7742b9a7f71d814744816bce69b6dda9b40a22485ebb8206"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.community_studio",
+      "file": "community_studio.png",
+      "native_size": [
+        176,
+        160
+      ],
+      "output_sha256": "abc40a6037505c29fafdbead8e12ee3f94085553940c5f05f58a82d2133da2b7",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Tv_Studio_Design_layer_1.png",
+          "sha256": "f01894014c63373a08ff450662dc8a4711cf2a4571f29c197fa1bef885613b58"
+        },
+        {
+          "name": "Tv_Studio_Design_layer_2.png",
+          "sha256": "88261200ed01900e7742b9a7f71d814744816bce69b6dda9b40a22485ebb8206"
+        },
+        {
+          "name": "Tv_Studio_Design_layer_3.png",
+          "sha256": "7b1c1ef2d3d7ae6c042526cf0c41c54a2d1a49c691dc4b5d8bfc8eebf454382a"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.agent_academy_graystone",
+      "file": "frontage_agent_academy_graystone.png",
+      "native_size": [
+        368,
+        48
+      ],
+      "output_sha256": "811a61ef4295de0acb064526bda5b22a595a918757c75906d09f5cf6a0402ba7",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_21.png",
+          "sha256": "94583c628c7ba6c7f0893806d67a67c9eb895d5687b5c6a5d265d64faf9adcd0"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_22.png",
+          "sha256": "53d030a694b642874cbfb435e70c26bfbe8b1ed69499d49dc5f1c2eeba60b015"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_23.png",
+          "sha256": "df1f2a7e108369ee3355c5ef1765ebec398622b39a53deb0bd75dcee12e8c957"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_17.png",
+          "sha256": "f99d7c3101d7a8bb82e3036f22f08ad3407126f0839189c1ae109fc6334466fa"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_20.png",
+          "sha256": "f80dc0d979b789c5923dd3639f185ab4a83ac44f3ac312d656ffdd1fb2b4af7a"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_9.png",
+          "sha256": "6884fcb12f368c0987529bf0a35ce9e40c217444b76bf36c75830cc6386df47d"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.bank_graystone",
+      "file": "frontage_bank_graystone.png",
+      "native_size": [
+        352,
+        48
+      ],
+      "output_sha256": "5f2f7c7e4bf5b0391b72c52366d2068e8f513924a6ca034f88501acdfadd73a4",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_23.png",
+          "sha256": "df1f2a7e108369ee3355c5ef1765ebec398622b39a53deb0bd75dcee12e8c957"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_17.png",
+          "sha256": "f99d7c3101d7a8bb82e3036f22f08ad3407126f0839189c1ae109fc6334466fa"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_20.png",
+          "sha256": "f80dc0d979b789c5923dd3639f185ab4a83ac44f3ac312d656ffdd1fb2b4af7a"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_21.png",
+          "sha256": "94583c628c7ba6c7f0893806d67a67c9eb895d5687b5c6a5d265d64faf9adcd0"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_22.png",
+          "sha256": "53d030a694b642874cbfb435e70c26bfbe8b1ed69499d49dc5f1c2eeba60b015"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_12.png",
+          "sha256": "2b6600be628fcfccfd78927ae23ec130065df525e34bda7279f64739e1c6845b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.claudeville_cafe_graystone",
+      "file": "frontage_claudeville_cafe_graystone.png",
+      "native_size": [
+        192,
+        48
+      ],
+      "output_sha256": "3d0d630d0017767be9e730b21b89ab2a1cb61b072a14ccf6da6db39609c26516",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_21.png",
+          "sha256": "94583c628c7ba6c7f0893806d67a67c9eb895d5687b5c6a5d265d64faf9adcd0"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_9.png",
+          "sha256": "6884fcb12f368c0987529bf0a35ce9e40c217444b76bf36c75830cc6386df47d"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_22.png",
+          "sha256": "53d030a694b642874cbfb435e70c26bfbe8b1ed69499d49dc5f1c2eeba60b015"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_23.png",
+          "sha256": "df1f2a7e108369ee3355c5ef1765ebec398622b39a53deb0bd75dcee12e8c957"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.community_center_graystone",
+      "file": "frontage_community_center_graystone.png",
+      "native_size": [
+        192,
+        48
+      ],
+      "output_sha256": "714188bd07b74f1dd0a1850c9b6c854e15b092b80758b6c0eac70ab0f40de93c",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_17.png",
+          "sha256": "f99d7c3101d7a8bb82e3036f22f08ad3407126f0839189c1ae109fc6334466fa"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_20.png",
+          "sha256": "f80dc0d979b789c5923dd3639f185ab4a83ac44f3ac312d656ffdd1fb2b4af7a"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_12.png",
+          "sha256": "2b6600be628fcfccfd78927ae23ec130065df525e34bda7279f64739e1c6845b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_23.png",
+          "sha256": "df1f2a7e108369ee3355c5ef1765ebec398622b39a53deb0bd75dcee12e8c957"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_10_graystone",
+      "file": "frontage_home_10_graystone.png",
+      "native_size": [
+        192,
+        48
+      ],
+      "output_sha256": "32d97b79b61c37f4718b9cbeb11f3e3dd828457ac772069e621d848b1a3a2bf5",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_9.png",
+          "sha256": "6884fcb12f368c0987529bf0a35ce9e40c217444b76bf36c75830cc6386df47d"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_17.png",
+          "sha256": "f99d7c3101d7a8bb82e3036f22f08ad3407126f0839189c1ae109fc6334466fa"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_20.png",
+          "sha256": "f80dc0d979b789c5923dd3639f185ab4a83ac44f3ac312d656ffdd1fb2b4af7a"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_23.png",
+          "sha256": "df1f2a7e108369ee3355c5ef1765ebec398622b39a53deb0bd75dcee12e8c957"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_1_graystone",
+      "file": "frontage_home_1_graystone.png",
+      "native_size": [
+        336,
+        48
+      ],
+      "output_sha256": "e4a277b97087c91d353dabbc84d3485dffdf246e34a815484d2d267d8d269ba2",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_23.png",
+          "sha256": "df1f2a7e108369ee3355c5ef1765ebec398622b39a53deb0bd75dcee12e8c957"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_17.png",
+          "sha256": "f99d7c3101d7a8bb82e3036f22f08ad3407126f0839189c1ae109fc6334466fa"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_20.png",
+          "sha256": "f80dc0d979b789c5923dd3639f185ab4a83ac44f3ac312d656ffdd1fb2b4af7a"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_21.png",
+          "sha256": "94583c628c7ba6c7f0893806d67a67c9eb895d5687b5c6a5d265d64faf9adcd0"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_22.png",
+          "sha256": "53d030a694b642874cbfb435e70c26bfbe8b1ed69499d49dc5f1c2eeba60b015"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_12.png",
+          "sha256": "2b6600be628fcfccfd78927ae23ec130065df525e34bda7279f64739e1c6845b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_2_graystone",
+      "file": "frontage_home_2_graystone.png",
+      "native_size": [
+        208,
+        48
+      ],
+      "output_sha256": "3032972ae82e21d53d596ffa8d04350c0a0fa2988a398e7ec20abf9518368b39",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_17.png",
+          "sha256": "f99d7c3101d7a8bb82e3036f22f08ad3407126f0839189c1ae109fc6334466fa"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_20.png",
+          "sha256": "f80dc0d979b789c5923dd3639f185ab4a83ac44f3ac312d656ffdd1fb2b4af7a"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_12.png",
+          "sha256": "2b6600be628fcfccfd78927ae23ec130065df525e34bda7279f64739e1c6845b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_21.png",
+          "sha256": "94583c628c7ba6c7f0893806d67a67c9eb895d5687b5c6a5d265d64faf9adcd0"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_22.png",
+          "sha256": "53d030a694b642874cbfb435e70c26bfbe8b1ed69499d49dc5f1c2eeba60b015"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_3_graystone",
+      "file": "frontage_home_3_graystone.png",
+      "native_size": [
+        192,
+        48
+      ],
+      "output_sha256": "f19c55e3faa768a717901b01fc437075b7e16f2a1d5d1fdcd8e4da2cb79d047d",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_11.png",
+          "sha256": "52df46e8dfcc0213ef46dbd0664665b74a245438107b706570cf7504f598cebf"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_17.png",
+          "sha256": "f99d7c3101d7a8bb82e3036f22f08ad3407126f0839189c1ae109fc6334466fa"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_20.png",
+          "sha256": "f80dc0d979b789c5923dd3639f185ab4a83ac44f3ac312d656ffdd1fb2b4af7a"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_23.png",
+          "sha256": "df1f2a7e108369ee3355c5ef1765ebec398622b39a53deb0bd75dcee12e8c957"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_4_graystone",
+      "file": "frontage_home_4_graystone.png",
+      "native_size": [
+        144,
+        48
+      ],
+      "output_sha256": "e5c20a545cd78d8922a70a5bbaace419f1fdac9f3f1f1b72d9286b57a42f21b1",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_21.png",
+          "sha256": "94583c628c7ba6c7f0893806d67a67c9eb895d5687b5c6a5d265d64faf9adcd0"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_12.png",
+          "sha256": "2b6600be628fcfccfd78927ae23ec130065df525e34bda7279f64739e1c6845b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_5_graystone",
+      "file": "frontage_home_5_graystone.png",
+      "native_size": [
+        160,
+        48
+      ],
+      "output_sha256": "06f7e5a7482f0d55695256418769eadc5a4c49289da99405f944ff130a9b359f",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_9.png",
+          "sha256": "6884fcb12f368c0987529bf0a35ce9e40c217444b76bf36c75830cc6386df47d"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_23.png",
+          "sha256": "df1f2a7e108369ee3355c5ef1765ebec398622b39a53deb0bd75dcee12e8c957"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_6_graystone",
+      "file": "frontage_home_6_graystone.png",
+      "native_size": [
+        160,
+        48
+      ],
+      "output_sha256": "7974fa18e3662203de21921694e735ce117f4014253b54af6665dc6e93ce5830",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_21.png",
+          "sha256": "94583c628c7ba6c7f0893806d67a67c9eb895d5687b5c6a5d265d64faf9adcd0"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_11.png",
+          "sha256": "52df46e8dfcc0213ef46dbd0664665b74a245438107b706570cf7504f598cebf"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_22.png",
+          "sha256": "53d030a694b642874cbfb435e70c26bfbe8b1ed69499d49dc5f1c2eeba60b015"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_7_graystone",
+      "file": "frontage_home_7_graystone.png",
+      "native_size": [
+        192,
+        48
+      ],
+      "output_sha256": "5c1d266805c22eb8771e6d184a0b018997600dc1714ae468e361870a2a9352b7",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_23.png",
+          "sha256": "df1f2a7e108369ee3355c5ef1765ebec398622b39a53deb0bd75dcee12e8c957"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_11.png",
+          "sha256": "52df46e8dfcc0213ef46dbd0664665b74a245438107b706570cf7504f598cebf"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_21.png",
+          "sha256": "94583c628c7ba6c7f0893806d67a67c9eb895d5687b5c6a5d265d64faf9adcd0"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_22.png",
+          "sha256": "53d030a694b642874cbfb435e70c26bfbe8b1ed69499d49dc5f1c2eeba60b015"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_8_graystone",
+      "file": "frontage_home_8_graystone.png",
+      "native_size": [
+        208,
+        48
+      ],
+      "output_sha256": "87308cd0db258418f659ecf5814579cc320d9b5dd566d5335f5ea9043e695a8a",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_17.png",
+          "sha256": "f99d7c3101d7a8bb82e3036f22f08ad3407126f0839189c1ae109fc6334466fa"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_20.png",
+          "sha256": "f80dc0d979b789c5923dd3639f185ab4a83ac44f3ac312d656ffdd1fb2b4af7a"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_12.png",
+          "sha256": "2b6600be628fcfccfd78927ae23ec130065df525e34bda7279f64739e1c6845b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_21.png",
+          "sha256": "94583c628c7ba6c7f0893806d67a67c9eb895d5687b5c6a5d265d64faf9adcd0"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_22.png",
+          "sha256": "53d030a694b642874cbfb435e70c26bfbe8b1ed69499d49dc5f1c2eeba60b015"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_9_graystone",
+      "file": "frontage_home_9_graystone.png",
+      "native_size": [
+        192,
+        48
+      ],
+      "output_sha256": "c5f295b2480c4faff1e0eb0fcafdf85fb89411bf3c76bb91c31c7957b366e3ea",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_9.png",
+          "sha256": "6884fcb12f368c0987529bf0a35ce9e40c217444b76bf36c75830cc6386df47d"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_21.png",
+          "sha256": "94583c628c7ba6c7f0893806d67a67c9eb895d5687b5c6a5d265d64faf9adcd0"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_22.png",
+          "sha256": "53d030a694b642874cbfb435e70c26bfbe8b1ed69499d49dc5f1c2eeba60b015"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_23.png",
+          "sha256": "df1f2a7e108369ee3355c5ef1765ebec398622b39a53deb0bd75dcee12e8c957"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_japanese",
+      "file": "frontage_home_japanese.png",
+      "native_size": [
+        192,
+        80
+      ],
+      "output_sha256": "3623449ebd31842c87c94ed8fedcdd2347dc4dd1e3336f896194c6e763a08c2a",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "24_Additional_Houses_Japanese_House_16x16.png",
+          "sha256": "fb4ecb7993483b9329b66e1c0ee469dda355703ae9f9e858d43df2058fb94c1e"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_modern",
+      "file": "frontage_home_modern.png",
+      "native_size": [
+        192,
+        80
+      ],
+      "output_sha256": "bfa30f59dd8879340974c619b53c953bd0278cf022d8b9c075188767de76699e",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "24_Additional_Houses_Modern_House_16x16.png",
+          "sha256": "152ec1020b696e9672d856510bfd5d93818b316baf375e78ca552379111acad7"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_one_story",
+      "file": "frontage_home_one_story.png",
+      "native_size": [
+        192,
+        80
+      ],
+      "output_sha256": "669c0f97bc1c9357a5be6a10697b3fd900f632b9f5d148c371de731f3e969059",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "24_Additional_Houses_One_Story_House_16x16.png",
+          "sha256": "22ec0a71329b0001123023339e01cf5b018e727848173370b2ab9ebe1b93593c"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_terraced_1",
+      "file": "frontage_home_terraced_1.png",
+      "native_size": [
+        192,
+        80
+      ],
+      "output_sha256": "833287ad6ae5ea43b2fbf071bb1c80e948c53200a97a1ee02943efdcd6373316",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "24_Additional_Houses_Terraced_House_1_16x16.png",
+          "sha256": "d7abe26b2f4830a2b0733cde164d9d8f27f03c1dcacf0959c372705211b32330"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_terraced_3",
+      "file": "frontage_home_terraced_3.png",
+      "native_size": [
+        192,
+        80
+      ],
+      "output_sha256": "5ade884ebcd08abe9b6fb9f4406dcea20f25a3c016741b8d78437219b5e012f6",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "24_Additional_Houses_Terraced_House_3_16x16.png",
+          "sha256": "3508fbac644966d710b4203f5910bd886483d9b73213a252587e94494932158c"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_terraced_4",
+      "file": "frontage_home_terraced_4.png",
+      "native_size": [
+        192,
+        80
+      ],
+      "output_sha256": "a20d2352495e62405fe13abba31f151e55b658921fedab4a238db5428180ccfa",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "24_Additional_Houses_Terraced_House_4_16x16.png",
+          "sha256": "5f917c3a7b92baaf57b6cdcde42bb82e52fc12b001ce4c069fca249037392dfc"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_terraced_5",
+      "file": "frontage_home_terraced_5.png",
+      "native_size": [
+        192,
+        80
+      ],
+      "output_sha256": "d7a5918a57427f095d899c903cbdefec9e90ce89820602c993ea372e4a58289e",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "24_Additional_Houses_Terraced_House_5_16x16.png",
+          "sha256": "d3093475335f22d58648982c63cb07eee1c9f420de46a941a93af56c1d5aa109"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_villa_1",
+      "file": "frontage_home_villa_1.png",
+      "native_size": [
+        144,
+        80
+      ],
+      "output_sha256": "fd000638bc767be86d73869db0e8cbca648152f1f0d36acd22e45d4541af3eb1",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Villas_16x16_Villa_1.png",
+          "sha256": "0f553f6ec71d12a48a7003e3c0ff5888867ff6473498c26c3bf675e35afbdd6f"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.home_villa_3",
+      "file": "frontage_home_villa_3.png",
+      "native_size": [
+        144,
+        80
+      ],
+      "output_sha256": "e34f6560225d085d43e301ba3d2f95f731ddb3f3f234f3fd6a0168774ec9fa02",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Villas_16x16_Villa_3.png",
+          "sha256": "ab4f50bc2f999864b96cb6dc2a1f765810a55135ef89c86a6cea3e364e17da45"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.library_graystone",
+      "file": "frontage_library_graystone.png",
+      "native_size": [
+        400,
+        48
+      ],
+      "output_sha256": "69387f6e3b4495c5c9408f743839e6ac5a0e416dd00020c348f222a71f332244",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_23.png",
+          "sha256": "df1f2a7e108369ee3355c5ef1765ebec398622b39a53deb0bd75dcee12e8c957"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_17.png",
+          "sha256": "f99d7c3101d7a8bb82e3036f22f08ad3407126f0839189c1ae109fc6334466fa"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_20.png",
+          "sha256": "f80dc0d979b789c5923dd3639f185ab4a83ac44f3ac312d656ffdd1fb2b4af7a"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_21.png",
+          "sha256": "94583c628c7ba6c7f0893806d67a67c9eb895d5687b5c6a5d265d64faf9adcd0"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_22.png",
+          "sha256": "53d030a694b642874cbfb435e70c26bfbe8b1ed69499d49dc5f1c2eeba60b015"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_11.png",
+          "sha256": "52df46e8dfcc0213ef46dbd0664665b74a245438107b706570cf7504f598cebf"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.market",
+      "file": "frontage_market.png",
+      "native_size": [
+        224,
+        80
+      ],
+      "output_sha256": "ac82e529522ebfbf88771ec21df2ee54dadb9899500d53c04bd6f91174149717",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Shopping_Center_and_Markets_16x16_Market_Big_1.png",
+          "sha256": "29a57796ac58328a0861e4a0c60bcad8db59885f3ba0f7f3be67d0250b9bcde2"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.post_office",
+      "file": "frontage_post_office.png",
+      "native_size": [
+        288,
+        80
+      ],
+      "output_sha256": "f4d0cf5fd1300112047a1d73f43ff82e3e108eff74f16f4b16c18172a39ce70e",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "22_Post_Office_16x16_Building_1.png",
+          "sha256": "7ddfb15ad5e0b68fe10077e5cf023c9ac9a3013dc282514d39832b7e17489401"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.town_hall",
+      "file": "frontage_town_hall.png",
+      "native_size": [
+        272,
+        80
+      ],
+      "output_sha256": "ff1b6bfa3ce2ffd711ef1753966f8ca93009f4e46c9d90f270fca146d950772e",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Garden_16x16_Palace_Example_1.png",
+          "sha256": "5ef609940283b5d07344bba9ca00e418928427ae331a323524c77961a07c60df"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.university_left",
+      "file": "frontage_university_left.png",
+      "native_size": [
+        176,
+        64
+      ],
+      "output_sha256": "3e2b969545103504a09d8349eb8233f967c354c2347d4bf8132e861ca377349b",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_School_16x16_School_1.png",
+          "sha256": "100fd970c099b59c98b2a65a5d1c8081b28e44dcb052f40a9abcd31ad4e9a86d"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.university_right",
+      "file": "frontage_university_right.png",
+      "native_size": [
+        160,
+        64
+      ],
+      "output_sha256": "5a2fdc35ac5661766abe8d7c4bb30811ae42473f3fe32a6c412b3040f93527ea",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_School_16x16_School_1.png",
+          "sha256": "100fd970c099b59c98b2a65a5d1c8081b28e44dcb052f40a9abcd31ad4e9a86d"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.frontage.workshop_graystone",
+      "file": "frontage_workshop_graystone.png",
+      "native_size": [
+        352,
+        48
+      ],
+      "output_sha256": "0b86adde4a9bb1ed69e29dfbbcbbb61876ccb609f32fbd18cf8fd3aeea8f6dd7",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_23.png",
+          "sha256": "df1f2a7e108369ee3355c5ef1765ebec398622b39a53deb0bd75dcee12e8c957"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_21.png",
+          "sha256": "94583c628c7ba6c7f0893806d67a67c9eb895d5687b5c6a5d265d64faf9adcd0"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_22.png",
+          "sha256": "53d030a694b642874cbfb435e70c26bfbe8b1ed69499d49dc5f1c2eeba60b015"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_18.png",
+          "sha256": "8d305b09e8554cc5a9c2194a2f5599551325a9da8c664cc1b6455ce0ecae952b"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_17.png",
+          "sha256": "f99d7c3101d7a8bb82e3036f22f08ad3407126f0839189c1ae109fc6334466fa"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_20.png",
+          "sha256": "f80dc0d979b789c5923dd3639f185ab4a83ac44f3ac312d656ffdd1fb2b4af7a"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_11.png",
+          "sha256": "52df46e8dfcc0213ef46dbd0664665b74a245438107b706570cf7504f598cebf"
+        },
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_Modular_24.png",
+          "sha256": "4cbdfa91774e4cd0191254140450431944773a39774e43e5249d224ebd922232"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.home_cluster.generic_ne",
+      "file": "home_cluster_generic_ne.png",
+      "native_size": [
+        112,
+        112
+      ],
+      "output_sha256": "c7064a51ebf7ee1849a9c85be5b5c4d51407648ca5af7111d6f417a7c0460067",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Generic_Home_1_Layer_2_.png",
+          "sha256": "095ecd0fba6fbcf92dbcb2f71a3ea89af90bdedf81f8cde90cc53da67ad32332"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.home_cluster.generic_nw",
+      "file": "home_cluster_generic_nw.png",
+      "native_size": [
+        112,
+        112
+      ],
+      "output_sha256": "3cbfb785fdd1c9516ac5c416b5028d944f318fe04c459fa20870db96cc158a34",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Generic_Home_1_Layer_2_.png",
+          "sha256": "095ecd0fba6fbcf92dbcb2f71a3ea89af90bdedf81f8cde90cc53da67ad32332"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.home_cluster.generic_south",
+      "file": "home_cluster_generic_south.png",
+      "native_size": [
+        160,
+        118
+      ],
+      "output_sha256": "c0e24ae48fe3125027a29e05577ab64a0b808b885d383aec3249cef20300b201",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Generic_Home_1_Layer_2_.png",
+          "sha256": "095ecd0fba6fbcf92dbcb2f71a3ea89af90bdedf81f8cde90cc53da67ad32332"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.home_cluster.japanese_ne",
+      "file": "home_cluster_japanese_ne.png",
+      "native_size": [
+        128,
+        112
+      ],
+      "output_sha256": "9a020a272001b409e3696144b3ae93e3fe29279026c9d13df06d6a2fafc6b733",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Japanese_Home_1_Layer_2_16x16.png",
+          "sha256": "e021694541db0c4b36f8337a225f85cb7f8ce3b0dff8d93b33a7fc6b50b182c9"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.home_cluster.japanese_nw",
+      "file": "home_cluster_japanese_nw.png",
+      "native_size": [
+        128,
+        112
+      ],
+      "output_sha256": "f9087afd10b984f880d0994754e300f06fb761858f7a3dbb6fbc26f90851c0a3",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Japanese_Home_1_Layer_2_16x16.png",
+          "sha256": "e021694541db0c4b36f8337a225f85cb7f8ce3b0dff8d93b33a7fc6b50b182c9"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.home_cluster.japanese_se",
+      "file": "home_cluster_japanese_se.png",
+      "native_size": [
+        144,
+        112
+      ],
+      "output_sha256": "30dca855d4ed63b4ab55bd2530776cf98763a2e1d9fcfeb0ad4524c43c5521e4",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Japanese_Home_1_Layer_2_16x16.png",
+          "sha256": "e021694541db0c4b36f8337a225f85cb7f8ce3b0dff8d93b33a7fc6b50b182c9"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.home_cluster.japanese_sw",
+      "file": "home_cluster_japanese_sw.png",
+      "native_size": [
+        144,
+        112
+      ],
+      "output_sha256": "0115fc6bb6f6cfe1c9b2466aee8cc0b3ebf378b0c5755f452dc9b3292bd0d0e1",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Japanese_Home_1_Layer_2_16x16.png",
+          "sha256": "e021694541db0c4b36f8337a225f85cb7f8ce3b0dff8d93b33a7fc6b50b182c9"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.home_generic",
+      "file": "home_generic.png",
+      "native_size": [
+        224,
+        214
+      ],
+      "output_sha256": "e099bb9d41cf6e337ee379559cefd568e44ca63068506f58e3451356aa98f916",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Generic_Home_1_Layer_1.png",
+          "sha256": "24effc29867409ec5abfd946f0b731f5212637ff722729dd0d52d86e4c91761c"
+        },
+        {
+          "name": "Generic_Home_1_Layer_2_.png",
+          "sha256": "095ecd0fba6fbcf92dbcb2f71a3ea89af90bdedf81f8cde90cc53da67ad32332"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.home_japanese",
+      "file": "home_japanese.png",
+      "native_size": [
+        272,
+        202
+      ],
+      "output_sha256": "e50806b7b3d601779acb75fac4f6859f3f15ab04aab2203b3ab71f53eeb4007b",
+      "pack": "Modern Interiors",
+      "sources": [
+        {
+          "name": "Japanese_Home_1_Layer_2_16x16.png",
+          "sha256": "e021694541db0c4b36f8337a225f85cb7f8ce3b0dff8d93b33a7fc6b50b182c9"
+        }
+      ],
+      "trim_offset": [
+        16,
+        6
+      ]
+    },
+    {
+      "asset_key": "prop.design.home_neutral_facade",
+      "file": "home_neutral_facade.png",
+      "native_size": [
+        112,
+        48
+      ],
+      "output_sha256": "5d7e038ce7f586619f2bfedf5521fb4bc8fde719e66ddc5448d6d8ba2d38af77",
+      "pack": "Modern Exteriors",
+      "sources": [
+        {
+          "name": "ME_Singles_Floor_Modular_Building_16x16_Ground_Floor_Condo_12.png",
+          "sha256": "2b6600be628fcfccfd78927ae23ec130065df525e34bda7279f64739e1c6845b"
+        }
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.university_floor",
+      "file": "university_floor.png",
+      "native_size": [
+        247,
+        262
+      ],
+      "output_sha256": "370c0d0eda5f17c6f1a75abc1637bd2a3a60bb1d7203696b5bc42a62785e91b5",
+      "pack": "Modern Office Revamped",
+      "source_sha256": "cac42f25c080f57313e7cb25e3a2d309bee6ba390a8ba4abc8986b8c119adfdd",
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "asset_key": "prop.design.university_lab",
+      "file": "university_lab.png",
+      "native_size": [
+        221,
+        253
+      ],
+      "output_sha256": "80f4a936cba115225f77ccf72a0fb9f79f876cf4b437dbe9ecfe550fee89cf4f",
+      "pack": "Modern Office Revamped",
+      "source_sha256": "cac42f25c080f57313e7cb25e3a2d309bee6ba390a8ba4abc8986b8c119adfdd",
+      "trim_offset": [
+        19,
+        3
+      ]
+    },
+    {
+      "asset_key": "prop.design.university_lab_main",
+      "file": "university_lab_main.png",
+      "native_size": [
+        221,
+        157
+      ],
+      "output_sha256": "dc500b4197e3d5375e968a857e8659e4d1ed9432a486e5d4e795487528da40cd",
+      "pack": "Modern Office Revamped",
+      "source_sha256": "cac42f25c080f57313e7cb25e3a2d309bee6ba390a8ba4abc8986b8c119adfdd",
+      "trim_offset": [
+        19,
+        3
+      ]
+    },
+    {
+      "asset_key": "prop.design.university_lounge",
+      "file": "university_lounge.png",
+      "native_size": [
+        176,
+        80
+      ],
+      "output_sha256": "2167bc19221c64dbd37496c43d1a34eee5df357e8e63da49e80212f61735e9be",
+      "pack": "Modern Office Revamped",
+      "source_sha256": "cac42f25c080f57313e7cb25e3a2d309bee6ba390a8ba4abc8986b8c119adfdd",
+      "trim_offset": [
+        8,
+        16
+      ]
+    }
+  ],
+  "schema_version": 1
+}

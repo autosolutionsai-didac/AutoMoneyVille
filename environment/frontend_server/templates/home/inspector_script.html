@@ -1,22 +1,19 @@
 {% load static %}
 <script>
-// Agent Inspector (P1.C1): click a persona -> live drawer with plan, schedule,
-// goals, relationships, and memory stream. Data comes from the live backend
-// via api_persona_state; everything renders via textContent (LLM-1: agent-
-// authored text must never become markup).
+// Agent Inspector (P1.C1): live simulations poll the backend; frozen replays
+// read immutable run files once. Agent-authored text is always textContent.
 (function () {
 	const PROFILE_BASE = "{% static 'assets/characters/profile/' %}";
-	const STATE_URL_TEMPLATE = "{% url 'api_persona_state' 'PERSONA_NAME' %}";
+	const stateSource = ClaudevilleInspectorSource.create({
+		mode: document.getElementById('sim_mode')?.textContent.trim() || 'simulate',
+		liveUrlTemplate: "{% url 'api_persona_state' 'PERSONA_NAME' %}",
+		replayUrlTemplate: "{% url 'api_replay_persona_state' sim_code requested_step|default:step 'PERSONA_NAME' %}",
+	});
 	const POLL_MS = 5000;
 
-	let openPersona = null;
 	let pollTimer = null;
 
 	const el = (id) => document.getElementById(id);
-
-	function stateUrl(name) {
-		return STATE_URL_TEMPLATE.replace('PERSONA_NAME', encodeURIComponent(name));
-	}
 
 	function rowDiv(className, text, title) {
 		const div = document.createElement('div');
@@ -26,19 +23,24 @@
 		return div;
 	}
 
-	function renderState(state) {
-		el('inspector-name').textContent = state.name || openPersona || '--';
-		el('inspector-currently').textContent = state.currently || '';
-		el('inspector-action').textContent = state.action || '--';
-		el('inspector-address').textContent = (state.address || '')
-			.split(':').slice(1).join(' › ') || state.address || '';
-
+	function renderState(state, requestedName) {
+		const scope = el('inspector-state-scope');
+		if (scope) {
+			scope.textContent = ClaudevilleInspectorSource.scopeSummary(state);
+		}
+		el('inspector-name').textContent = state.name || requestedName || '--';
+		el('inspector-currently').textContent =
+			ClaudevilleAddresses.translateText(state.currently || '');
+		el('inspector-action').textContent =
+			ClaudevilleAddresses.translateText(state.action || '--');
+		el('inspector-address').textContent =
+			ClaudevilleAddresses.displayAddress(state.address || '');
 		const schedule = el('inspector-schedule');
 		schedule.textContent = '';
 		(state.schedule || []).forEach((item, i) => {
 			const row = rowDiv(
 				'inspector-row' + (i === state.schedule_current_index ? ' current' : ''),
-				`${item.task} (${item.minutes}m)`
+				`${ClaudevilleAddresses.translateText(item.task)} (${item.minutes}m)`
 			);
 			schedule.appendChild(row);
 		});
@@ -49,7 +51,8 @@
 		const goals = el('inspector-goals');
 		goals.textContent = '';
 		(state.goals || []).forEach(goal => {
-			const label = goal.status ? `${goal.title} — ${goal.status}` : goal.title;
+			const title = ClaudevilleAddresses.translateText(goal.title);
+			const label = goal.status ? `${title} — ${goal.status}` : title;
 			goals.appendChild(rowDiv('inspector-row', label));
 		});
 		if (!goals.childNodes.length) {
@@ -76,7 +79,7 @@
 			const time = (memory.created || '').split(' ').pop() || '';
 			memories.appendChild(rowDiv(
 				`inspector-row memory-${memory.kind}`,
-				`[${memory.kind}] ${memory.description}`,
+				`[${memory.kind}] ${ClaudevilleAddresses.translateText(memory.description)}`,
 				time
 			));
 		});
@@ -85,35 +88,35 @@
 		}
 	}
 
-	async function refreshInspector() {
-		if (!openPersona) return;
-		try {
-			const response = await fetch(stateUrl(openPersona));
-			const state = await response.json();
-			if (!response.ok || state.error) {
-				el('inspector-currently').textContent =
-					state.error || 'Inspector unavailable (backend offline?)';
-				return;
+	const controller = ClaudevilleInspectorController.create({
+		fetch: window.fetch.bind(window),
+		source: stateSource,
+		addresses: ClaudevilleAddresses,
+		onState: renderState,
+		onError: message => { el('inspector-currently').textContent = message; },
+		onFocus: sector => {
+			if (typeof window.setFocusedWorldSector === 'function') {
+				window.setFocusedWorldSector(sector);
 			}
-			renderState(state);
-		} catch (error) {
-			el('inspector-currently').textContent = 'Inspector unavailable';
+		},
+	});
+
+	function openInspector(name) {
+		window.ClaudevilleHUD?.inspectorOpened();
+		el('inspector-drawer').classList.remove('hidden');
+		el('inspector-name').textContent = name;
+		el('inspector-portrait').src = ClaudevilleCharacters.portraitUrl(
+			null, name, static_asset_root
+		) || PROFILE_BASE + name.replace(/ /g, '_') + '.png';
+		controller.open(name);
+		if (pollTimer) clearInterval(pollTimer);
+		if (stateSource.shouldPoll) {
+			pollTimer = setInterval(controller.refresh, POLL_MS);
 		}
 	}
 
-	function openInspector(name) {
-		openPersona = name;
-		el('inspector-drawer').classList.remove('hidden');
-		el('inspector-name').textContent = name;
-		el('inspector-portrait').src =
-			PROFILE_BASE + name.replace(/ /g, '_') + '.png';
-		refreshInspector();
-		if (pollTimer) clearInterval(pollTimer);
-		pollTimer = setInterval(refreshInspector, POLL_MS);
-	}
-
 	function closeInspector() {
-		openPersona = null;
+		controller.close();
 		el('inspector-drawer').classList.add('hidden');
 		if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
 	}
@@ -126,6 +129,7 @@
 	});
 	el('inspector-close').addEventListener('click', closeInspector);
 	el('inspector-follow').addEventListener('click', () => {
+		const openPersona = controller.currentName();
 		if (openPersona && typeof window.setCameraFollowTarget === 'function') {
 			window.setCameraFollowTarget(openPersona);
 		}

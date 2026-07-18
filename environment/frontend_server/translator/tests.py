@@ -495,12 +495,22 @@ class RuntimeStatusTemplateTests(SimpleTestCase):
         frontend_root = Path(__file__).resolve().parents[1]
         script_template = frontend_root / "templates" / "home" / "main_script.html"
         source = script_template.read_text(encoding="utf-8")
+        character_renderer = (
+            frontend_root / "static_dirs/js/character_renderer.js"
+        ).read_text(encoding="utf-8")
+        manifest = json.loads(
+            (frontend_root / "static_dirs/assets/claudeville/world.json").read_text(
+                encoding="utf-8"
+            )
+        )
 
         self.assertNotIn("mikewesthad.github.io", source)
         self.assertNotIn("misa-", source)
-        self.assertIn("static 'img/atlas.png'", source)
-        self.assertIn("static 'assets/characters/atlas.json'", source)
-        self.assertIn("fallback-front-walk", source)
+        self.assertEqual(manifest["character_atlas_image_url"], "img/atlas.png")
+        self.assertEqual(manifest["character_manifest_url"], "assets/characters/atlas.json")
+        self.assertIn("ClaudevilleCharacters.queueCharacters", source)
+        self.assertIn("function createFallbackAnimations", character_renderer)
+        self.assertIn("`fallback-${direction}-walk`", character_renderer)
 
     def test_home_script_polls_movements_with_step_cursor(self):
         frontend_root = Path(__file__).resolve().parents[1]
@@ -557,16 +567,19 @@ class CsrfProtectionTests(SimpleTestCase):
         self.assertIn("csrftoken", response.cookies)
 
     @mock.patch(
-        "translator.views.open",
-        new_callable=mock.mock_open,
-        read_data='{"Nora Vale": {"x": 1, "y": 2}}',
+        "translator.views.load_replay_snapshot",
+        return_value={
+            "requested_step": 5,
+            "effective_step": 5,
+            "environment": {"Nora Vale": {"x": 1, "y": 2}},
+            "persona_names": ["Nora Vale"],
+            "meta": {"maze_name": "claudeville"},
+        },
     )
-    @mock.patch("translator.views.os.listdir")
-    def test_replay_page_primes_csrf_cookie(self, mock_listdir, _mock_open):
+    def test_replay_page_primes_csrf_cookie(self, _load_snapshot):
         # The replay view renders the same home.html (with Save/Simulate/Town-Center
         # POST controls), so it must also prime the csrftoken cookie. Regression
         # caught in adversarial review: it was missing @ensure_csrf_cookie.
-        mock_listdir.side_effect = [["Nora Vale"], ["0.json"]]
         response = Client().get("/replay/run_one/5/")
         self.assertEqual(response.status_code, 200)
         self.assertIn("csrftoken", response.cookies)

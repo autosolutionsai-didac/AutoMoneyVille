@@ -52,6 +52,11 @@ urlpatterns = [
         translator_views.api_persona_state,
         name="api_persona_state",
     ),
+    path(
+        "api/replay/<str:sim_code>/<str:step>/persona/<str:persona_name>/state/",
+        translator_views.api_replay_persona_state,
+        name="api_replay_persona_state",
+    ),
     path("api/events/", translator_views.api_events, name="api_events"),
     # Page views
     re_path(r"^$", translator_views.landing, name="landing"),
@@ -62,7 +67,7 @@ urlpatterns = [
         name="demo",
     ),
     re_path(
-        r"^replay/(?P<sim_code>[\w-]+)/(?P<step>[\w-]+)/$",
+        r"^replay/(?P<sim_code>[\w-]+)/(?P<step>[^/]+)/$",
         translator_views.replay,
         name="replay",
     ),

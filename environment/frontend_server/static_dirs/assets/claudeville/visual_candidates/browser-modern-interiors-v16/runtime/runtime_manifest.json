@@ -1,0 +1,1265 @@
+{
+  "authoring_root_sha256": "2b4135d69f6953441da6ebc155f793fd2aa5b56111c2b269762dc323f5aafdf8",
+  "credits": "credits.json",
+  "interiors_v3_catalog_sha256": "cbdc0f0c71d6c1ac31d35f78067807ef78be24e19b266d0b2863df1d5693f8ed",
+  "props": {
+    "asset_keys": [
+      "prop.community.stage_small",
+      "prop.garden.bench_horizontal",
+      "prop.garden.bench_vertical",
+      "prop.garden.flower_pink",
+      "prop.garden.flower_white",
+      "prop.garden.sunflower",
+      "prop.interiors_v3.art.0023",
+      "prop.interiors_v3.art.0024",
+      "prop.interiors_v3.art.0034",
+      "prop.interiors_v3.art.0043",
+      "prop.interiors_v3.bathroom.0002",
+      "prop.interiors_v3.bathroom.0003",
+      "prop.interiors_v3.bathroom.0005",
+      "prop.interiors_v3.bathroom.0006",
+      "prop.interiors_v3.bathroom.0009",
+      "prop.interiors_v3.bathroom.0010",
+      "prop.interiors_v3.bathroom.0012",
+      "prop.interiors_v3.bathroom.0013",
+      "prop.interiors_v3.bathroom.0021",
+      "prop.interiors_v3.bathroom.0035",
+      "prop.interiors_v3.bathroom.0036",
+      "prop.interiors_v3.bathroom.0038",
+      "prop.interiors_v3.bathroom.0042",
+      "prop.interiors_v3.bathroom.0045",
+      "prop.interiors_v3.bathroom.0050",
+      "prop.interiors_v3.bathroom.0053",
+      "prop.interiors_v3.bathroom.0054",
+      "prop.interiors_v3.bathroom.0061",
+      "prop.interiors_v3.bathroom.0062",
+      "prop.interiors_v3.bathroom.0063",
+      "prop.interiors_v3.bathroom.0064",
+      "prop.interiors_v3.bathroom.0065",
+      "prop.interiors_v3.bathroom.0083",
+      "prop.interiors_v3.bathroom.0151",
+      "prop.interiors_v3.bedroom.0088",
+      "prop.interiors_v3.bedroom.0090",
+      "prop.interiors_v3.bedroom.0092",
+      "prop.interiors_v3.bedroom.0097",
+      "prop.interiors_v3.bedroom.0103",
+      "prop.interiors_v3.bedroom.0108",
+      "prop.interiors_v3.bedroom.0111",
+      "prop.interiors_v3.bedroom.0118",
+      "prop.interiors_v3.bedroom.0135",
+      "prop.interiors_v3.bedroom.0262",
+      "prop.interiors_v3.bedroom.0263",
+      "prop.interiors_v3.bedroom.0265",
+      "prop.interiors_v3.bedroom.0266",
+      "prop.interiors_v3.bedroom.0267",
+      "prop.interiors_v3.bedroom.0268",
+      "prop.interiors_v3.bedroom.0269",
+      "prop.interiors_v3.bedroom.0270",
+      "prop.interiors_v3.bedroom.0302",
+      "prop.interiors_v3.bedroom.0383",
+      "prop.interiors_v3.bedroom.0384",
+      "prop.interiors_v3.bedroom.0385",
+      "prop.interiors_v3.bedroom.0386",
+      "prop.interiors_v3.bedroom.0387",
+      "prop.interiors_v3.bedroom.0388",
+      "prop.interiors_v3.bedroom.0389",
+      "prop.interiors_v3.bedroom.0424",
+      "prop.interiors_v3.bedroom.0434",
+      "prop.interiors_v3.bedroom.0440",
+      "prop.interiors_v3.bedroom.0452",
+      "prop.interiors_v3.bedroom.0458",
+      "prop.interiors_v3.bedroom.0464",
+      "prop.interiors_v3.bedroom.0472",
+      "prop.interiors_v3.bedroom.0478",
+      "prop.interiors_v3.classroom_library.0002",
+      "prop.interiors_v3.classroom_library.0003",
+      "prop.interiors_v3.classroom_library.0004",
+      "prop.interiors_v3.classroom_library.0015",
+      "prop.interiors_v3.classroom_library.0016",
+      "prop.interiors_v3.classroom_library.0017",
+      "prop.interiors_v3.classroom_library.0018",
+      "prop.interiors_v3.classroom_library.0025",
+      "prop.interiors_v3.classroom_library.0032",
+      "prop.interiors_v3.classroom_library.0034",
+      "prop.interiors_v3.classroom_library.0036",
+      "prop.interiors_v3.classroom_library.0043",
+      "prop.interiors_v3.classroom_library.0045",
+      "prop.interiors_v3.classroom_library.0049",
+      "prop.interiors_v3.classroom_library.0052",
+      "prop.interiors_v3.classroom_library.0055",
+      "prop.interiors_v3.classroom_library.0056",
+      "prop.interiors_v3.classroom_library.0057",
+      "prop.interiors_v3.classroom_library.0058",
+      "prop.interiors_v3.classroom_library.0060",
+      "prop.interiors_v3.classroom_library.0062",
+      "prop.interiors_v3.classroom_library.0064",
+      "prop.interiors_v3.classroom_library.0069",
+      "prop.interiors_v3.classroom_library.0071",
+      "prop.interiors_v3.classroom_library.0074",
+      "prop.interiors_v3.conference.0001",
+      "prop.interiors_v3.conference.0002",
+      "prop.interiors_v3.conference.0003",
+      "prop.interiors_v3.conference.0007",
+      "prop.interiors_v3.conference.0028",
+      "prop.interiors_v3.conference.0029",
+      "prop.interiors_v3.conference.0030",
+      "prop.interiors_v3.conference.0037",
+      "prop.interiors_v3.conference.0038",
+      "prop.interiors_v3.conference.0039",
+      "prop.interiors_v3.conference.0040",
+      "prop.interiors_v3.grocery.0058",
+      "prop.interiors_v3.grocery.0060",
+      "prop.interiors_v3.grocery.0062",
+      "prop.interiors_v3.grocery.0099",
+      "prop.interiors_v3.grocery.0101",
+      "prop.interiors_v3.grocery.0162",
+      "prop.interiors_v3.grocery.0166",
+      "prop.interiors_v3.grocery.0371",
+      "prop.interiors_v3.grocery.0373",
+      "prop.interiors_v3.grocery.0374",
+      "prop.interiors_v3.grocery.0413",
+      "prop.interiors_v3.grocery.0414",
+      "prop.interiors_v3.gym.0176",
+      "prop.interiors_v3.gym.0196",
+      "prop.interiors_v3.ice_cream.0002",
+      "prop.interiors_v3.ice_cream.0012",
+      "prop.interiors_v3.ice_cream.0015",
+      "prop.interiors_v3.ice_cream.0020",
+      "prop.interiors_v3.ice_cream.0023",
+      "prop.interiors_v3.ice_cream.0100",
+      "prop.interiors_v3.ice_cream.0101",
+      "prop.interiors_v3.ice_cream.0102",
+      "prop.interiors_v3.kitchen.0121",
+      "prop.interiors_v3.kitchen.0122",
+      "prop.interiors_v3.kitchen.0130",
+      "prop.interiors_v3.kitchen.0141",
+      "prop.interiors_v3.kitchen.0142",
+      "prop.interiors_v3.kitchen.0143",
+      "prop.interiors_v3.kitchen.0144",
+      "prop.interiors_v3.kitchen.0145",
+      "prop.interiors_v3.kitchen.0146",
+      "prop.interiors_v3.kitchen.0148",
+      "prop.interiors_v3.kitchen.0150",
+      "prop.interiors_v3.kitchen.0152",
+      "prop.interiors_v3.kitchen.0154",
+      "prop.interiors_v3.kitchen.0156",
+      "prop.interiors_v3.kitchen.0160",
+      "prop.interiors_v3.kitchen.0169",
+      "prop.interiors_v3.kitchen.0195",
+      "prop.interiors_v3.kitchen.0369",
+      "prop.interiors_v3.kitchen.0372",
+      "prop.interiors_v3.living.0003",
+      "prop.interiors_v3.living.0004",
+      "prop.interiors_v3.living.0005",
+      "prop.interiors_v3.living.0007",
+      "prop.interiors_v3.living.0008",
+      "prop.interiors_v3.living.0012",
+      "prop.interiors_v3.living.0013",
+      "prop.interiors_v3.living.0015",
+      "prop.interiors_v3.living.0016",
+      "prop.interiors_v3.living.0017",
+      "prop.interiors_v3.living.0018",
+      "prop.interiors_v3.living.0019",
+      "prop.interiors_v3.living.0037",
+      "prop.interiors_v3.living.0038",
+      "prop.interiors_v3.living.0040",
+      "prop.interiors_v3.living.0051",
+      "prop.interiors_v3.living.0052",
+      "prop.interiors_v3.living.0053",
+      "prop.interiors_v3.living.0063",
+      "prop.interiors_v3.living.0064",
+      "prop.interiors_v3.living.0065",
+      "prop.interiors_v3.living.0067",
+      "prop.interiors_v3.living.0069",
+      "prop.interiors_v3.living.0073",
+      "prop.interiors_v3.living.0074",
+      "prop.interiors_v3.living.0085",
+      "prop.interiors_v3.music_sport.0043",
+      "prop.interiors_v3.music_sport.0057",
+      "prop.interiors_v3.music_sport.0058",
+      "prop.interiors_v3.shooting_range.0011",
+      "prop.interiors_v3.shooting_range.0012",
+      "prop.interiors_v3.shooting_range.0015",
+      "prop.landscape.flower_bush_01",
+      "prop.landscape.flower_bush_03",
+      "prop.landscape.flower_bush_05",
+      "prop.landscape.flower_bush_07",
+      "prop.landscape.tree_03",
+      "prop.landscape.tree_05",
+      "prop.landscape.tree_07",
+      "prop.landscape.tree_09",
+      "prop.library.shelf_dark_1",
+      "prop.library.shelf_dark_2",
+      "prop.library.shelf_dark_3",
+      "prop.office.armchair_dark",
+      "prop.office.armchair_ice",
+      "prop.office.armchair_mustard",
+      "prop.office.cash_register",
+      "prop.office.chair_blue",
+      "prop.office.chair_blue_side",
+      "prop.office.chair_orange",
+      "prop.office.chair_orange_side",
+      "prop.office.coffee_station",
+      "prop.office.computer_desk",
+      "prop.office.copier",
+      "prop.office.counter_cream_left",
+      "prop.office.counter_cream_middle",
+      "prop.office.counter_cream_right",
+      "prop.office.counter_walnut_left",
+      "prop.office.counter_walnut_middle",
+      "prop.office.counter_walnut_right",
+      "prop.office.display_cabinet",
+      "prop.office.filing_cabinet",
+      "prop.office.manager_chair",
+      "prop.office.monitor_blue",
+      "prop.office.notice_board",
+      "prop.office.paper_stack",
+      "prop.office.phone",
+      "prop.office.printer_station",
+      "prop.office.side_table",
+      "prop.office.sofa_dark",
+      "prop.office.table_light",
+      "prop.office.table_walnut",
+      "prop.office.table_walnut_medium",
+      "prop.office.town_map",
+      "prop.office.training_station",
+      "prop.office.vending_machine",
+      "prop.office.wall_chart",
+      "prop.office.waste_bin",
+      "prop.office.water_cooler",
+      "prop.plaza.fountain_blue",
+      "prop.post.package_large",
+      "prop.post.package_small",
+      "prop.post.package_stack",
+      "prop.street.lamp_01",
+      "prop.street.lamp_03",
+      "prop.street.mailbox"
+    ],
+    "data": "props.json",
+    "image": "props.png",
+    "key": "claudeville-v2-props"
+  },
+  "schema_version": 1,
+  "source_tmj_sha256": "32250517db2539865c3962e90503432f4dd02ca0dc8b5180f3dce5701916c27c",
+  "tile_asset_remap": {
+    "tile.exteriors_city.0016.0016": {
+      "atlas": "terrain",
+      "runtime_gid": 11,
+      "tile_id": 10
+    },
+    "tile.exteriors_city.0064.0080": {
+      "atlas": "terrain",
+      "runtime_gid": 12,
+      "tile_id": 11
+    },
+    "tile.exteriors_city.0416.1120": {
+      "atlas": "terrain",
+      "runtime_gid": 13,
+      "tile_id": 12
+    },
+    "tile.exteriors_city.0448.1120": {
+      "atlas": "terrain",
+      "runtime_gid": 14,
+      "tile_id": 13
+    },
+    "tile.exteriors_city.0480.1120": {
+      "atlas": "terrain",
+      "runtime_gid": 15,
+      "tile_id": 14
+    },
+    "tile.exteriors_garden.0256.0000": {
+      "atlas": "town",
+      "runtime_gid": 101,
+      "tile_id": 85
+    },
+    "tile.exteriors_garden.0256.0016": {
+      "atlas": "town",
+      "runtime_gid": 103,
+      "tile_id": 87
+    },
+    "tile.exteriors_garden.0256.0064": {
+      "atlas": "town",
+      "runtime_gid": 111,
+      "tile_id": 95
+    },
+    "tile.exteriors_garden.0256.0080": {
+      "atlas": "town",
+      "runtime_gid": 113,
+      "tile_id": 97
+    },
+    "tile.exteriors_garden.0272.0000": {
+      "atlas": "town",
+      "runtime_gid": 102,
+      "tile_id": 86
+    },
+    "tile.exteriors_garden.0272.0016": {
+      "atlas": "town",
+      "runtime_gid": 104,
+      "tile_id": 88
+    },
+    "tile.exteriors_garden.0272.0064": {
+      "atlas": "town",
+      "runtime_gid": 112,
+      "tile_id": 96
+    },
+    "tile.exteriors_garden.0272.0080": {
+      "atlas": "town",
+      "runtime_gid": 114,
+      "tile_id": 98
+    },
+    "tile.exteriors_garden.0288.0032": {
+      "atlas": "town",
+      "runtime_gid": 105,
+      "tile_id": 89
+    },
+    "tile.exteriors_garden.0288.0048": {
+      "atlas": "town",
+      "runtime_gid": 108,
+      "tile_id": 92
+    },
+    "tile.exteriors_garden.0288.0096": {
+      "atlas": "town",
+      "runtime_gid": 115,
+      "tile_id": 99
+    },
+    "tile.exteriors_garden.0288.0112": {
+      "atlas": "town",
+      "runtime_gid": 118,
+      "tile_id": 102
+    },
+    "tile.exteriors_garden.0304.0032": {
+      "atlas": "town",
+      "runtime_gid": 106,
+      "tile_id": 90
+    },
+    "tile.exteriors_garden.0304.0048": {
+      "atlas": "town",
+      "runtime_gid": 109,
+      "tile_id": 93
+    },
+    "tile.exteriors_garden.0304.0096": {
+      "atlas": "town",
+      "runtime_gid": 116,
+      "tile_id": 100
+    },
+    "tile.exteriors_garden.0304.0112": {
+      "atlas": "town",
+      "runtime_gid": 119,
+      "tile_id": 103
+    },
+    "tile.exteriors_garden.0320.0032": {
+      "atlas": "town",
+      "runtime_gid": 107,
+      "tile_id": 91
+    },
+    "tile.exteriors_garden.0320.0048": {
+      "atlas": "town",
+      "runtime_gid": 110,
+      "tile_id": 94
+    },
+    "tile.exteriors_garden.0320.0096": {
+      "atlas": "town",
+      "runtime_gid": 117,
+      "tile_id": 101
+    },
+    "tile.exteriors_garden.0320.0112": {
+      "atlas": "town",
+      "runtime_gid": 120,
+      "tile_id": 104
+    },
+    "tile.exteriors_terrain.0128.0096": {
+      "atlas": "terrain",
+      "runtime_gid": 5,
+      "tile_id": 4
+    },
+    "tile.exteriors_terrain.0128.0112": {
+      "atlas": "terrain",
+      "runtime_gid": 8,
+      "tile_id": 7
+    },
+    "tile.exteriors_terrain.0144.0096": {
+      "atlas": "terrain",
+      "runtime_gid": 6,
+      "tile_id": 5
+    },
+    "tile.exteriors_terrain.0160.0096": {
+      "atlas": "terrain",
+      "runtime_gid": 7,
+      "tile_id": 6
+    },
+    "tile.exteriors_terrain.0160.0112": {
+      "atlas": "terrain",
+      "runtime_gid": 9,
+      "tile_id": 8
+    },
+    "tile.exteriors_terrain.0272.0112": {
+      "atlas": "terrain",
+      "runtime_gid": 10,
+      "tile_id": 9
+    },
+    "tile.exteriors_terrain.0400.0080": {
+      "atlas": "terrain",
+      "runtime_gid": 1,
+      "tile_id": 0
+    },
+    "tile.exteriors_terrain.0432.0080": {
+      "atlas": "terrain",
+      "runtime_gid": 2,
+      "tile_id": 1
+    },
+    "tile.exteriors_terrain.0448.0080": {
+      "atlas": "terrain",
+      "runtime_gid": 3,
+      "tile_id": 2
+    },
+    "tile.exteriors_terrain.0464.0080": {
+      "atlas": "terrain",
+      "runtime_gid": 4,
+      "tile_id": 3
+    },
+    "tile.exteriors_worksite.0048.0208": {
+      "atlas": "town",
+      "runtime_gid": 57,
+      "tile_id": 41
+    },
+    "tile.exteriors_worksite.0048.0224": {
+      "atlas": "town",
+      "runtime_gid": 66,
+      "tile_id": 50
+    },
+    "tile.exteriors_worksite.0048.0240": {
+      "atlas": "town",
+      "runtime_gid": 73,
+      "tile_id": 57
+    },
+    "tile.exteriors_worksite.0048.0256": {
+      "atlas": "town",
+      "runtime_gid": 80,
+      "tile_id": 64
+    },
+    "tile.exteriors_worksite.0048.0272": {
+      "atlas": "town",
+      "runtime_gid": 87,
+      "tile_id": 71
+    },
+    "tile.exteriors_worksite.0048.0288": {
+      "atlas": "town",
+      "runtime_gid": 94,
+      "tile_id": 78
+    },
+    "tile.exteriors_worksite.0064.0208": {
+      "atlas": "town",
+      "runtime_gid": 58,
+      "tile_id": 42
+    },
+    "tile.exteriors_worksite.0064.0224": {
+      "atlas": "town",
+      "runtime_gid": 67,
+      "tile_id": 51
+    },
+    "tile.exteriors_worksite.0064.0240": {
+      "atlas": "town",
+      "runtime_gid": 74,
+      "tile_id": 58
+    },
+    "tile.exteriors_worksite.0064.0256": {
+      "atlas": "town",
+      "runtime_gid": 81,
+      "tile_id": 65
+    },
+    "tile.exteriors_worksite.0064.0272": {
+      "atlas": "town",
+      "runtime_gid": 88,
+      "tile_id": 72
+    },
+    "tile.exteriors_worksite.0064.0288": {
+      "atlas": "town",
+      "runtime_gid": 95,
+      "tile_id": 79
+    },
+    "tile.exteriors_worksite.0080.0208": {
+      "atlas": "town",
+      "runtime_gid": 59,
+      "tile_id": 43
+    },
+    "tile.exteriors_worksite.0080.0224": {
+      "atlas": "town",
+      "runtime_gid": 68,
+      "tile_id": 52
+    },
+    "tile.exteriors_worksite.0080.0240": {
+      "atlas": "town",
+      "runtime_gid": 75,
+      "tile_id": 59
+    },
+    "tile.exteriors_worksite.0080.0256": {
+      "atlas": "town",
+      "runtime_gid": 82,
+      "tile_id": 66
+    },
+    "tile.exteriors_worksite.0080.0272": {
+      "atlas": "town",
+      "runtime_gid": 89,
+      "tile_id": 73
+    },
+    "tile.exteriors_worksite.0080.0288": {
+      "atlas": "town",
+      "runtime_gid": 96,
+      "tile_id": 80
+    },
+    "tile.exteriors_worksite.0096.0208": {
+      "atlas": "town",
+      "runtime_gid": 60,
+      "tile_id": 44
+    },
+    "tile.exteriors_worksite.0096.0224": {
+      "atlas": "town",
+      "runtime_gid": 69,
+      "tile_id": 53
+    },
+    "tile.exteriors_worksite.0096.0240": {
+      "atlas": "town",
+      "runtime_gid": 76,
+      "tile_id": 60
+    },
+    "tile.exteriors_worksite.0096.0256": {
+      "atlas": "town",
+      "runtime_gid": 83,
+      "tile_id": 67
+    },
+    "tile.exteriors_worksite.0096.0272": {
+      "atlas": "town",
+      "runtime_gid": 90,
+      "tile_id": 74
+    },
+    "tile.exteriors_worksite.0096.0288": {
+      "atlas": "town",
+      "runtime_gid": 97,
+      "tile_id": 81
+    },
+    "tile.exteriors_worksite.0112.0112": {
+      "atlas": "town",
+      "runtime_gid": 19,
+      "tile_id": 3
+    },
+    "tile.exteriors_worksite.0112.0128": {
+      "atlas": "town",
+      "runtime_gid": 27,
+      "tile_id": 11
+    },
+    "tile.exteriors_worksite.0112.0208": {
+      "atlas": "town",
+      "runtime_gid": 61,
+      "tile_id": 45
+    },
+    "tile.exteriors_worksite.0112.0224": {
+      "atlas": "town",
+      "runtime_gid": 70,
+      "tile_id": 54
+    },
+    "tile.exteriors_worksite.0112.0240": {
+      "atlas": "town",
+      "runtime_gid": 77,
+      "tile_id": 61
+    },
+    "tile.exteriors_worksite.0112.0256": {
+      "atlas": "town",
+      "runtime_gid": 84,
+      "tile_id": 68
+    },
+    "tile.exteriors_worksite.0112.0272": {
+      "atlas": "town",
+      "runtime_gid": 91,
+      "tile_id": 75
+    },
+    "tile.exteriors_worksite.0112.0288": {
+      "atlas": "town",
+      "runtime_gid": 98,
+      "tile_id": 82
+    },
+    "tile.exteriors_worksite.0128.0112": {
+      "atlas": "town",
+      "runtime_gid": 20,
+      "tile_id": 4
+    },
+    "tile.exteriors_worksite.0128.0128": {
+      "atlas": "town",
+      "runtime_gid": 28,
+      "tile_id": 12
+    },
+    "tile.exteriors_worksite.0128.0192": {
+      "atlas": "town",
+      "runtime_gid": 53,
+      "tile_id": 37
+    },
+    "tile.exteriors_worksite.0128.0208": {
+      "atlas": "town",
+      "runtime_gid": 62,
+      "tile_id": 46
+    },
+    "tile.exteriors_worksite.0128.0224": {
+      "atlas": "town",
+      "runtime_gid": 71,
+      "tile_id": 55
+    },
+    "tile.exteriors_worksite.0128.0240": {
+      "atlas": "town",
+      "runtime_gid": 78,
+      "tile_id": 62
+    },
+    "tile.exteriors_worksite.0128.0256": {
+      "atlas": "town",
+      "runtime_gid": 85,
+      "tile_id": 69
+    },
+    "tile.exteriors_worksite.0128.0272": {
+      "atlas": "town",
+      "runtime_gid": 92,
+      "tile_id": 76
+    },
+    "tile.exteriors_worksite.0128.0288": {
+      "atlas": "town",
+      "runtime_gid": 99,
+      "tile_id": 83
+    },
+    "tile.exteriors_worksite.0144.0192": {
+      "atlas": "town",
+      "runtime_gid": 54,
+      "tile_id": 38
+    },
+    "tile.exteriors_worksite.0144.0208": {
+      "atlas": "town",
+      "runtime_gid": 63,
+      "tile_id": 47
+    },
+    "tile.exteriors_worksite.0144.0224": {
+      "atlas": "town",
+      "runtime_gid": 72,
+      "tile_id": 56
+    },
+    "tile.exteriors_worksite.0144.0240": {
+      "atlas": "town",
+      "runtime_gid": 79,
+      "tile_id": 63
+    },
+    "tile.exteriors_worksite.0144.0256": {
+      "atlas": "town",
+      "runtime_gid": 86,
+      "tile_id": 70
+    },
+    "tile.exteriors_worksite.0144.0272": {
+      "atlas": "town",
+      "runtime_gid": 93,
+      "tile_id": 77
+    },
+    "tile.exteriors_worksite.0144.0288": {
+      "atlas": "town",
+      "runtime_gid": 100,
+      "tile_id": 84
+    },
+    "tile.exteriors_worksite.0224.0096": {
+      "atlas": "town",
+      "runtime_gid": 16,
+      "tile_id": 0
+    },
+    "tile.exteriors_worksite.0224.0112": {
+      "atlas": "town",
+      "runtime_gid": 21,
+      "tile_id": 5
+    },
+    "tile.exteriors_worksite.0224.0128": {
+      "atlas": "town",
+      "runtime_gid": 29,
+      "tile_id": 13
+    },
+    "tile.exteriors_worksite.0224.0144": {
+      "atlas": "town",
+      "runtime_gid": 35,
+      "tile_id": 19
+    },
+    "tile.exteriors_worksite.0224.0160": {
+      "atlas": "town",
+      "runtime_gid": 41,
+      "tile_id": 25
+    },
+    "tile.exteriors_worksite.0224.0176": {
+      "atlas": "town",
+      "runtime_gid": 47,
+      "tile_id": 31
+    },
+    "tile.exteriors_worksite.0240.0096": {
+      "atlas": "town",
+      "runtime_gid": 17,
+      "tile_id": 1
+    },
+    "tile.exteriors_worksite.0240.0112": {
+      "atlas": "town",
+      "runtime_gid": 22,
+      "tile_id": 6
+    },
+    "tile.exteriors_worksite.0240.0128": {
+      "atlas": "town",
+      "runtime_gid": 30,
+      "tile_id": 14
+    },
+    "tile.exteriors_worksite.0240.0144": {
+      "atlas": "town",
+      "runtime_gid": 36,
+      "tile_id": 20
+    },
+    "tile.exteriors_worksite.0240.0160": {
+      "atlas": "town",
+      "runtime_gid": 42,
+      "tile_id": 26
+    },
+    "tile.exteriors_worksite.0240.0176": {
+      "atlas": "town",
+      "runtime_gid": 48,
+      "tile_id": 32
+    },
+    "tile.exteriors_worksite.0256.0096": {
+      "atlas": "town",
+      "runtime_gid": 18,
+      "tile_id": 2
+    },
+    "tile.exteriors_worksite.0256.0112": {
+      "atlas": "town",
+      "runtime_gid": 23,
+      "tile_id": 7
+    },
+    "tile.exteriors_worksite.0256.0128": {
+      "atlas": "town",
+      "runtime_gid": 31,
+      "tile_id": 15
+    },
+    "tile.exteriors_worksite.0256.0144": {
+      "atlas": "town",
+      "runtime_gid": 37,
+      "tile_id": 21
+    },
+    "tile.exteriors_worksite.0256.0160": {
+      "atlas": "town",
+      "runtime_gid": 43,
+      "tile_id": 27
+    },
+    "tile.exteriors_worksite.0256.0176": {
+      "atlas": "town",
+      "runtime_gid": 49,
+      "tile_id": 33
+    },
+    "tile.exteriors_worksite.0464.0112": {
+      "atlas": "town",
+      "runtime_gid": 24,
+      "tile_id": 8
+    },
+    "tile.exteriors_worksite.0464.0128": {
+      "atlas": "town",
+      "runtime_gid": 32,
+      "tile_id": 16
+    },
+    "tile.exteriors_worksite.0464.0144": {
+      "atlas": "town",
+      "runtime_gid": 38,
+      "tile_id": 22
+    },
+    "tile.exteriors_worksite.0464.0160": {
+      "atlas": "town",
+      "runtime_gid": 44,
+      "tile_id": 28
+    },
+    "tile.exteriors_worksite.0464.0176": {
+      "atlas": "town",
+      "runtime_gid": 50,
+      "tile_id": 34
+    },
+    "tile.exteriors_worksite.0464.0192": {
+      "atlas": "town",
+      "runtime_gid": 55,
+      "tile_id": 39
+    },
+    "tile.exteriors_worksite.0464.0208": {
+      "atlas": "town",
+      "runtime_gid": 64,
+      "tile_id": 48
+    },
+    "tile.exteriors_worksite.0480.0112": {
+      "atlas": "town",
+      "runtime_gid": 25,
+      "tile_id": 9
+    },
+    "tile.exteriors_worksite.0480.0128": {
+      "atlas": "town",
+      "runtime_gid": 33,
+      "tile_id": 17
+    },
+    "tile.exteriors_worksite.0480.0144": {
+      "atlas": "town",
+      "runtime_gid": 39,
+      "tile_id": 23
+    },
+    "tile.exteriors_worksite.0480.0160": {
+      "atlas": "town",
+      "runtime_gid": 45,
+      "tile_id": 29
+    },
+    "tile.exteriors_worksite.0480.0176": {
+      "atlas": "town",
+      "runtime_gid": 51,
+      "tile_id": 35
+    },
+    "tile.exteriors_worksite.0480.0192": {
+      "atlas": "town",
+      "runtime_gid": 56,
+      "tile_id": 40
+    },
+    "tile.exteriors_worksite.0480.0208": {
+      "atlas": "town",
+      "runtime_gid": 65,
+      "tile_id": 49
+    },
+    "tile.exteriors_worksite.0496.0112": {
+      "atlas": "town",
+      "runtime_gid": 26,
+      "tile_id": 10
+    },
+    "tile.exteriors_worksite.0496.0128": {
+      "atlas": "town",
+      "runtime_gid": 34,
+      "tile_id": 18
+    },
+    "tile.exteriors_worksite.0496.0144": {
+      "atlas": "town",
+      "runtime_gid": 40,
+      "tile_id": 24
+    },
+    "tile.exteriors_worksite.0496.0160": {
+      "atlas": "town",
+      "runtime_gid": 46,
+      "tile_id": 30
+    },
+    "tile.exteriors_worksite.0496.0176": {
+      "atlas": "town",
+      "runtime_gid": 52,
+      "tile_id": 36
+    },
+    "tile.interiors_v3.room.arched_entryways.r010.c04": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 129,
+      "tile_id": 0
+    },
+    "tile.interiors_v3.room.arched_entryways.r010.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 130,
+      "tile_id": 1
+    },
+    "tile.interiors_v3.room.arched_entryways.r011.c04": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 131,
+      "tile_id": 2
+    },
+    "tile.interiors_v3.room.arched_entryways.r011.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 132,
+      "tile_id": 3
+    },
+    "tile.interiors_v3.room.arched_entryways.r018.c02": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 133,
+      "tile_id": 4
+    },
+    "tile.interiors_v3.room.arched_entryways.r018.c03": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 134,
+      "tile_id": 5
+    },
+    "tile.interiors_v3.room.arched_entryways.r019.c02": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 135,
+      "tile_id": 6
+    },
+    "tile.interiors_v3.room.arched_entryways.r019.c03": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 136,
+      "tile_id": 7
+    },
+    "tile.interiors_v3.room.arched_entryways.r022.c04": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 137,
+      "tile_id": 8
+    },
+    "tile.interiors_v3.room.arched_entryways.r022.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 138,
+      "tile_id": 9
+    },
+    "tile.interiors_v3.room.arched_entryways.r023.c04": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 139,
+      "tile_id": 10
+    },
+    "tile.interiors_v3.room.arched_entryways.r023.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 140,
+      "tile_id": 11
+    },
+    "tile.interiors_v3.room.floors.r008.c13": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 141,
+      "tile_id": 12
+    },
+    "tile.interiors_v3.room.floors.r009.c13": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 142,
+      "tile_id": 13
+    },
+    "tile.interiors_v3.room.floors.r010.c01": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 143,
+      "tile_id": 14
+    },
+    "tile.interiors_v3.room.floors.r010.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 144,
+      "tile_id": 15
+    },
+    "tile.interiors_v3.room.floors.r010.c09": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 145,
+      "tile_id": 16
+    },
+    "tile.interiors_v3.room.floors.r010.c13": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 146,
+      "tile_id": 17
+    },
+    "tile.interiors_v3.room.floors.r011.c01": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 147,
+      "tile_id": 18
+    },
+    "tile.interiors_v3.room.floors.r012.c01": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 148,
+      "tile_id": 19
+    },
+    "tile.interiors_v3.room.floors.r012.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 149,
+      "tile_id": 20
+    },
+    "tile.interiors_v3.room.floors.r025.c01": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 150,
+      "tile_id": 21
+    },
+    "tile.interiors_v3.room.floors.r025.c09": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 151,
+      "tile_id": 22
+    },
+    "tile.interiors_v3.room.floors.r028.c01": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 152,
+      "tile_id": 23
+    },
+    "tile.interiors_v3.room.floors.r029.c09": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 153,
+      "tile_id": 24
+    },
+    "tile.interiors_v3.room.floors.r029.c13": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 154,
+      "tile_id": 25
+    },
+    "tile.interiors_v3.room.floors.r031.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 155,
+      "tile_id": 26
+    },
+    "tile.interiors_v3.room.floors.r031.c09": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 156,
+      "tile_id": 27
+    },
+    "tile.interiors_v3.room.floors.r032.c05": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 157,
+      "tile_id": 28
+    },
+    "tile.interiors_v3.room.floors.r032.c09": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 158,
+      "tile_id": 29
+    },
+    "tile.interiors_v3.room.floors.r032.c13": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 159,
+      "tile_id": 30
+    },
+    "tile.interiors_v3.room.floors.r033.c13": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 160,
+      "tile_id": 31
+    },
+    "tile.interiors_v3.room.walls.r000.c11": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 161,
+      "tile_id": 32
+    },
+    "tile.interiors_v3.room.walls.r000.c12": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 162,
+      "tile_id": 33
+    },
+    "tile.interiors_v3.room.walls.r000.c14": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 163,
+      "tile_id": 34
+    },
+    "tile.interiors_v3.room.walls.r001.c16": {
+      "atlas": "interiors_v3",
+      "runtime_gid": 164,
+      "tile_id": 35
+    },
+    "tile.office_room_builder.0032.0016": {
+      "atlas": "office",
+      "runtime_gid": 121,
+      "tile_id": 0
+    },
+    "tile.office_room_builder.0080.0016": {
+      "atlas": "office",
+      "runtime_gid": 122,
+      "tile_id": 1
+    },
+    "tile.office_room_builder.0096.0016": {
+      "atlas": "office",
+      "runtime_gid": 123,
+      "tile_id": 2
+    },
+    "tile.office_room_builder.0112.0016": {
+      "atlas": "office",
+      "runtime_gid": 124,
+      "tile_id": 3
+    },
+    "tile.office_room_builder.0144.0016": {
+      "atlas": "office",
+      "runtime_gid": 125,
+      "tile_id": 4
+    },
+    "tile.office_room_builder.0160.0080": {
+      "atlas": "office",
+      "runtime_gid": 126,
+      "tile_id": 5
+    },
+    "tile.office_room_builder.0160.0176": {
+      "atlas": "office",
+      "runtime_gid": 128,
+      "tile_id": 7
+    },
+    "tile.office_room_builder.0176.0080": {
+      "atlas": "office",
+      "runtime_gid": 127,
+      "tile_id": 6
+    }
+  },
+  "tile_gid_clear_mask": 4026531840,
+  "tile_gid_flip_mask": 3758096384,
+  "tile_gid_remap": {
+    "105": 10,
+    "1328": 11,
+    "1517": 12,
+    "20073": 16,
+    "20074": 17,
+    "20075": 18,
+    "20095": 19,
+    "20096": 20,
+    "20101": 21,
+    "20102": 22,
+    "20103": 23,
+    "20114": 24,
+    "20115": 25,
+    "20116": 26,
+    "20124": 27,
+    "20125": 28,
+    "20127": 29,
+    "20128": 30,
+    "20129": 31,
+    "20139": 32,
+    "20140": 33,
+    "20141": 34,
+    "20149": 35,
+    "20150": 36,
+    "20151": 37,
+    "20161": 38,
+    "20162": 39,
+    "20163": 40,
+    "20169": 41,
+    "20170": 42,
+    "20171": 43,
+    "20181": 44,
+    "20182": 45,
+    "20183": 46,
+    "20193": 47,
+    "20194": 48,
+    "20195": 49,
+    "20205": 50,
+    "20206": 51,
+    "20207": 52,
+    "20215": 53,
+    "20216": 54,
+    "20223": 55,
+    "20224": 56,
+    "20228": 57,
+    "20229": 58,
+    "20230": 59,
+    "20231": 60,
+    "20232": 61,
+    "20233": 62,
+    "20234": 63,
+    "20242": 64,
+    "20243": 65,
+    "20247": 66,
+    "20248": 67,
+    "20249": 68,
+    "20250": 69,
+    "20251": 70,
+    "20252": 71,
+    "20253": 72,
+    "20264": 73,
+    "20265": 74,
+    "20266": 75,
+    "20267": 76,
+    "20268": 77,
+    "20269": 78,
+    "20270": 79,
+    "20281": 80,
+    "20282": 81,
+    "20283": 82,
+    "20284": 83,
+    "20285": 84,
+    "20286": 85,
+    "20287": 86,
+    "20300": 87,
+    "20301": 88,
+    "20302": 89,
+    "20303": 90,
+    "20304": 91,
+    "20305": 92,
+    "20306": 93,
+    "20319": 94,
+    "20320": 95,
+    "20321": 96,
+    "20322": 97,
+    "20323": 98,
+    "20324": 99,
+    "20325": 100,
+    "26042": 101,
+    "26043": 102,
+    "26066": 103,
+    "26067": 104,
+    "26094": 105,
+    "26095": 106,
+    "26096": 107,
+    "26124": 108,
+    "26125": 109,
+    "26126": 110,
+    "26145": 111,
+    "26146": 112,
+    "26172": 113,
+    "26173": 114,
+    "26198": 115,
+    "26199": 116,
+    "26200": 117,
+    "26222": 118,
+    "26223": 119,
+    "26224": 120,
+    "38062": 121,
+    "38065": 122,
+    "38066": 123,
+    "38067": 124,
+    "38069": 125,
+    "38108": 126,
+    "38109": 127,
+    "38195": 128,
+    "4386": 13,
+    "4387": 14,
+    "4388": 15,
+    "59": 1,
+    "59779": 141,
+    "59794": 142,
+    "59797": 143,
+    "59801": 144,
+    "59805": 145,
+    "59809": 146,
+    "59812": 147,
+    "59827": 148,
+    "59831": 149,
+    "60022": 150,
+    "60030": 151,
+    "60067": 152,
+    "60090": 153,
+    "60094": 154,
+    "60116": 155,
+    "60120": 156,
+    "60131": 157,
+    "60135": 158,
+    "60139": 159,
+    "60154": 160,
+    "60257": 161,
+    "60258": 162,
+    "60260": 163,
+    "60294": 164,
+    "61": 2,
+    "61630": 129,
+    "61631": 130,
+    "61640": 131,
+    "61641": 132,
+    "61708": 133,
+    "61709": 134,
+    "61718": 135,
+    "61719": 136,
+    "61750": 137,
+    "61751": 138,
+    "61760": 139,
+    "61761": 140,
+    "62": 3,
+    "63": 4,
+    "71": 5,
+    "72": 6,
+    "73": 7,
+    "97": 8,
+    "99": 9
+  },
+  "tile_size": 16,
+  "tilesets": [
+    {
+      "firstgid": 1,
+      "image": "tiles/terrain.png",
+      "key": "terrain",
+      "tile_count": 15,
+      "tileset": "tiles/terrain.tsj"
+    },
+    {
+      "firstgid": 16,
+      "image": "tiles/town.png",
+      "key": "town",
+      "tile_count": 105,
+      "tileset": "tiles/town.tsj"
+    },
+    {
+      "firstgid": 121,
+      "image": "tiles/office.png",
+      "key": "office",
+      "tile_count": 8,
+      "tileset": "tiles/office.tsj"
+    },
+    {
+      "firstgid": 129,
+      "image": "tiles/interiors_v3.png",
+      "key": "interiors_v3",
+      "tile_count": 36,
+      "tileset": "tiles/interiors_v3.tsj"
+    }
+  ]
+}

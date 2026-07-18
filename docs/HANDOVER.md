@@ -80,7 +80,8 @@ Django:   cd environment/frontend_server && ..\..\env\Scripts\python.exe manage.
 Lint:     env\Scripts\python.exe -m ruff check reverie/ tools/ tests/
 ```
 
-Current green baseline: **208 backend + 28 eval + 34 Django** tests; ruff clean.
+Current green baseline: **230 backend + 78 Django** tests, the focused Claudeville world/renderer suites,
+map validators, and ruff are clean.
 
 ---
 
@@ -106,12 +107,15 @@ Current green baseline: **208 backend + 28 eval + 34 Django** tests; ruff clean.
   - `templates/home/{home.html, main_script.html, inspector_script.html, feed_script.html}` — the game
     page (Phaser + all UI JS is inline here; `main_script.html` is large).
   - `static_dirs/css/style.css` — all UI styling.
-  - `static_dirs/assets/` — character sprites (32×32, RPG-Maker layout), the `the_ville` tilemap, and the
-    active world (currently ONE flat painted PNG — see roadmap P2).
+  - `static_dirs/assets/claudeville/world.json` — the active data-driven world contract. It selects the
+    native-16 v45 Tiled runtime, ordered layers, curated atlases, English aliases, collision data, and the
+    schema-v2 character catalog. The old painted Claudeville scene remains load-failure fallback only.
+  - `static_dirs/js/world_collision.js` — collision-aware spawn and historical-replay projection helpers.
 - `tools/eval/` — read-only run analyzers (metrics, emergence, economy, believability_judge, report);
   e.g. `python -m tools.eval.economy <sim_code>`.
-- `tools/mapgen/` — image-first map authoring (`town_spec.json → maze CSVs` via `generate_world.py`,
-  validated through the real engine by `validate_world.py`).
+- `tools/mapgen/` — authoritative world generation plus the native-16 Tiled authoring/compiler and curated
+  Modern Pixels asset pipeline (`town_spec.json → maze CSVs`, TMJ → deterministic runtime JSON), validated
+  through the real engine by `validate_world.py` and exact collision-parity tests.
 - `scripts/run_claudeville.ps1` — the launcher (must stay ASCII-only — see §8).
 
 ---
@@ -142,16 +146,43 @@ Current green baseline: **208 backend + 28 eval + 34 Django** tests; ruff clean.
 
 ---
 
-## 5. CURRENT STATE (clean, committed, pushed — start from HEAD)
+## 5. CURRENT STATE (Claudeville v45 promoted)
 
-Git HEAD = **`1f74efcd`** on `main`, and it is **pushed to `origin/main`**. The working tree is clean of
-source changes (the only untracked items are intentionally-excluded noise: `.claude-flow/` assets,
-`.playwright-cli/`, generated `tools/eval/out/*`). You start from a clean, committed, remote-synced
-baseline — no uncommitted delta to reconcile. Full narrative history is in `docs/DEVLOG.md`
+The Modern Pixels implementation is recorded by **`dbeefc07`** and its follow-up handover commit. It is
+merged to `main` and pushed to `origin/main`. The only intentionally excluded local items are browser
+scratch captures and generated `tools/eval/out/*` reports. Full narrative history is in `docs/DEVLOG.md`
 (reverse-chronological — read the top few entries first).
 
-`1f74efcd` consolidated two tested milestones that had accumulated uncommitted across sessions: the
-"transaction console + economy analyzer" and all of Phase 1 below.
+**CLAUDEVILLE MODERN PIXELS TOWN — COMPLETE & promoted:**
+
+- **Map contract:** `88×48 @ 32px` logical simulation grid and `176×96 @ 16px` visual grid, preserving the
+  original `2816×1536` world dimensions. `world.json` selects
+  `visual_candidates/browser-target-v45/claudeville_v2.json`; the editable source is
+  `visuals/claudeville_target_v45.tmj`.
+- **Composition:** a hand-authored three-row town with Bank, Home 1, University, Agent Academy, Market and
+  Post Office in the north; Workshop, Community Center, Central Plaza, Claudeville Cafe and Library in the
+  middle; Homes 2–10 and Town Hall in the south. Facilities use distinct, purposeful cutaway interiors.
+- **Assets:** only curated runtime derivatives from licensed Modern Exteriors, Modern Office and full Modern
+  Interiors sources are committed, with required LimeZu/0a3r credits. Raw vendor packs, generators, ZIPs,
+  Free Interiors, old versions, previews, and unused 32/48px duplicates remain excluded.
+- **Semantics:** 21 sectors, 73 authored zones, 70 reachable interactions/stance cells, 38 semantic objects,
+  and 1,235 visual props. All active names, descriptions and UI are English; Spanish names survive only as
+  hidden historical input aliases.
+- **Navigation:** the backend matrices remain authoritative. The generated Tiled collision layer has zero
+  mismatches, all solid prop footprints are blocked, and all 2,080 walkable cells form one connected
+  component (**100% connectivity**).
+- **Residents:** the ten canonical residents use distinct licensed/generated 16×32 sprite sheets at native
+  scale, bottom-centre anchors, explicit four-direction idle/walk frames, portraits and provenance in the
+  schema-v2 character manifest. Historical replay positions project to the nearest safe logical cell.
+- **Renderer:** Phaser renders the actual Tiled tile/object layers with nearest-neighbour pixels, foot-based
+  depth sorting, collision-aware actors, camera drag/zoom/follow, inspector, replay controls, speech bubbles,
+  and day/night tinting. The accepted legacy image is load-failure fallback only.
+- **Verification:** 85 focused world tests (1,354 subtests), 16 renderer/collision tests, 230 backend tests,
+  78 Django tests, ruff, `validate_world.py`, and the replay smoke passed. Playwright captures at full-town,
+  100%, 150%, 200%, 300% actor and mobile views loaded 1,235 objects with no missing assets, console errors,
+  failed requests, or fallback activation.
+
+The earlier **`1f74efcd`** milestone consolidated the transaction console, economy analyzer and Phase 1:
 
 **PHASE 1 "Make it watchable" — COMPLETE & green:**
 
@@ -180,7 +211,7 @@ baseline — no uncommitted delta to reconcile. Full narrative history is in `do
 
 ---
 
-## 6. THE AGREED ROADMAP (P1 done; P2→P4 next)
+## 6. THE AGREED ROADMAP (P1 and P2 visuals done; intelligence/P3→P4 next)
 
 Sequencing reviewed and approved by the user as **P1→P2→P3→P4**.
 
@@ -209,14 +240,10 @@ Sequencing reviewed and approved by the user as **P1→P2→P3→P4**.
 7. **Interview-grade persona documents** (Stanford's 1000-people result: rich "life-interview" persona
    docs massively outperform trait lists — one-time generation, hand-edited for drama).
 
-**(B) VISUALS** (retile the town): LimeZu "Modern Office Revamped v1.2" is already dropped at
-`.claude-flow/data/Modern_Office_Revamped_v1.2/` (use the 32×32 sheets; **do NOT commit the .zip or serve
-the raw pack — license**). Still need LimeZu Modern Interiors (+ characters) and Modern Exteriors for a
-full town. Plan: author the 88×48 town in **Tiled** with the LimeZu sheets and render it through the
-**existing `the_ville` tilemap branch** in `main_script.html` (the code path, layer names, and depth logic
-already exist — the active world is currently one flat painted PNG, the #1 visual ceiling). Add y-depth
-sorting, character action states (sit/type/phone/coffee) driven by agent action strings, animated tiles
-(monitors/coffee), and night lamps. Only change that fixes the style-clash + zoom-blur.
+**(B) VISUALS — COMPLETE:** Claudeville v45 is the promoted native-16 Tiled town described in §5. Future
+visual work is refinement rather than another retile: hand-tune individual rooms/props in the source TMJ,
+recompile deterministically, run collision parity, and inspect the Playwright screenshot matrix before
+changing `world.json`. Never commit or serve the raw licensed vendor directories.
 
 ### P3 "The show + the game" (~2 weeks)
 
@@ -250,17 +277,13 @@ per-action human confirm. This is "Stage 2" of the money path — **do not enabl
 
 ## 7. IMMEDIATE NEXT STEPS (in order)
 
-1. Sanity: `git log --oneline -1` should show `1f74efcd`. Run all three test suites + ruff; confirm
-   **208 backend + 28 eval + 34 Django** green, ruff clean. Read `docs/DEVLOG.md` top 3 entries.
-2. Launch the stack (`scripts\run_claudeville.ps1`), Play, and eyeball P1 end-to-end (this **interactive
-   live smoke is the one check that needs a persistent backend** — automated tests + template-render
-   probes already pass; the live backend tends to die at tool/session boundaries, so run it yourself in a
-   real terminal): shadows/bubbles, follow-cam, inspector on a persona, the event feed populating,
-   file→approve a request WITH a note and confirm the artifact + note reach the agent (visible in
-   inspector/feed), a browser notification fires.
-3. Start **P2**. Recommended first slice: **INTELLIGENCE A1 (feed research detail into agents)** — small,
-   high-leverage, well-contained, immediately visible in the inspector's memory stream. Then A2 (model
-   tiering) + A3 (caching/locations-delta). Retile (B) can proceed in parallel.
+1. Launch the stack (`scripts\run_claudeville.ps1`) and use the promoted v45 world for all new live runs.
+   Keep v1 and the accepted legacy image unchanged for historical replay/load-failure rollback.
+2. If visually refining the town, edit `claudeville_target_v45.tmj`; do not reintroduce procedural prop
+   scattering or edit compiled runtime JSON by hand. Recompile, validate exact collision parity, and repeat
+   the full-town/district/zoom/mobile Playwright review before promotion.
+3. Continue **P2 intelligence A1** (feed sanitized research detail into agents), then model tiering and
+   prompt-cache/location-delta work. The visual track no longer blocks these milestones.
 
 ---
 

@@ -1,0 +1,14 @@
+{
+  "theo grant": {
+    "name": "Theo Grant",
+    "familiarity": 1,
+    "affinity": 0.1,
+    "sentiment": "neutral",
+    "last_topics": [],
+    "beliefs": [
+      "expects them to vet my outreach"
+    ],
+    "last_interaction": null,
+    "times_talked": 0
+  }
+}
